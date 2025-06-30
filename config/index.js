@@ -27,7 +27,7 @@ const config = {
       name: 'AI Brenden',
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
-      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/9acfb29c-d648-4f5f-afd2-08cb30122877'
+      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook-test/9acfb29c-d648-4f5f-afd2-08cb30122877'
     },
     van: {
       assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
