@@ -103,6 +103,20 @@ class LeadProcessor {
   async deleteLead(leadId) {
     return await this.supabaseService.deleteLead(leadId);
   }
+
+  /**
+   * Export leads to CSV
+   */
+  async exportToCSV(leads) {
+    return await this.supabaseService.exportToCSV(leads);
+  }
+
+  /**
+   * Export leads to XML
+   */
+  async exportToXML(leads) {
+    return await this.supabaseService.exportToXML(leads);
+  }
 }
 
 module.exports = LeadProcessor;

@@ -3,6 +3,7 @@ let currentEmployee = 'brenden';
 let currentThreadId = null;
 let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
+let currentFilters = {}; // Store current lead filters
 
 // Employee configurations
 const employees = {
@@ -58,12 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
+  initializeLeadsPage();
+  initializeBrandingUploads();
   
   // Load initial employee
   switchEmployee('brenden');
   
   // Load dashboard metrics
   loadDashboardMetrics();
+  
+  // Load branding
+  loadBranding();
   
   console.log('🚀 Orchid Republic Command Center initialized');
 });
@@ -207,6 +213,397 @@ function initializeBranding() {
   }
 }
 
+function initializeBrandingUploads() {
+  // Logo upload functionality
+  const logoUploadArea = document.getElementById('logoUploadArea');
+  const logoFileInput = document.getElementById('logoFileInput');
+  const logoPreview = document.getElementById('logoPreview');
+  const saveLogoBtn = document.getElementById('saveLogoBtn');
+  
+  if (logoUploadArea && logoFileInput) {
+    logoUploadArea.addEventListener('click', () => logoFileInput.click());
+    logoUploadArea.addEventListener('dragover', handleDragOver);
+    logoUploadArea.addEventListener('drop', handleLogoDrop);
+    logoFileInput.addEventListener('change', handleLogoSelect);
+  }
+  
+  if (saveLogoBtn) {
+    saveLogoBtn.addEventListener('click', saveLogo);
+  }
+  
+  // Initialize employee profile grid
+  initializeEmployeeProfiles();
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('dragover');
+}
+
+function handleLogoDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleLogoFile(files[0]);
+  }
+}
+
+function handleLogoSelect(e) {
+  const file = e.target.files[0];
+  if (file) {
+    handleLogoFile(file);
+  }
+}
+
+function handleLogoFile(file) {
+  // Validate file type
+  const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+  if (!validTypes.includes(file.type)) {
+    showNotification('Please select a PNG, JPG, or SVG file', 'error');
+    return;
+  }
+  
+  // Validate file size (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showNotification('File size must be less than 2MB', 'error');
+    return;
+  }
+  
+  // Preview the image
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const logoPreview = document.getElementById('logoPreview');
+    const saveLogoBtn = document.getElementById('saveLogoBtn');
+    
+    if (logoPreview && saveLogoBtn) {
+      logoPreview.src = e.target.result;
+      logoPreview.style.display = 'block';
+      saveLogoBtn.style.display = 'inline-flex';
+      saveLogoBtn.dataset.fileData = e.target.result;
+      saveLogoBtn.dataset.fileName = file.name;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveLogo() {
+  const saveLogoBtn = document.getElementById('saveLogoBtn');
+  const fileData = saveLogoBtn.dataset.fileData;
+  const fileName = saveLogoBtn.dataset.fileName;
+  
+  if (!fileData) {
+    showNotification('No logo selected', 'error');
+    return;
+  }
+  
+  try {
+    // In a real implementation, you would upload to a file storage service
+    // For now, we'll store the data URL in localStorage and database
+    const logoUrl = fileData; // This would be the actual file URL in production
+    
+    // Save to database via API
+    const response = await fetch('/api/branding/logo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        logo_url: logoUrl,
+        file_name: fileName
+      })
+    });
+    
+    if (response.ok) {
+      // Update sidebar logo
+      updateSidebarLogo(logoUrl);
+      showNotification('Logo saved successfully!', 'success');
+      saveLogoBtn.style.display = 'none';
+    } else {
+      throw new Error('Failed to save logo');
+    }
+  } catch (error) {
+    console.error('Error saving logo:', error);
+    showNotification('Failed to save logo', 'error');
+  }
+}
+
+function updateSidebarLogo(logoUrl) {
+  const logoIcon = document.getElementById('logoIcon');
+  const sidebarLogo = document.getElementById('sidebarLogo');
+  
+  if (logoUrl && sidebarLogo && logoIcon) {
+    sidebarLogo.src = logoUrl;
+    sidebarLogo.style.display = 'block';
+    logoIcon.style.display = 'none';
+  } else if (logoIcon && sidebarLogo) {
+    sidebarLogo.style.display = 'none';
+    logoIcon.style.display = 'flex';
+  }
+}
+
+function initializeEmployeeProfiles() {
+  const employeeProfileGrid = document.getElementById('employeeProfileGrid');
+  if (!employeeProfileGrid) return;
+  
+  employeeProfileGrid.innerHTML = '';
+  
+  Object.entries(employees).forEach(([employeeId, employee]) => {
+    const profileCard = document.createElement('div');
+    profileCard.className = 'employee-profile-card';
+    profileCard.innerHTML = `
+      <div class="employee-profile-header">
+        <img src="${employee.avatar}" alt="${employee.name}" class="employee-current-avatar" id="avatar-${employeeId}">
+        <div class="employee-info">
+          <h4>${employee.name}</h4>
+          <p>${employee.specialty}</p>
+        </div>
+      </div>
+      <div class="profile-upload-area" data-employee="${employeeId}">
+        <div class="upload-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21,15 16,10 5,21"></polyline>
+          </svg>
+        </div>
+        <div class="upload-text">Upload Profile Picture</div>
+        <div class="upload-hint">1:1 ratio, PNG/JPG, max 1MB</div>
+      </div>
+      <input type="file" class="file-input" id="profileInput-${employeeId}" accept=".png,.jpg,.jpeg" />
+      <button class="btn primary" id="saveProfile-${employeeId}" style="display: none; margin-top: 12px;">Save Profile Picture</button>
+    `;
+    
+    employeeProfileGrid.appendChild(profileCard);
+    
+    // Add event listeners
+    const uploadArea = profileCard.querySelector('.profile-upload-area');
+    const fileInput = profileCard.querySelector(`#profileInput-${employeeId}`);
+    const saveBtn = profileCard.querySelector(`#saveProfile-${employeeId}`);
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleProfilePictureSelect(e, employeeId));
+    saveBtn.addEventListener('click', () => saveProfilePicture(employeeId));
+  });
+}
+
+function handleProfilePictureSelect(e, employeeId) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  // Validate file type
+  const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  if (!validTypes.includes(file.type)) {
+    showNotification('Please select a PNG or JPG file', 'error');
+    return;
+  }
+  
+  // Validate file size (1MB)
+  if (file.size > 1024 * 1024) {
+    showNotification('File size must be less than 1MB', 'error');
+    return;
+  }
+  
+  // Preview the image
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const uploadArea = document.querySelector(`[data-employee="${employeeId}"]`);
+    const saveBtn = document.getElementById(`saveProfile-${employeeId}`);
+    
+    if (uploadArea && saveBtn) {
+      // Replace upload area content with preview
+      uploadArea.innerHTML = `
+        <img src="${e.target.result}" alt="Profile preview" class="profile-preview">
+        <div class="upload-text">Click to change</div>
+      `;
+      
+      saveBtn.style.display = 'inline-flex';
+      saveBtn.dataset.fileData = e.target.result;
+      saveBtn.dataset.fileName = file.name;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfilePicture(employeeId) {
+  const saveBtn = document.getElementById(`saveProfile-${employeeId}`);
+  const fileData = saveBtn.dataset.fileData;
+  const fileName = saveBtn.dataset.fileName;
+  
+  if (!fileData) {
+    showNotification('No profile picture selected', 'error');
+    return;
+  }
+  
+  try {
+    // Save to database via API
+    const response = await fetch('/api/branding/employee-profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        employee_id: employeeId,
+        profile_picture_url: fileData,
+        file_name: fileName
+      })
+    });
+    
+    if (response.ok) {
+      // Update employee avatar in the config and UI
+      employees[employeeId].avatar = fileData;
+      updateEmployeeAvatars(employeeId, fileData);
+      showNotification(`${employees[employeeId].name} profile picture saved!`, 'success');
+      saveBtn.style.display = 'none';
+    } else {
+      throw new Error('Failed to save profile picture');
+    }
+  } catch (error) {
+    console.error('Error saving profile picture:', error);
+    showNotification('Failed to save profile picture', 'error');
+  }
+}
+
+function updateEmployeeAvatars(employeeId, avatarUrl) {
+  // Update current avatar in profile card
+  const currentAvatar = document.getElementById(`avatar-${employeeId}`);
+  if (currentAvatar) {
+    currentAvatar.src = avatarUrl;
+  }
+  
+  // Update avatar in team panel
+  const teamMember = document.querySelector(`[data-employee="${employeeId}"] .member-avatar img`);
+  if (teamMember) {
+    teamMember.src = avatarUrl;
+  }
+  
+  // Update avatar in chat header if this is the current employee
+  if (currentEmployee === employeeId) {
+    const chatAvatar = document.getElementById('current-employee-avatar');
+    if (chatAvatar) {
+      chatAvatar.src = avatarUrl;
+    }
+  }
+}
+
+function initializeLeadsPage() {
+  // Export dropdown functionality
+  const exportDropdown = document.getElementById('exportDropdown');
+  const exportLeadsBtn = document.getElementById('exportLeadsBtn');
+  const exportOptions = document.querySelectorAll('.export-option');
+  
+  if (exportLeadsBtn) {
+    exportLeadsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportDropdown.classList.toggle('active');
+    });
+  }
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (exportDropdown && !exportDropdown.contains(e.target)) {
+      exportDropdown.classList.remove('active');
+    }
+  });
+  
+  // Export options
+  exportOptions.forEach(option => {
+    option.addEventListener('click', (e) => {
+      const format = e.target.dataset.format;
+      exportLeads(format);
+      exportDropdown.classList.remove('active');
+    });
+  });
+  
+  // Filter functionality
+  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', applyLeadFilters);
+  }
+  
+  // Initialize filters
+  initializeLeadFilters();
+}
+
+function initializeLeadFilters() {
+  const sourcePlatformFilter = document.getElementById('sourcePlatformFilter');
+  const dateFromFilter = document.getElementById('dateFromFilter');
+  const dateToFilter = document.getElementById('dateToFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  
+  // Set default date range (last 30 days)
+  if (dateToFilter) {
+    dateToFilter.value = new Date().toISOString().split('T')[0];
+  }
+  if (dateFromFilter) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    dateFromFilter.value = thirtyDaysAgo.toISOString().split('T')[0];
+  }
+}
+
+function applyLeadFilters() {
+  const sourcePlatformFilter = document.getElementById('sourcePlatformFilter');
+  const dateFromFilter = document.getElementById('dateFromFilter');
+  const dateToFilter = document.getElementById('dateToFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  
+  currentFilters = {};
+  
+  if (sourcePlatformFilter && sourcePlatformFilter.value) {
+    currentFilters.source_platform = sourcePlatformFilter.value;
+  }
+  
+  if (dateFromFilter && dateFromFilter.value) {
+    currentFilters.date_from = dateFromFilter.value;
+  }
+  
+  if (dateToFilter && dateToFilter.value) {
+    currentFilters.date_to = dateToFilter.value;
+  }
+  
+  if (statusFilter && statusFilter.value) {
+    currentFilters.validated = statusFilter.value;
+  }
+  
+  console.log('Applying filters:', currentFilters);
+  loadLeadsData();
+}
+
+async function exportLeads(format) {
+  try {
+    showNotification(`Preparing ${format.toUpperCase()} export...`, 'info');
+    
+    // Build query parameters
+    const params = new URLSearchParams({
+      format: format,
+      ...currentFilters
+    });
+    
+    const response = await fetch(`/api/leads/export?${params}`);
+    
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    
+    // Get the blob and create download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showNotification(`${format.toUpperCase()} export completed!`, 'success');
+  } catch (error) {
+    console.error('Export error:', error);
+    showNotification(`Export failed: ${error.message}`, 'error');
+  }
+}
 function initializeMobileMenu() {
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
   const sidebar = document.getElementById('sidebar');
@@ -822,7 +1219,13 @@ async function loadDashboardMetrics() {
 
 async function loadLeadsData() {
   try {
-    const response = await fetch('/api/leads?limit=100');
+    // Build query parameters with current filters
+    const params = new URLSearchParams({
+      limit: '100',
+      ...currentFilters
+    });
+    
+    const response = await fetch(`/api/leads?${params}`);
     const data = await response.json();
     
     if (response.ok) {
@@ -843,7 +1246,7 @@ function displayLeadsTable(leads) {
   if (leads.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+        <td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">
           No leads found. Ask AI Brenden to generate some leads for you!
         </td>
       </tr>
@@ -855,15 +1258,24 @@ function displayLeadsTable(leads) {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>
+        <span class="source-badge ${getSourceClass(lead.source_platform)}">${lead.source_platform || 'Unknown'}</span>
+      </td>
+      <td>
         <div class="business-info">
           <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}</small>
+          <small>${lead.category || lead.industry || 'Unknown Category'}</small>
         </div>
       </td>
       <td>
         <div class="contact-info">
           <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.email || ''}<br>${lead.phone || ''}</small>
+          <small>${lead.role || ''}<br>${lead.email || ''}</small>
+        </div>
+      </td>
+      <td>
+        <div class="phone-info">
+          <strong>${lead.phone_number || 'No phone'}</strong>
+          ${lead.website ? `<br><small><a href="${lead.website}" target="_blank">Website</a></small>` : ''}
         </div>
       </td>
       <td>
@@ -871,6 +1283,9 @@ function displayLeadsTable(leads) {
           <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
           <small>${lead.address || ''}</small>
         </div>
+      </td>
+      <td>
+        ${lead.rating ? `<span class="rating">${lead.rating}⭐</span>` : '<span class="no-rating">No rating</span>'}
       </td>
       <td>
         <span class="score ${getScoreClass(lead.average_score)}">${(lead.average_score || 0).toFixed(1)}</span>
@@ -887,6 +1302,15 @@ function displayLeadsTable(leads) {
     `;
     tableBody.appendChild(row);
   });
+}
+
+function getSourceClass(source) {
+  switch (source) {
+    case 'LinkedIn': return 'linkedin';
+    case 'Google Business': return 'google';
+    case 'Yelp': return 'yelp';
+    default: return 'unknown';
+  }
 }
 
 function getScoreClass(score) {
@@ -958,6 +1382,57 @@ function viewLead(leadId) {
 function editLead(leadId) {
   // TODO: Implement lead editing
   console.log('Edit lead:', leadId);
+}
+
+async function loadBranding() {
+  try {
+    const response = await fetch('/api/branding');
+    if (response.ok) {
+      const branding = await response.json();
+      
+      // Update sidebar logo
+      if (branding.logo_url) {
+        updateSidebarLogo(branding.logo_url);
+        
+        // Update logo preview in branding page
+        const logoPreview = document.getElementById('logoPreview');
+        if (logoPreview) {
+          logoPreview.src = branding.logo_url;
+          logoPreview.style.display = 'block';
+        }
+      }
+      
+      // Update colors
+      if (branding.primary_color) {
+        document.documentElement.style.setProperty('--primary-color', branding.primary_color);
+      }
+      if (branding.secondary_color) {
+        document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
+      }
+      if (branding.accent_color) {
+        document.documentElement.style.setProperty('--accent-color', branding.accent_color);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load branding:', error);
+  }
+  
+  // Load employee profiles
+  try {
+    const response = await fetch('/api/branding/employee-profiles');
+    if (response.ok) {
+      const profiles = await response.json();
+      
+      profiles.forEach(profile => {
+        if (profile.profile_picture_url && employees[profile.employee_id]) {
+          employees[profile.employee_id].avatar = profile.profile_picture_url;
+          updateEmployeeAvatars(profile.employee_id, profile.profile_picture_url);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to load employee profiles:', error);
+  }
 }
 
 // Load saved color scheme on page load

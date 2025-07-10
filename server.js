@@ -8,6 +8,7 @@ const config = require('./config');
 const { errorHandler } = require('./middleware/validation');
 const assistantRoutes = require('./routes/assistant');
 const leadsRoutes = require('./routes/leads');
+const brandingRoutes = require('./routes/branding');
 
 const app = express();
 
@@ -98,6 +99,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api', assistantRoutes);
 app.use('/api/leads', leadsRoutes);
+app.use('/api/branding', brandingRoutes);
 
 // Serve chat interface at root
 app.get('/', (req, res) => {

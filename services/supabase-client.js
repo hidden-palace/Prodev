@@ -142,6 +142,10 @@ class SupabaseService {
         .order('created_at', { ascending: false });
 
       // Apply filters
+      if (filters.source_platform && filters.source_platform !== 'All Sources') {
+        query = query.eq('source_platform', filters.source_platform);
+      }
+
       if (filters.industry && filters.industry !== 'All Industries') {
         query = query.eq('industry', filters.industry);
       }
@@ -164,6 +168,18 @@ class SupabaseService {
 
       if (filters.min_score) {
         query = query.gte('average_score', filters.min_score);
+      }
+
+      // Date range filtering
+      if (filters.date_from) {
+        query = query.gte('created_at', filters.date_from);
+      }
+
+      if (filters.date_to) {
+        // Add one day to include the entire end date
+        const endDate = new Date(filters.date_to);
+        endDate.setDate(endDate.getDate() + 1);
+        query = query.lt('created_at', endDate.toISOString().split('T')[0]);
       }
 
       // Apply pagination
@@ -189,6 +205,158 @@ class SupabaseService {
       console.error('❌ Error getting leads:', error);
       throw error;
     }
+  }
+
+  /**
+   * Export leads to CSV format
+   */
+  async exportToCSV(leads) {
+    const headers = [
+      'Source Platform',
+      'Business Name',
+      'Contact Name',
+      'Role',
+      'Email',
+      'Phone Number',
+      'Address',
+      'City',
+      'State',
+      'Postal Code',
+      'Country',
+      'Website',
+      'Category',
+      'Specialties',
+      'Rating',
+      'Profile Link',
+      'Notes',
+      'Relevance Score',
+      'Contact Role Score',
+      'Location Score',
+      'Completeness Score',
+      'Online Presence Score',
+      'Average Score',
+      'Validated',
+      'Outreach Sent',
+      'Response Received',
+      'Converted',
+      'Employee ID',
+      'Created At'
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    leads.forEach(lead => {
+      const row = [
+        this.escapeCsvField(lead.source_platform || ''),
+        this.escapeCsvField(lead.business_name || ''),
+        this.escapeCsvField(lead.contact_name || ''),
+        this.escapeCsvField(lead.role || ''),
+        this.escapeCsvField(lead.email || ''),
+        this.escapeCsvField(lead.phone_number || ''),
+        this.escapeCsvField(lead.address || ''),
+        this.escapeCsvField(lead.city || ''),
+        this.escapeCsvField(lead.state || ''),
+        this.escapeCsvField(lead.postal_code || ''),
+        this.escapeCsvField(lead.country || ''),
+        this.escapeCsvField(lead.website || ''),
+        this.escapeCsvField(lead.category || ''),
+        this.escapeCsvField(Array.isArray(lead.specialties) ? lead.specialties.join('; ') : ''),
+        lead.rating || '',
+        this.escapeCsvField(lead.profile_link || ''),
+        this.escapeCsvField(lead.notes || ''),
+        lead.relevance_score || '',
+        lead.contact_role_score || '',
+        lead.location_score || '',
+        lead.completeness_score || '',
+        lead.online_presence_score || '',
+        lead.average_score || '',
+        lead.validated ? 'Yes' : 'No',
+        lead.outreach_sent ? 'Yes' : 'No',
+        lead.response_received ? 'Yes' : 'No',
+        lead.converted ? 'Yes' : 'No',
+        this.escapeCsvField(lead.employee_id || ''),
+        lead.created_at || ''
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    return csvRows.join('\n');
+  }
+
+  /**
+   * Export leads to XML format
+   */
+  async exportToXML(leads) {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<leads>\n';
+
+    leads.forEach(lead => {
+      xml += '  <lead>\n';
+      xml += `    <source_platform>${this.escapeXml(lead.source_platform || '')}</source_platform>\n`;
+      xml += `    <business_name>${this.escapeXml(lead.business_name || '')}</business_name>\n`;
+      xml += `    <contact_name>${this.escapeXml(lead.contact_name || '')}</contact_name>\n`;
+      xml += `    <role>${this.escapeXml(lead.role || '')}</role>\n`;
+      xml += `    <email>${this.escapeXml(lead.email || '')}</email>\n`;
+      xml += `    <phone_number>${this.escapeXml(lead.phone_number || '')}</phone_number>\n`;
+      xml += `    <address>${this.escapeXml(lead.address || '')}</address>\n`;
+      xml += `    <city>${this.escapeXml(lead.city || '')}</city>\n`;
+      xml += `    <state>${this.escapeXml(lead.state || '')}</state>\n`;
+      xml += `    <postal_code>${this.escapeXml(lead.postal_code || '')}</postal_code>\n`;
+      xml += `    <country>${this.escapeXml(lead.country || '')}</country>\n`;
+      xml += `    <website>${this.escapeXml(lead.website || '')}</website>\n`;
+      xml += `    <category>${this.escapeXml(lead.category || '')}</category>\n`;
+      xml += `    <specialties>${this.escapeXml(Array.isArray(lead.specialties) ? lead.specialties.join('; ') : '')}</specialties>\n`;
+      xml += `    <rating>${lead.rating || ''}</rating>\n`;
+      xml += `    <profile_link>${this.escapeXml(lead.profile_link || '')}</profile_link>\n`;
+      xml += `    <notes>${this.escapeXml(lead.notes || '')}</notes>\n`;
+      xml += `    <relevance_score>${lead.relevance_score || ''}</relevance_score>\n`;
+      xml += `    <contact_role_score>${lead.contact_role_score || ''}</contact_role_score>\n`;
+      xml += `    <location_score>${lead.location_score || ''}</location_score>\n`;
+      xml += `    <completeness_score>${lead.completeness_score || ''}</completeness_score>\n`;
+      xml += `    <online_presence_score>${lead.online_presence_score || ''}</online_presence_score>\n`;
+      xml += `    <average_score>${lead.average_score || ''}</average_score>\n`;
+      xml += `    <validated>${lead.validated ? 'true' : 'false'}</validated>\n`;
+      xml += `    <outreach_sent>${lead.outreach_sent ? 'true' : 'false'}</outreach_sent>\n`;
+      xml += `    <response_received>${lead.response_received ? 'true' : 'false'}</response_received>\n`;
+      xml += `    <converted>${lead.converted ? 'true' : 'false'}</converted>\n`;
+      xml += `    <employee_id>${this.escapeXml(lead.employee_id || '')}</employee_id>\n`;
+      xml += `    <created_at>${lead.created_at || ''}</created_at>\n`;
+      xml += '  </lead>\n';
+    });
+
+    xml += '</leads>';
+    return xml;
+  }
+
+  /**
+   * Escape CSV field
+   */
+  escapeCsvField(field) {
+    if (typeof field !== 'string') {
+      field = String(field);
+    }
+    
+    // If field contains comma, quote, or newline, wrap in quotes and escape quotes
+    if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+      return '"' + field.replace(/"/g, '""') + '"';
+    }
+    return field;
+  }
+
+  /**
+   * Escape XML content
+   */
+  escapeXml(text) {
+    if (typeof text !== 'string') {
+      text = String(text);
+    }
+    
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 
   /**
