@@ -1,20 +1,3 @@
-/*
-  # Create Branding and Employee Profile System
-
-  1. New Tables
-    - `company_branding` - Store company logo and color scheme
-    - `employee_profiles` - Store employee profile pictures
-  
-  2. Enhanced Leads Table
-    - Add missing columns for better lead management
-    - Rename existing columns for consistency
-  
-  3. Security
-    - Enable RLS on all new tables
-    - Add policies for admin-only branding management
-    - Add policies for profile management
-*/
-
 -- Create company_branding table
 CREATE TABLE IF NOT EXISTS company_branding (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -35,71 +18,17 @@ CREATE TABLE IF NOT EXISTS employee_profiles (
   updated_at timestamptz DEFAULT now()
 );
 
--- Add missing columns to leads table (with safe checks)
-DO $$
-BEGIN
-  -- Add source_platform column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'source_platform'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN source_platform text;
-  END IF;
+-- Add missing columns to leads table
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS source_platform text;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS rating numeric(2,1);
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS specialties jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS profile_link text;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS notes text;
 
-  -- Add rating column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'rating'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN rating numeric(2,1);
-  END IF;
-
-  -- Add specialties column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'specialties'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN specialties jsonb DEFAULT '[]'::jsonb;
-  END IF;
-
-  -- Add profile_link column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'profile_link'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN profile_link text;
-  END IF;
-
-  -- Add notes column if it doesn't exist
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'notes'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN notes text;
-  END IF;
-
-  -- Rename role_title to role if role_title exists and role doesn't
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'role_title'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'role'
-  ) THEN
-    ALTER TABLE leads RENAME COLUMN role_title TO role;
-  END IF;
-
-  -- Rename phone to phone_number if phone exists and phone_number doesn't
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'phone'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'phone_number'
-  ) THEN
-    ALTER TABLE leads RENAME COLUMN phone TO phone_number;
-  END IF;
-END $$;
+-- Note: RENAME statements must be handled manually after confirming column existence
+-- Uncomment and use only after verification:
+-- ALTER TABLE leads RENAME COLUMN role_title TO role;
+-- ALTER TABLE leads RENAME COLUMN phone TO phone_number;
 
 -- Enable RLS
 ALTER TABLE company_branding ENABLE ROW LEVEL SECURITY;
@@ -157,20 +86,21 @@ CREATE POLICY "Only admins can manage employee profiles"
     )
   );
 
--- Create indexes for performance
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_leads_source_platform ON leads (source_platform);
 CREATE INDEX IF NOT EXISTS idx_leads_rating ON leads (rating);
 CREATE INDEX IF NOT EXISTS idx_employee_profiles_employee_id ON employee_profiles (employee_id);
 
--- Create triggers for updated_at
+-- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
+-- Apply trigger to update updated_at columns
 CREATE TRIGGER update_company_branding_updated_at
   BEFORE UPDATE ON company_branding
   FOR EACH ROW
