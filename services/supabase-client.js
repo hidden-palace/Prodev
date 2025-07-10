@@ -250,16 +250,16 @@ class SupabaseService {
         this.escapeCsvField(lead.source_platform || ''),
         this.escapeCsvField(lead.business_name || ''),
         this.escapeCsvField(lead.contact_name || ''),
-        this.escapeCsvField(lead.role || ''),
+        this.escapeCsvField(lead.role || lead.role_title || ''),
         this.escapeCsvField(lead.email || ''),
-        this.escapeCsvField(lead.phone_number || ''),
+        this.escapeCsvField(lead.phone_number || lead.phone || ''),
         this.escapeCsvField(lead.address || ''),
         this.escapeCsvField(lead.city || ''),
         this.escapeCsvField(lead.state || ''),
         this.escapeCsvField(lead.postal_code || ''),
         this.escapeCsvField(lead.country || ''),
         this.escapeCsvField(lead.website || ''),
-        this.escapeCsvField(lead.category || ''),
+        this.escapeCsvField(lead.category || lead.industry || ''),
         this.escapeCsvField(Array.isArray(lead.specialties) ? lead.specialties.join('; ') : ''),
         lead.rating || '',
         this.escapeCsvField(lead.profile_link || ''),
@@ -295,16 +295,16 @@ class SupabaseService {
       xml += `    <source_platform>${this.escapeXml(lead.source_platform || '')}</source_platform>\n`;
       xml += `    <business_name>${this.escapeXml(lead.business_name || '')}</business_name>\n`;
       xml += `    <contact_name>${this.escapeXml(lead.contact_name || '')}</contact_name>\n`;
-      xml += `    <role>${this.escapeXml(lead.role || '')}</role>\n`;
+      xml += `    <role>${this.escapeXml(lead.role || lead.role_title || '')}</role>\n`;
       xml += `    <email>${this.escapeXml(lead.email || '')}</email>\n`;
-      xml += `    <phone_number>${this.escapeXml(lead.phone_number || '')}</phone_number>\n`;
+      xml += `    <phone_number>${this.escapeXml(lead.phone_number || lead.phone || '')}</phone_number>\n`;
       xml += `    <address>${this.escapeXml(lead.address || '')}</address>\n`;
       xml += `    <city>${this.escapeXml(lead.city || '')}</city>\n`;
       xml += `    <state>${this.escapeXml(lead.state || '')}</state>\n`;
       xml += `    <postal_code>${this.escapeXml(lead.postal_code || '')}</postal_code>\n`;
       xml += `    <country>${this.escapeXml(lead.country || '')}</country>\n`;
       xml += `    <website>${this.escapeXml(lead.website || '')}</website>\n`;
-      xml += `    <category>${this.escapeXml(lead.category || '')}</category>\n`;
+      xml += `    <category>${this.escapeXml(lead.category || lead.industry || '')}</category>\n`;
       xml += `    <specialties>${this.escapeXml(Array.isArray(lead.specialties) ? lead.specialties.join('; ') : '')}</specialties>\n`;
       xml += `    <rating>${lead.rating || ''}</rating>\n`;
       xml += `    <profile_link>${this.escapeXml(lead.profile_link || '')}</profile_link>\n`;

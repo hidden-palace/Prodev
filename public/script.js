@@ -1269,12 +1269,12 @@ function displayLeadsTable(leads) {
       <td>
         <div class="contact-info">
           <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.role || ''}<br>${lead.email || ''}</small>
+          <small>${lead.role || lead.role_title || ''}<br>${lead.email || ''}</small>
         </div>
       </td>
       <td>
         <div class="phone-info">
-          <strong>${lead.phone_number || 'No phone'}</strong>
+          <strong>${lead.phone_number || lead.phone || 'No phone'}</strong>
           ${lead.website ? `<br><small><a href="${lead.website}" target="_blank">Website</a></small>` : ''}
         </div>
       </td>
