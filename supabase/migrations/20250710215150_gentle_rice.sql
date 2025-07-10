@@ -1,19 +1,21 @@
 /*
-  # Create Branding System
+  # Create Branding and Employee Profile System
 
   1. New Tables
-    - `company_branding` - Store company logo and colors
+    - `company_branding` - Store company logo and color scheme
     - `employee_profiles` - Store employee profile pictures
   
   2. Enhanced Leads Table
-    - Add missing columns for complete lead data
-    
+    - Add missing columns for better lead management
+    - Rename existing columns for consistency
+  
   3. Security
-    - Enable RLS on new tables
-    - Add policies for admin access
+    - Enable RLS on all new tables
+    - Add policies for admin-only branding management
+    - Add policies for profile management
 */
 
--- Create company branding table
+-- Create company_branding table
 CREATE TABLE IF NOT EXISTS company_branding (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   logo_url text,
@@ -24,7 +26,7 @@ CREATE TABLE IF NOT EXISTS company_branding (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create employee profiles table
+-- Create employee_profiles table
 CREATE TABLE IF NOT EXISTS employee_profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id text NOT NULL UNIQUE,
@@ -33,18 +35,50 @@ CREATE TABLE IF NOT EXISTS employee_profiles (
   updated_at timestamptz DEFAULT now()
 );
 
--- Add missing columns to leads table (only if they don't exist)
+-- Add missing columns to leads table (with safe checks)
 DO $$
 BEGIN
-  -- Add source_platform column
+  -- Add source_platform column if it doesn't exist
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'leads' AND column_name = 'source_platform'
   ) THEN
-    ALTER TABLE leads ADD COLUMN source_platform text DEFAULT 'Unknown';
+    ALTER TABLE leads ADD COLUMN source_platform text;
   END IF;
 
-  -- Add role column (rename role_title if it exists)
+  -- Add rating column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'leads' AND column_name = 'rating'
+  ) THEN
+    ALTER TABLE leads ADD COLUMN rating numeric(2,1);
+  END IF;
+
+  -- Add specialties column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'leads' AND column_name = 'specialties'
+  ) THEN
+    ALTER TABLE leads ADD COLUMN specialties jsonb DEFAULT '[]'::jsonb;
+  END IF;
+
+  -- Add profile_link column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'leads' AND column_name = 'profile_link'
+  ) THEN
+    ALTER TABLE leads ADD COLUMN profile_link text;
+  END IF;
+
+  -- Add notes column if it doesn't exist
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'leads' AND column_name = 'notes'
+  ) THEN
+    ALTER TABLE leads ADD COLUMN notes text;
+  END IF;
+
+  -- Rename role_title to role if role_title exists and role doesn't
   IF EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'leads' AND column_name = 'role_title'
@@ -53,14 +87,9 @@ BEGIN
     WHERE table_name = 'leads' AND column_name = 'role'
   ) THEN
     ALTER TABLE leads RENAME COLUMN role_title TO role;
-  ELSIF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'role'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN role text;
   END IF;
 
-  -- Add phone_number column (rename phone if it exists)
+  -- Rename phone to phone_number if phone exists and phone_number doesn't
   IF EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'leads' AND column_name = 'phone'
@@ -69,66 +98,21 @@ BEGIN
     WHERE table_name = 'leads' AND column_name = 'phone_number'
   ) THEN
     ALTER TABLE leads RENAME COLUMN phone TO phone_number;
-  ELSIF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'phone_number'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN phone_number text;
-  END IF;
-
-  -- Add category column
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'category'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN category text;
-  END IF;
-
-  -- Add specialties column
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'specialties'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN specialties jsonb DEFAULT '[]'::jsonb;
-  END IF;
-
-  -- Add rating column
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'rating'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN rating numeric(2,1);
-  END IF;
-
-  -- Add profile_link column
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'profile_link'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN profile_link text;
-  END IF;
-
-  -- Add notes column
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'leads' AND column_name = 'notes'
-  ) THEN
-    ALTER TABLE leads ADD COLUMN notes text;
   END IF;
 END $$;
 
--- Enable RLS on new tables
+-- Enable RLS
 ALTER TABLE company_branding ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employee_profiles ENABLE ROW LEVEL SECURITY;
 
--- Create policies for company_branding
+-- RLS Policies for company_branding
 CREATE POLICY "Anyone can read branding"
   ON company_branding
   FOR SELECT
   TO authenticated
   USING (true);
 
-CREATE POLICY "Only admins can modify branding"
+CREATE POLICY "Only admins can manage branding"
   ON company_branding
   FOR ALL
   TO authenticated
@@ -147,14 +131,14 @@ CREATE POLICY "Only admins can modify branding"
     )
   );
 
--- Create policies for employee_profiles
+-- RLS Policies for employee_profiles
 CREATE POLICY "Anyone can read employee profiles"
   ON employee_profiles
   FOR SELECT
   TO authenticated
   USING (true);
 
-CREATE POLICY "Only admins can modify employee profiles"
+CREATE POLICY "Only admins can manage employee profiles"
   ON employee_profiles
   FOR ALL
   TO authenticated
@@ -175,11 +159,10 @@ CREATE POLICY "Only admins can modify employee profiles"
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_leads_source_platform ON leads (source_platform);
-CREATE INDEX IF NOT EXISTS idx_leads_category ON leads (category);
 CREATE INDEX IF NOT EXISTS idx_leads_rating ON leads (rating);
 CREATE INDEX IF NOT EXISTS idx_employee_profiles_employee_id ON employee_profiles (employee_id);
 
--- Create updated_at triggers
+-- Create triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
