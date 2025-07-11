@@ -2477,6 +2477,30 @@ body {
     word-break: break-all;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.logo-fallback {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+#sidebar-logo {
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-logo:hover {
+    opacity: 0.8;
+}
+
 /* Scrollbar styling */
 .chat-messages::-webkit-scrollbar,
 .modal-body::-webkit-scrollbar,
