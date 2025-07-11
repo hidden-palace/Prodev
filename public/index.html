@@ -766,8 +766,17 @@
                                         <polyline points="21,15 16,10 5,21"></polyline>
                                     </svg>
                                 </div>
-                                <div class="upload-text">Click to upload logo or drag and drop</div>
-                                <div class="upload-hint">PNG, JPG, SVG up to 2MB</div>
+                                <div class="upload-text">Click to upload company logo or drag and drop</div>
+                                <div class="upload-requirements">
+                                    <p class="upload-hint"><strong>Requirements:</strong></p>
+                                    <ul class="requirements-list">
+                                        <li>Format: PNG, JPG, or SVG</li>
+                                        <li>Max size: 2MB</li>
+                                        <li>Min dimensions: 200×50px</li>
+                                        <li>Recommended: SVG for best quality</li>
+                                        <li>Aspect ratio: Wide format preferred</li>
+                                    </ul>
+                                </div>
                             </div>
                             <img id="logoPreview" class="logo-preview" style="display: none;" alt="Logo preview">
                         </div>
@@ -782,7 +791,98 @@
                     <div class="brand-section employee-profile-section">
                         <h3>AI Employee Profile Pictures</h3>
                         <div class="employee-profile-grid" id="employeeProfileGrid">
-                            <!-- Employee profile cards will be populated by JavaScript -->
+                            <div class="employee-profile-card">
+                                <div class="profile-header">
+                                    <h4>AI Brenden</h4>
+                                    <span class="profile-role">Lead Research Specialist</span>
+                                </div>
+                                <div class="profile-upload-area" data-employee-id="brenden">
+                                    <img class="profile-preview" style="display: none;" alt="Profile Preview">
+                                    <div class="upload-content">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7,10 12,15 17,10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        <p style="font-size: 12px; margin: 8px 0 4px; font-weight: 500;">Upload Photo</p>
+                                        <div class="avatar-requirements">
+                                            <p style="font-size: 10px; color: #64748b; margin: 2px 0;"><strong>Requirements:</strong></p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• PNG or JPG format</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Max size: 1MB</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Square format (1:1 ratio)</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Min: 200×200px</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Recommended: 512×512px</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" class="file-input avatar-file-input" accept=".png,.jpg,.jpeg" data-employee-id="brenden" />
+                                </div>
+                                <div class="profile-actions" style="display: none;">
+                                    <button class="btn primary save-avatar-btn" data-employee-id="brenden" style="display: none;">Save</button>
+                                    <button class="btn remove remove-avatar-btn" data-employee-id="brenden" style="display: none;">Remove</button>
+                                </div>
+                            </div>
+
+                            <div class="employee-profile-card">
+                                <div class="profile-header">
+                                    <h4>AI Van</h4>
+                                    <span class="profile-role">Digital Marketing Designer</span>
+                                </div>
+                                <div class="profile-upload-area" data-employee-id="van">
+                                    <img class="profile-preview" style="display: none;" alt="Profile Preview">
+                                    <div class="upload-content">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7,10 12,15 17,10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        <p style="font-size: 12px; margin: 8px 0 4px; font-weight: 500;">Upload Photo</p>
+                                        <div class="avatar-requirements">
+                                            <p style="font-size: 10px; color: #64748b; margin: 2px 0;"><strong>Requirements:</strong></p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• PNG or JPG format</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Max size: 1MB</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Square format (1:1 ratio)</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Min: 200×200px</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Recommended: 512×512px</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" class="file-input avatar-file-input" accept=".png,.jpg,.jpeg" data-employee-id="van" />
+                                </div>
+                                <div class="profile-actions" style="display: none;">
+                                    <button class="btn primary save-avatar-btn" data-employee-id="van" style="display: none;">Save</button>
+                                    <button class="btn remove remove-avatar-btn" data-employee-id="van" style="display: none;">Remove</button>
+                                </div>
+                            </div>
+
+                            <div class="employee-profile-card">
+                                <div class="profile-header">
+                                    <h4>AI Angel</h4>
+                                    <span class="profile-role">Voice Outreach Manager</span>
+                                </div>
+                                <div class="profile-upload-area" data-employee-id="angel">
+                                    <img class="profile-preview" style="display: none;" alt="Profile Preview">
+                                    <div class="upload-content">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7,10 12,15 17,10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        <p style="font-size: 12px; margin: 8px 0 4px; font-weight: 500;">Upload Photo</p>
+                                        <div class="avatar-requirements">
+                                            <p style="font-size: 10px; color: #64748b; margin: 2px 0;"><strong>Requirements:</strong></p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• PNG or JPG format</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Max size: 1MB</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Square format (1:1 ratio)</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Min: 200×200px</p>
+                                            <p style="font-size: 9px; color: #94a3b8; line-height: 1.2;">• Recommended: 512×512px</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" class="file-input avatar-file-input" accept=".png,.jpg,.jpeg" data-employee-id="angel" />
+                                </div>
+                                <div class="profile-actions" style="display: none;">
+                                    <button class="btn primary save-avatar-btn" data-employee-id="angel" style="display: none;">Save</button>
+                                    <button class="btn remove remove-avatar-btn" data-employee-id="angel" style="display: none;">Remove</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

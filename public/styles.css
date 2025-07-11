@@ -930,6 +930,39 @@ body {
 .upload-hint {
     color: var(--text-secondary);
     font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.upload-requirements {
+    text-align: left;
+    margin-top: 12px;
+}
+
+.requirements-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.requirements-list li {
+    padding: 2px 0;
+    position: relative;
+    padding-left: 16px;
+}
+
+.requirements-list li::before {
+    content: '•';
+    color: var(--primary-color);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.avatar-requirements {
+    text-align: left;
+    margin-top: 4px;
 }
 
 .file-input {
