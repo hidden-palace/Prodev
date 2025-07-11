@@ -909,10 +909,11 @@ body {
 
 .logo-preview {
     max-width: 200px;
-    max-height: 100px;
+    max-height: 40px;
     margin: 0 auto 16px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
 }
 
 .upload-icon {
@@ -963,7 +964,7 @@ body {
 .employee-current-avatar {
     width: 64px;
     height: 64px;
-    border-radius: 12px;
+    border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--border-color);
 }
@@ -997,18 +998,34 @@ body {
 .profile-preview {
     width: 80px;
     height: 80px;
-    border-radius: 12px;
+    border-radius: 50%;
     margin: 0 auto 12px;
     object-fit: cover;
+    border: 2px solid var(--border-color);
 }
 
 /* Sidebar Logo */
 .company-logo .logo-image {
     width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    object-fit: cover;
+    max-height: 40px;
+    border-radius: 8px;
+    object-fit: contain;
     border: 1px solid var(--border-color);
+}
+
+.logo-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn.remove {
+    background: var(--error-color);
+    color: white;
+}
+
+.btn.remove:hover {
+    background: #dc2626;
 }
 
 .color-palette {
@@ -1258,8 +1275,9 @@ body {
 .activity-avatar img {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
+    border-radius: 50%;
     object-fit: cover;
+    border: 1px solid var(--border-color);
 }
 
 .activity-content {
@@ -1424,8 +1442,9 @@ body {
 .member-avatar img {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--border-color);
 }
 
 .status-indicator {
@@ -1508,8 +1527,9 @@ body {
 .employee-avatar img {
     width: 56px;
     height: 56px;
-    border-radius: 14px;
+    border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--border-color);
 }
 
 .employee-details h3 {
