@@ -210,7 +210,7 @@
             validationResults = {};
             
             // Format validation
-            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
             const formatValid = allowedTypes.includes(file.type);
             validationResults.format = formatValid;
             
@@ -241,6 +241,12 @@
 
             // Enable upload test if basic validations pass
             document.getElementById('test-upload').disabled = !(formatValid && sizeValid);
+            
+            if (formatValid && sizeValid) {
+                log('✅ File validation passed - upload button enabled', 'success');
+            } else {
+                log('❌ File validation failed - fix issues to enable upload', 'error');
+            }
         }
 
         function previewFile(file) {
@@ -331,9 +337,13 @@
                 } else {
                     log(`❌ Upload failed: ${result.error}`, 'error');
                     log(`Details: ${result.details}`, 'error');
+                    if (result.context) {
+                        log(`Context: ${JSON.stringify(result.context)}`, 'error');
+                    }
                 }
             } catch (error) {
                 log(`❌ Upload error: ${error.message}`, 'error');
+                console.error('Full error:', error);
             }
         }
 

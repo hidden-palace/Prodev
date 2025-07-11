@@ -13,8 +13,9 @@ class StorageService {
       console.log('📤 Uploading logo:', fileName);
       
       // Validate file type
-      const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
-      if (!allowedTypes.includes(file.type)) {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+      const fileType = file.mimetype || file.type;
+      if (!allowedTypes.includes(fileType)) {
         throw new Error('Invalid file type. Only PNG, JPG, and SVG files are allowed.');
       }
 
@@ -25,15 +26,19 @@ class StorageService {
 
       // Generate unique filename
       const timestamp = Date.now();
-      const extension = file.name.split('.').pop();
+      const extension = fileName.split('.').pop() || 'png';
       const uniqueFileName = `logo_${timestamp}.${extension}`;
 
+      // Prepare file buffer for upload
+      const fileBuffer = file.buffer || file;
+      
       // Upload to Supabase Storage
       const { data, error } = await this.supabaseService.client.storage
         .from('logos')
-        .upload(uniqueFileName, file, {
+        .upload(uniqueFileName, fileBuffer, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: fileType
         });
 
       if (error) {

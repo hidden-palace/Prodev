@@ -57,14 +57,6 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       size: req.file.size
     });
 
-    // Convert buffer to File-like object for validation
-    const file = {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size,
-      stream: () => req.file.buffer
-    };
-
     // Upload to storage
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
 
@@ -109,7 +101,21 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
 
   } catch (error) {
     console.error('❌ Error uploading logo:', error);
-    next(error);
+    
+    // Enhanced error response for debugging
+    const errorResponse = {
+      error: 'Logo upload failed',
+      details: error.message,
+      context: {
+        hasFile: !!req.file,
+        fileName: req.file?.originalname,
+        fileSize: req.file?.size,
+        mimeType: req.file?.mimetype,
+        timestamp: new Date().toISOString()
+      }
+    };
+    
+    res.status(500).json(errorResponse);
   }
 });
 
