@@ -361,6 +361,43 @@ function validateImageDimensions(file, requirements) {
   });
 }
 
+// Load sidebar logo
+async function loadSidebarLogo() {
+    try {
+        console.log('🎨 Loading sidebar logo...');
+        const response = await fetch('/api/branding');
+        const branding = await response.json();
+        
+        const logoImg = document.getElementById('sidebar-logo');
+        const logoFallback = document.getElementById('sidebar-logo-fallback');
+        
+        if (branding.logo_url) {
+            console.log('✅ Logo found, displaying in sidebar:', branding.logo_url);
+            logoImg.src = branding.logo_url;
+            logoImg.style.display = 'block';
+            logoFallback.style.display = 'none';
+            
+            // Handle image load errors
+            logoImg.onerror = function() {
+                console.warn('⚠️ Logo failed to load, showing fallback');
+                logoImg.style.display = 'none';
+                logoFallback.style.display = 'flex';
+            };
+        } else {
+            console.log('ℹ️ No logo configured, showing fallback');
+            logoImg.style.display = 'none';
+            logoFallback.style.display = 'flex';
+        }
+    } catch (error) {
+        console.error('❌ Error loading sidebar logo:', error);
+        // Show fallback on error
+        const logoImg = document.getElementById('sidebar-logo');
+        const logoFallback = document.getElementById('sidebar-logo-fallback');
+        logoImg.style.display = 'none';
+        logoFallback.style.display = 'flex';
+    }
+}
+
 async function saveLogo() {
   const saveLogoBtn = document.getElementById('saveLogoBtn');
   const file = saveLogoBtn._fileToUpload;
@@ -387,6 +424,14 @@ async function saveLogo() {
       // Update sidebar logo
       updateSidebarLogo(result.logo_url);
       showNotification('Logo uploaded successfully!', 'success');
+      
+      // Update logo preview
+      const logoPreview = document.getElementById('logoPreview');
+      logoPreview.src = result.logo_url;
+      logoPreview.style.display = 'block';
+      
+      // Update sidebar logo immediately
+      await loadSidebarLogo();
       
       // Hide save button
       saveLogoBtn.style.display = 'none';
