@@ -219,6 +219,7 @@ function initializeBrandingUploads() {
   const logoFileInput = document.getElementById('logoFileInput');
   const logoPreview = document.getElementById('logoPreview');
   const saveLogoBtn = document.getElementById('saveLogoBtn');
+  const removeLogoBtn = document.getElementById('removeLogoBtn');
   
   if (logoUploadArea && logoFileInput) {
     logoUploadArea.addEventListener('click', () => logoFileInput.click());
@@ -229,6 +230,10 @@ function initializeBrandingUploads() {
   
   if (saveLogoBtn) {
     saveLogoBtn.addEventListener('click', saveLogo);
+  }
+  
+  if (removeLogoBtn) {
+    removeLogoBtn.addEventListener('click', removeLogo);
   }
   
   // Initialize employee profile grid
@@ -259,6 +264,193 @@ function handleLogoSelect(e) {
 
 function handleLogoFile(file) {
   // Validate file type
+  const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+  if (!validTypes.includes(file.type)) {
+    showNotification('Please select a PNG, JPEG, or SVG file', 'error');
+    return;
+  }
+  
+  // Validate file size (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showNotification('File size must be less than 2MB', 'error');
+    return;
+  }
+  
+  // Validate image dimensions for non-SVG files
+  if (file.type !== 'image/svg+xml') {
+    validateImageDimensions(file, { minWidth: 200, minHeight: 50 })
+      .then(() => {
+        previewLogo(file);
+      })
+      .catch(error => {
+        showNotification(error.message, 'error');
+      });
+  } else {
+    previewLogo(file);
+  }
+}
+
+function previewLogo(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const logoPreview = document.getElementById('logoPreview');
+    const saveLogoBtn = document.getElementById('saveLogoBtn');
+    const removeLogoBtn = document.getElementById('removeLogoBtn');
+    
+    if (logoPreview && saveLogoBtn) {
+      logoPreview.src = e.target.result;
+      logoPreview.style.display = 'block';
+      saveLogoBtn.style.display = 'inline-flex';
+      saveLogoBtn.dataset.file = JSON.stringify({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+      
+      // Store file for upload
+      saveLogoBtn._fileToUpload = file;
+      
+      if (removeLogoBtn) {
+        removeLogoBtn.style.display = 'inline-flex';
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function validateImageDimensions(file, requirements) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      
+      const { width, height } = img;
+      const { minWidth, minHeight, aspectRatio } = requirements;
+      
+      // Check minimum dimensions
+      if (minWidth && width < minWidth) {
+        reject(new Error(`Image width must be at least ${minWidth}px`));
+        return;
+      }
+      
+      if (minHeight && height < minHeight) {
+        reject(new Error(`Image height must be at least ${minHeight}px`));
+        return;
+      }
+      
+      // Check aspect ratio for avatars
+      if (aspectRatio === '1:1') {
+        const ratio = width / height;
+        if (Math.abs(ratio - 1) > 0.1) {
+          reject(new Error('Image must have a 1:1 aspect ratio (square)'));
+          return;
+        }
+      }
+      
+      resolve({ width, height });
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Invalid image file'));
+    };
+    
+    img.src = url;
+  });
+}
+
+async function saveLogo() {
+  const saveLogoBtn = document.getElementById('saveLogoBtn');
+  const file = saveLogoBtn._fileToUpload;
+  
+  if (!file) {
+    showNotification('No logo selected', 'error');
+    return;
+  }
+  
+  try {
+    showNotification('Uploading logo...', 'info');
+    
+    const formData = new FormData();
+    formData.append('logo', file);
+    
+    const response = await fetch('/api/storage/logo', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      // Update sidebar logo
+      updateSidebarLogo(result.logo_url);
+      showNotification('Logo uploaded successfully!', 'success');
+      
+      // Hide save button
+      saveLogoBtn.style.display = 'none';
+      delete saveLogoBtn._fileToUpload;
+      
+      // Show remove button
+      const removeLogoBtn = document.getElementById('removeLogoBtn');
+      if (removeLogoBtn) {
+        removeLogoBtn.style.display = 'inline-flex';
+      }
+    } else {
+      throw new Error(result.details || result.error || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    showNotification(`Failed to upload logo: ${error.message}`, 'error');
+  }
+}
+
+async function removeLogo() {
+  try {
+    showNotification('Removing logo...', 'info');
+    
+    const response = await fetch('/api/storage/logo', {
+      method: 'DELETE'
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      // Update sidebar to remove logo
+      updateSidebarLogo(null);
+      
+      // Reset logo preview
+      const logoPreview = document.getElementById('logoPreview');
+      const saveLogoBtn = document.getElementById('saveLogoBtn');
+      const removeLogoBtn = document.getElementById('removeLogoBtn');
+      
+      if (logoPreview) {
+        logoPreview.style.display = 'none';
+        logoPreview.src = '';
+      }
+      
+      if (saveLogoBtn) {
+        saveLogoBtn.style.display = 'none';
+        delete saveLogoBtn._fileToUpload;
+      }
+      
+      if (removeLogoBtn) {
+        removeLogoBtn.style.display = 'none';
+      }
+      
+      showNotification('Logo removed successfully!', 'success');
+    } else {
+      throw new Error(result.details || result.error || 'Remove failed');
+    }
+  } catch (error) {
+    console.error('Error removing logo:', error);
+    showNotification(`Failed to remove logo: ${error.message}`, 'error');
+  }
+}
+
+function handleLogoFile_OLD(file) {
+  // Validate file type
   const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
   if (!validTypes.includes(file.type)) {
     showNotification('Please select a PNG, JPG, or SVG file', 'error');
@@ -286,47 +478,6 @@ function handleLogoFile(file) {
     }
   };
   reader.readAsDataURL(file);
-}
-
-async function saveLogo() {
-  const saveLogoBtn = document.getElementById('saveLogoBtn');
-  const fileData = saveLogoBtn.dataset.fileData;
-  const fileName = saveLogoBtn.dataset.fileName;
-  
-  if (!fileData) {
-    showNotification('No logo selected', 'error');
-    return;
-  }
-  
-  try {
-    // In a real implementation, you would upload to a file storage service
-    // For now, we'll store the data URL in localStorage and database
-    const logoUrl = fileData; // This would be the actual file URL in production
-    
-    // Save to database via API
-    const response = await fetch('/api/branding/logo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        logo_url: logoUrl,
-        file_name: fileName
-      })
-    });
-    
-    if (response.ok) {
-      // Update sidebar logo
-      updateSidebarLogo(logoUrl);
-      showNotification('Logo saved successfully!', 'success');
-      saveLogoBtn.style.display = 'none';
-    } else {
-      throw new Error('Failed to save logo');
-    }
-  } catch (error) {
-    console.error('Error saving logo:', error);
-    showNotification('Failed to save logo', 'error');
-  }
 }
 
 function updateSidebarLogo(logoUrl) {
@@ -393,9 +544,9 @@ function handleProfilePictureSelect(e, employeeId) {
   if (!file) return;
   
   // Validate file type
-  const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  const validTypes = ['image/png', 'image/jpeg'];
   if (!validTypes.includes(file.type)) {
-    showNotification('Please select a PNG or JPG file', 'error');
+    showNotification('Please select a PNG or JPEG file', 'error');
     return;
   }
   
@@ -405,7 +556,21 @@ function handleProfilePictureSelect(e, employeeId) {
     return;
   }
   
-  // Preview the image
+  // Validate image dimensions (1:1 aspect ratio, minimum 200x200px)
+  validateImageDimensions(file, { 
+    minWidth: 200, 
+    minHeight: 200, 
+    aspectRatio: '1:1' 
+  })
+    .then(() => {
+      previewProfilePicture(file, employeeId);
+    })
+    .catch(error => {
+      showNotification(error.message, 'error');
+    });
+}
+
+function previewProfilePicture(file, employeeId) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const uploadArea = document.querySelector(`[data-employee="${employeeId}"]`);
@@ -419,7 +584,7 @@ function handleProfilePictureSelect(e, employeeId) {
       `;
       
       saveBtn.style.display = 'inline-flex';
-      saveBtn.dataset.fileData = e.target.result;
+      saveBtn._fileToUpload = file;
       saveBtn.dataset.fileName = file.name;
     }
   };
@@ -428,40 +593,41 @@ function handleProfilePictureSelect(e, employeeId) {
 
 async function saveProfilePicture(employeeId) {
   const saveBtn = document.getElementById(`saveProfile-${employeeId}`);
-  const fileData = saveBtn.dataset.fileData;
+  const file = saveBtn._fileToUpload;
   const fileName = saveBtn.dataset.fileName;
   
-  if (!fileData) {
+  if (!file) {
     showNotification('No profile picture selected', 'error');
     return;
   }
   
   try {
-    // Save to database via API
-    const response = await fetch('/api/branding/employee-profile', {
+    showNotification(`Uploading ${employees[employeeId]?.name} profile picture...`, 'info');
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('employee_id', employeeId);
+    
+    const response = await fetch('/api/storage/employee-avatar', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        employee_id: employeeId,
-        profile_picture_url: fileData,
-        file_name: fileName
-      })
+      body: formData
     });
     
-    if (response.ok) {
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
       // Update employee avatar in the config and UI
-      employees[employeeId].avatar = fileData;
-      updateEmployeeAvatars(employeeId, fileData);
+      employees[employeeId].avatar = result.avatar_url;
+      updateEmployeeAvatars(employeeId, result.avatar_url);
       showNotification(`${employees[employeeId].name} profile picture saved!`, 'success');
       saveBtn.style.display = 'none';
+      delete saveBtn._fileToUpload;
     } else {
-      throw new Error('Failed to save profile picture');
+      throw new Error(result.details || result.error || 'Upload failed');
     }
   } catch (error) {
-    console.error('Error saving profile picture:', error);
-    showNotification('Failed to save profile picture', 'error');
+    console.error('Error uploading profile picture:', error);
+    showNotification(`Failed to upload profile picture: ${error.message}`, 'error');
   }
 }
 
@@ -1396,9 +1562,13 @@ async function loadBranding() {
         
         // Update logo preview in branding page
         const logoPreview = document.getElementById('logoPreview');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
         if (logoPreview) {
           logoPreview.src = branding.logo_url;
           logoPreview.style.display = 'block';
+        }
+        if (removeLogoBtn) {
+          removeLogoBtn.style.display = 'inline-flex';
         }
       }
       
