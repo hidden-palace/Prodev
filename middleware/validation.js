@@ -93,15 +93,15 @@ const errorHandler = (err, req, res, next) => {
   // FIXED: Safe error message handling with multiple fallbacks
   let errorMessage = 'Unknown error occurred';
   
-  if (err) {
-    if (typeof err === 'string') {
-      errorMessage = err;
-    } else if (err.message && typeof err.message === 'string') {
-      errorMessage = err.message;
-    } else if (err.details && typeof err.details === 'string') {
-      errorMessage = err.details;
-    } else if (err.error && typeof err.error === 'string') {
-      errorMessage = err.error;
+  if (validationError) {
+    if (typeof validationError === 'string') {
+      errorMessage = validationError;
+    } else if (validationError.message && typeof validationError.message === 'string') {
+      errorMessage = validationError.message;
+    } else if (validationError.details && typeof validationError.details === 'string') {
+      errorMessage = validationError.details;
+    } else if (validationError.error && typeof validationError.error === 'string') {
+      errorMessage = validationError.error;
     }
   }
 
@@ -154,13 +154,13 @@ const errorHandler = (err, req, res, next) => {
 
   try {
     res.status(statusCode).json(errorResponse);
-  } catch (sendError) {
-    console.error('Failed to send error response:', sendError);
+  } catch (responseError) {
+    console.error('Failed to send error response:', responseError);
     // Last resort - try to send a basic response
     try {
       res.status(500).end('{"error":"Internal server error","details":"Failed to send proper error response"}');
-    } catch (finalError) {
-      console.error('Complete failure to send any response:', finalError);
+    } catch (criticalError) {
+      console.error('Complete failure to send any response:', criticalError);
     }
   }
 };
