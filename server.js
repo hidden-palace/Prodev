@@ -252,8 +252,8 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error);
+process.on('uncaughtException', (uncaughtError) => {
+  console.error('❌ Uncaught Exception:', uncaughtError);
   // Exit the process as this is a serious error
   process.exit(1);
 });
