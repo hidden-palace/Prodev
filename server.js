@@ -57,8 +57,8 @@ app.use(express.json({
   verify: (req, res, buf, encoding) => {
     try {
       JSON.parse(buf);
-    } catch (e) {
-      console.error('Invalid JSON in request body:', e.message);
+    } catch (jsonParseError) {
+      console.error('Invalid JSON in request body:', jsonParseError.message);
       const error = new Error('Invalid JSON in request body');
       error.status = 400;
       throw error;
@@ -221,8 +221,8 @@ try {
   setInterval(() => {
     webhookHandler.cleanupPendingCalls();
   }, 15 * 60 * 1000);
-} catch (error) {
-  console.warn('Could not initialize webhook handler for cleanup:', error.message);
+} catch (webhookInitError) {
+  console.warn('Could not initialize webhook handler for cleanup:', webhookInitError.message);
 }
 
 // Graceful shutdown
