@@ -72,8 +72,9 @@ class StorageService {
       console.log('📤 Uploading avatar for employee:', employeeId);
       
       // Validate file type
-      const allowedTypes = ['image/png', 'image/jpeg'];
-      if (!allowedTypes.includes(file.type)) {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      const fileType = file.mimetype || file.type;
+      if (!allowedTypes.includes(fileType)) {
         throw new Error('Invalid file type. Only PNG and JPG files are allowed.');
       }
 
@@ -84,15 +85,19 @@ class StorageService {
 
       // Generate unique filename
       const timestamp = Date.now();
-      const extension = file.name.split('.').pop();
+      const extension = file.originalname ? file.originalname.split('.').pop() : 'jpg';
       const uniqueFileName = `${employeeId}_${timestamp}.${extension}`;
+
+      // Prepare file buffer for upload
+      const fileBuffer = file.buffer || file;
 
       // Upload to Supabase Storage
       const { data, error } = await this.supabaseService.client.storage
         .from('employee_avatars')
-        .upload(uniqueFileName, file, {
+        .upload(uniqueFileName, fileBuffer, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: fileType
         });
 
       if (error) {

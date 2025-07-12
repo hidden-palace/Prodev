@@ -152,6 +152,23 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       size: req.file.size
     });
 
+    // Additional validation for file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        error: 'Invalid file type',
+        details: 'Only PNG and JPG files are allowed for avatars.'
+      });
+    }
+
+    // Additional validation for file size
+    if (req.file.size > 1024 * 1024) {
+      return res.status(400).json({
+        error: 'File too large',
+        details: 'Avatar file size must be less than 1MB.'
+      });
+    }
+
     // Upload to storage
     const uploadResult = await storageService.uploadEmployeeAvatar(req.file, employee_id);
 
@@ -200,6 +217,24 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
 
   } catch (error) {
     console.error('❌ Error uploading avatar:', error);
+    
+    // Enhanced error response for debugging
+    const errorResponse = {
+      error: 'Avatar upload failed',
+      details: error.message,
+      context: {
+        hasFile: !!req.file,
+        fileName: req.file?.originalname,
+        fileSize: req.file?.size,
+        mimeType: req.file?.mimetype,
+        employeeId: req.body?.employee_id,
+        timestamp: new Date().toISOString()
+      }
+    };
+    
+    res.status(500).json(errorResponse);
+  }
+});
     next(error);
   }
 });
