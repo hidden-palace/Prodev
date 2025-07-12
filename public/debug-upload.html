@@ -341,7 +341,7 @@
                         log(`Context: ${JSON.stringify(result.context)}`, 'error');
                     }
                 }
-            } catch (error) {
+            } catch (uploadError) {
                 log(`❌ Upload error: ${error.message}`, 'error');
                 console.error('Full error:', error);
             }
@@ -360,7 +360,7 @@
                 } else {
                     log(`❌ API connection failed: ${response.status}`, 'error');
                 }
-            } catch (error) {
+            } catch (uploadError) {
                 log(`❌ API connection error: ${error.message}`, 'error');
             }
         }
@@ -392,7 +392,7 @@
                     `;
                     log('⚠️ No logo currently set', 'warning');
                 }
-            } catch (error) {
+            } catch (uploadError) {
                 log(`❌ Error checking logo: ${error.message}`, 'error');
             }
         }
