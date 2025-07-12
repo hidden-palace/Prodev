@@ -174,6 +174,7 @@ function initializeBranding() {
   const accentPicker = document.getElementById('accentPicker');
   const accentInput = document.getElementById('accentInput');
   const saveColorsBtn = document.getElementById('saveColorsBtn');
+  const logoUploadArea = document.getElementById('logo-upload-area');
   const logoFileInput = document.getElementById('logo-file-input');
   const avatarFileInput = document.getElementById('avatar-file-input');
   const removeLogo = document.getElementById('remove-logo-btn');
@@ -211,6 +212,13 @@ function initializeBranding() {
     saveColorsBtn.addEventListener('click', saveColorScheme);
   }
   
+  // Logo upload area click handler
+  if (logoUploadArea && logoFileInput) {
+    logoUploadArea.addEventListener('click', () => {
+      logoFileInput.click();
+    });
+  }
+  
   // Logo upload handling
   if (logoFileInput) {
     logoFileInput.addEventListener('change', handleLogoUpload);
@@ -231,6 +239,7 @@ function initializeBranding() {
   changeAvatarBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       const employeeId = btn.getAttribute('data-employee');
       handleChangeAvatar(employeeId);
     });

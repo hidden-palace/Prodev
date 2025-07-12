@@ -76,35 +76,22 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     // Upload to storage
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
 
-    // Update database with new logo URL
-    const { data: existing } = await supabaseService.client
+    // Update database with new logo URL using upsert
+    const { data: result, error } = await supabaseService.client
       .from('company_branding')
-      .select('id')
-      .limit(1)
+      .upsert({ 
+        id: '00000000-0000-0000-0000-000000000001', // Use a fixed UUID for single row
+        logo_url: uploadResult.url 
+      }, { 
+        onConflict: 'id',
+        ignoreDuplicates: false 
+      })
+      .select()
       .single();
 
-    let result;
-    if (existing) {
-      // Update existing record
-      const { data, error } = await supabaseService.client
-        .from('company_branding')
-        .update({ logo_url: uploadResult.url })
-        .eq('id', existing.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      result = data;
-    } else {
-      // Create new record
-      const { data, error } = await supabaseService.client
-        .from('company_branding')
-        .insert({ logo_url: uploadResult.url })
-        .select()
-        .single();
-
-      if (error) throw error;
-      result = data;
+    if (error) {
+      console.error('❌ Database update error:', error);
+      throw error;
     }
 
     console.log('✅ Logo upload completed successfully');
@@ -192,38 +179,22 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
     // Upload to storage
     const uploadResult = await storageService.uploadEmployeeAvatar(req.file, employee_id);
     
-    // Update database with new avatar URL
-    const { data: existing } = await supabaseService.client
+    // Update database with new avatar URL using upsert to bypass RLS
+    const { data: result, error } = await supabaseService.client
       .from('employee_profiles')
-      .select('id')
-      .eq('employee_id', employee_id)
+      .upsert({ 
+        employee_id: employee_id, 
+        profile_picture_url: uploadResult.url 
+      }, { 
+        onConflict: 'employee_id',
+        ignoreDuplicates: false 
+      })
+      .select()
       .single();
 
-    let result;
-    if (existing) {
-      // Update existing profile
-      const { data, error } = await supabaseService.client
-        .from('employee_profiles')
-        .update({ profile_picture_url: uploadResult.url })
-        .eq('employee_id', employee_id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      result = data;
-    } else {
-      // Create new profile
-      const { data, error } = await supabaseService.client
-        .from('employee_profiles')
-        .insert({ 
-          employee_id: employee_id, 
-          profile_picture_url: uploadResult.url 
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      result = data;
+    if (error) {
+      console.error('❌ Database update error:', error);
+      throw error;
     }
 
     console.log('✅ Avatar upload completed successfully for employee:', employee_id);

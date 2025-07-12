@@ -23,24 +23,28 @@ router.get('/', async (req, res, next) => {
       });
     }
 
-    const { data, error } = await supabaseService.client
+    // Use upsert to ensure a row exists, then fetch it
+    const { data: upsertData, error: upsertError } = await supabaseService.client
       .from('company_branding')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .upsert({ 
+        id: '00000000-0000-0000-0000-000000000001',
+        logo_url: null,
+        primary_color: '#ec4899',
+        secondary_color: '#64748b',
+        accent_color: '#f97316'
+      }, { 
+        onConflict: 'id',
+        ignoreDuplicates: true 
+      })
+      .select()
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error fetching branding:', error);
-      throw error;
+    if (upsertError) {
+      console.error('Error upserting branding:', upsertError);
+      throw upsertError;
     }
 
-    res.json(data || {
-      logo_url: null,
-      primary_color: '#ec4899',
-      secondary_color: '#64748b',
-      accent_color: '#f97316'
-    });
+    res.json(upsertData);
   } catch (error) {
     console.error('Error in branding GET:', error);
     next(error);
