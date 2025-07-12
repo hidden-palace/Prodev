@@ -55,9 +55,9 @@ router.get('/', async (req, res, next) => {
     );
 
     res.json(result);
-  } catch (error) {
-    console.error('Error fetching leads:', error);
-    next(error);
+  } catch (leadsError) {
+    console.error('Error fetching leads:', leadsError);
+    next(leadsError);
   }
 });
 
@@ -120,9 +120,9 @@ router.get('/export', async (req, res, next) => {
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.xml"`);
       res.send(xml);
     }
-  } catch (error) {
-    console.error('Error exporting leads:', error);
-    next(error);
+  } catch (exportError) {
+    console.error('Error exporting leads:', exportError);
+    next(exportError);
   }
 });
 
@@ -140,9 +140,9 @@ router.get('/statistics', async (req, res, next) => {
 
     const stats = await leadProcessor.getStatistics();
     res.json(stats);
-  } catch (error) {
-    console.error('Error fetching lead statistics:', error);
-    next(error);
+  } catch (statsError) {
+    console.error('Error fetching lead statistics:', statsError);
+    next(statsError);
   }
 });
 
@@ -178,9 +178,9 @@ router.put('/:id', async (req, res, next) => {
 
     const updatedLead = await leadProcessor.updateLead(id, filteredUpdates);
     res.json(updatedLead);
-  } catch (error) {
-    console.error('Error updating lead:', error);
-    next(error);
+  } catch (updateError) {
+    console.error('Error updating lead:', updateError);
+    next(updateError);
   }
 });
 
@@ -200,9 +200,9 @@ router.delete('/:id', async (req, res, next) => {
     await leadProcessor.deleteLead(id);
     
     res.json({ success: true, message: 'Lead deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting lead:', error);
-    next(error);
+  } catch (deleteError) {
+    console.error('Error deleting lead:', deleteError);
+    next(deleteError);
   }
 });
 
@@ -229,9 +229,9 @@ router.post('/process', async (req, res, next) => {
 
     const result = await leadProcessor.processLeadData(output, employee_id);
     res.json(result);
-  } catch (error) {
-    console.error('Error processing lead data:', error);
-    next(error);
+  } catch (processError) {
+    console.error('Error processing lead data:', processError);
+    next(processError);
   }
 });
 

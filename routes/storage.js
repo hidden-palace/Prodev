@@ -102,14 +102,14 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       branding: result
     });
 
-  } catch (error) {
-    console.error('❌ Error uploading logo:', error);
+  } catch (uploadError) {
+    console.error('❌ Error uploading logo:', uploadError);
     
     // Enhanced error response for debugging
     const errorResponse = {
       error: 'Logo upload failed',
-      details: error.message,
-      suggestion: error.message.includes('Bucket not found') ? 
+      details: uploadError.message,
+      suggestion: uploadError.message.includes('Bucket not found') ? 
         'The storage buckets may not exist. Please check your Supabase dashboard and ensure the "logos" bucket is created.' : 
         'Check your Supabase configuration and file format.',
       context: {
@@ -209,13 +209,13 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       profile: result
     });
 
-  } catch (error) {
-    console.error('❌ Error uploading avatar:', error);
+  } catch (uploadError) {
+    console.error('❌ Error uploading avatar:', uploadError);
     
     // Enhanced error response for debugging
     const errorResponse = {
       error: 'Avatar upload failed',
-      details: error.message,
+      details: uploadError.message,
       context: {
         hasFile: !!req.file,
         fileName: req.file?.originalname,
@@ -227,7 +227,7 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
     };
     
     res.status(500).json(errorResponse);
-    next(error);
+    next(uploadError);
   }
 });
 
@@ -265,9 +265,9 @@ router.delete('/logo', async (req, res, next) => {
       message: 'Logo removed successfully'
     });
 
-  } catch (error) {
-    console.error('❌ Error removing logo:', error);
-    next(error);
+  } catch (deleteError) {
+    console.error('❌ Error removing logo:', deleteError);
+    next(deleteError);
   }
 });
 
