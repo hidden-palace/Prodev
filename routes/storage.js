@@ -123,7 +123,7 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       error: 'Logo upload failed',
       details: error.message,
       suggestion: error.message.includes('Bucket not found') ? 
-        'Storage buckets need to be created. Please run the storage migration.' : 
+        'The storage buckets may not exist. Please check your Supabase dashboard and ensure the "logos" bucket is created.' : 
         'Check your Supabase configuration and file format.',
       context: {
         hasFile: !!req.file,

@@ -3,68 +3,7 @@ const SupabaseService = require('./supabase-client');
 class StorageService {
   constructor() {
     this.supabaseService = new SupabaseService();
-    this.initializeBuckets();
-  }
-
-  /**
-   * Initialize storage buckets if they don't exist
-   */
-  async initializeBuckets() {
-    try {
-      // Check if buckets exist, create if they don't
-      await this.ensureBucketExists('logos', {
-        public: true,
-        fileSizeLimit: 2 * 1024 * 1024, // 2MB
-        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml']
-      });
-      
-      await this.ensureBucketExists('employee_avatars', {
-        public: true,
-        fileSizeLimit: 1024 * 1024, // 1MB
-        allowedMimeTypes: ['image/png', 'image/jpeg']
-      });
-    } catch (error) {
-      console.warn('⚠️ Could not initialize storage buckets:', error.message);
-    }
-  }
-
-  /**
-   * Ensure a storage bucket exists
-   */
-  async ensureBucketExists(bucketName, options = {}) {
-    try {
-      // Try to get bucket info
-      const { data: bucket, error: getError } = await this.supabaseService.client.storage
-        .getBucket(bucketName);
-
-      if (getError && getError.message.includes('not found')) {
-        console.log(`📦 Creating storage bucket: ${bucketName}`);
-        
-        // Create the bucket
-        const { data, error: createError } = await this.supabaseService.client.storage
-          .createBucket(bucketName, {
-            public: options.public || true,
-            fileSizeLimit: options.fileSizeLimit,
-            allowedMimeTypes: options.allowedMimeTypes
-          });
-
-        if (createError) {
-          console.error(`❌ Failed to create bucket ${bucketName}:`, createError);
-          throw createError;
-        }
-
-        console.log(`✅ Created storage bucket: ${bucketName}`);
-        return data;
-      } else if (getError) {
-        throw getError;
-      }
-
-      console.log(`✅ Storage bucket exists: ${bucketName}`);
-      return bucket;
-    } catch (error) {
-      console.error(`❌ Error with bucket ${bucketName}:`, error);
-      throw error;
-    }
+    console.log('✅ StorageService initialized');
   }
 
   /**
@@ -73,13 +12,6 @@ class StorageService {
   async uploadLogo(file, fileName) {
     try {
       console.log('📤 Uploading logo:', fileName);
-      
-      // Ensure logos bucket exists
-      await this.ensureBucketExists('logos', {
-        public: true,
-        fileSizeLimit: 2 * 1024 * 1024,
-        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml']
-      });
       
       // Validate file type
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
@@ -112,42 +44,6 @@ class StorageService {
 
       if (error) {
         console.error('❌ Storage upload error:', error);
-        
-        // If bucket doesn't exist, try to create it and retry
-        if (error.message.includes('not found') || error.message.includes('Bucket not found')) {
-          console.log('🔄 Bucket not found, creating and retrying...');
-          await this.ensureBucketExists('logos', {
-            public: true,
-            fileSizeLimit: 2 * 1024 * 1024,
-            allowedMimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml']
-          });
-          
-          // Retry upload
-          const { data: retryData, error: retryError } = await this.supabaseService.client.storage
-            .from('logos')
-            .upload(uniqueFileName, fileBuffer, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: fileType
-            });
-            
-          if (retryError) {
-            throw retryError;
-          }
-          
-          // Get public URL for retry
-          const { data: retryUrlData } = this.supabaseService.client.storage
-            .from('logos')
-            .getPublicUrl(uniqueFileName);
-
-          console.log('✅ Logo uploaded successfully (after retry):', retryUrlData.publicUrl);
-          return {
-            success: true,
-            url: retryUrlData.publicUrl,
-            fileName: uniqueFileName
-          };
-        }
-        
         throw error;
       }
 
@@ -175,13 +71,6 @@ class StorageService {
   async uploadEmployeeAvatar(file, employeeId) {
     try {
       console.log('📤 Uploading avatar for employee:', employeeId);
-      
-      // Ensure employee_avatars bucket exists
-      await this.ensureBucketExists('employee_avatars', {
-        public: true,
-        fileSizeLimit: 1024 * 1024,
-        allowedMimeTypes: ['image/png', 'image/jpeg']
-      });
       
       // Validate file type
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
@@ -214,42 +103,6 @@ class StorageService {
 
       if (error) {
         console.error('❌ Storage upload error:', error);
-        
-        // If bucket doesn't exist, try to create it and retry
-        if (error.message.includes('not found') || error.message.includes('Bucket not found')) {
-          console.log('🔄 Bucket not found, creating and retrying...');
-          await this.ensureBucketExists('employee_avatars', {
-            public: true,
-            fileSizeLimit: 1024 * 1024,
-            allowedMimeTypes: ['image/png', 'image/jpeg']
-          });
-          
-          // Retry upload
-          const { data: retryData, error: retryError } = await this.supabaseService.client.storage
-            .from('employee_avatars')
-            .upload(uniqueFileName, fileBuffer, {
-              cacheControl: '3600',
-              upsert: false,
-              contentType: fileType
-            });
-            
-          if (retryError) {
-            throw retryError;
-          }
-          
-          // Get public URL for retry
-          const { data: retryUrlData } = this.supabaseService.client.storage
-            .from('employee_avatars')
-            .getPublicUrl(uniqueFileName);
-
-          console.log('✅ Avatar uploaded successfully (after retry):', retryUrlData.publicUrl);
-          return {
-            success: true,
-            url: retryUrlData.publicUrl,
-            fileName: uniqueFileName
-          };
-        }
-        
         throw error;
       }
 
