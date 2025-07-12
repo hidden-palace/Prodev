@@ -3,7 +3,7 @@
 
   1. Storage Buckets
     - `logos` bucket for company logo uploads
-    - `employee_avatars` bucket for employee profile pictures
+    - `employee-avatars` bucket for employee profile pictures
   
   2. Security
     - Enable public access for both buckets
