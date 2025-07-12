@@ -130,6 +130,9 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
  * POST /storage/employee-avatar - Upload employee avatar
  */
 router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) => {
+  console.log('DEBUG: Entered /api/storage/employee-avatar route handler.');
+  console.log('DEBUG: Multer processed file, proceeding to try/catch block.');
+  
   try {
     if (!storageService || !supabaseService) {
       return res.status(503).json({
