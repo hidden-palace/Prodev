@@ -233,8 +233,6 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
     };
     
     res.status(500).json(errorResponse);
-  }
-});
     next(error);
   }
 });
