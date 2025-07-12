@@ -112,6 +112,28 @@ class StorageService {
         .getPublicUrl(uniqueFileName);
 
       console.log('✅ Avatar uploaded successfully:', urlData.publicUrl);
+      
+      // DEBUG: Log the exact values being sent to the upsert operation
+      console.log(`🔍 DEBUG: About to upsert employee_id: '${employeeId}' with profile_picture_url: '${urlData.publicUrl}'`);
+
+      // Update database with new avatar URL using upsert to bypass RLS
+      const { data: result, error } = await this.supabaseService.client
+        .from('employee_profiles')
+        .upsert({ 
+          employee_id: employeeId, 
+          profile_picture_url: urlData.publicUrl 
+        }, { 
+          onConflict: 'employee_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Database update error:', error);
+        throw error;
+      }
+
       return {
         success: true,
         url: urlData.publicUrl,
