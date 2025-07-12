@@ -24,6 +24,7 @@
             <div class="sidebar-header">
                 <div class="company-logo">
                     <div class="logo-icon">PC</div>
+                    <img id="sidebar-logo" class="sidebar-logo" style="display: none;" alt="Company Logo">
                     <div class="company-info">
                         <h3>AI Command Center</h3>
                         <p>Powered By ProDev </p>
@@ -830,6 +831,109 @@
                             </div>
                         </div>
                         <button class="btn primary" id="saveColorsBtn">Save Color Scheme</button>
+                    </div>
+
+                    <!-- Logo Upload Section -->
+                    <div class="brand-section">
+                        <h3>🏢 Company Logo</h3>
+                        <div class="current-logo-display">
+                            <div id="current-logo-container" style="display: none;">
+                                <img id="current-logo-preview" class="logo-preview" alt="Current Logo">
+                                <button id="remove-logo-btn" class="btn secondary">Remove Logo</button>
+                            </div>
+                            <div id="no-logo-message" class="no-asset-message">
+                                <p>No logo uploaded yet</p>
+                            </div>
+                        </div>
+                        <div class="asset-upload">
+                            <div class="upload-area" id="logo-upload-area">
+                                <div class="upload-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </div>
+                                <h4>Upload Company Logo</h4>
+                                <p>PNG, JPG, or SVG • Max 2MB • Recommended: 200×50px minimum</p>
+                                <input type="file" id="logo-file-input" accept=".png,.jpg,.jpeg,.svg" style="display: none;">
+                                <button type="button" class="btn primary" onclick="document.getElementById('logo-file-input').click()">
+                                    Choose Logo File
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Profile Pictures Section -->
+                    <div class="brand-section">
+                        <h3>👥 Employee Profile Pictures</h3>
+                        <div class="employee-avatars-grid">
+                            <div class="employee-avatar-item" data-employee="brenden">
+                                <div class="avatar-preview">
+                                    <img id="avatar-preview-brenden" class="employee-avatar-img" 
+                                         src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face" 
+                                         alt="AI Brenden">
+                                    <div class="avatar-overlay">
+                                        <button class="change-avatar-btn" data-employee="brenden">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7,10 12,15 17,10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="employee-info">
+                                    <h4>AI Brenden</h4>
+                                    <p>Lead Research Specialist</p>
+                                </div>
+                            </div>
+
+                            <div class="employee-avatar-item" data-employee="van">
+                                <div class="avatar-preview">
+                                    <img id="avatar-preview-van" class="employee-avatar-img" 
+                                         src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face" 
+                                         alt="AI Van">
+                                    <div class="avatar-overlay">
+                                        <button class="change-avatar-btn" data-employee="van">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7,10 12,15 17,10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="employee-info">
+                                    <h4>AI Van</h4>
+                                    <p>Digital Marketing Designer</p>
+                                </div>
+                            </div>
+
+                            <div class="employee-avatar-item" data-employee="angel">
+                                <div class="avatar-preview">
+                                    <img id="avatar-preview-angel" class="employee-avatar-img" 
+                                         src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face" 
+                                         alt="AI Angel">
+                                    <div class="avatar-overlay">
+                                        <button class="change-avatar-btn" data-employee="angel">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7,10 12,15 17,10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="employee-info">
+                                    <h4>AI Angel</h4>
+                                    <p>Voice Outreach Manager</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden file input for avatars -->
+                        <input type="file" id="avatar-file-input" accept=".png,.jpg,.jpeg" style="display: none;">
                     </div>
 
                     <div class="brand-section">

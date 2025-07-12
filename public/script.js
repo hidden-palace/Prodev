@@ -174,6 +174,9 @@ function initializeBranding() {
   const accentPicker = document.getElementById('accentPicker');
   const accentInput = document.getElementById('accentInput');
   const saveColorsBtn = document.getElementById('saveColorsBtn');
+  const logoFileInput = document.getElementById('logo-file-input');
+  const avatarFileInput = document.getElementById('avatar-file-input');
+  const removeLogo = document.getElementById('remove-logo-btn');
   
   // Sync color picker with text input
   if (primaryPicker && primaryInput) {
@@ -206,6 +209,269 @@ function initializeBranding() {
   // Save colors
   if (saveColorsBtn) {
     saveColorsBtn.addEventListener('click', saveColorScheme);
+  }
+  
+  // Logo upload handling
+  if (logoFileInput) {
+    logoFileInput.addEventListener('change', handleLogoUpload);
+  }
+  
+  // Avatar upload handling
+  if (avatarFileInput) {
+    avatarFileInput.addEventListener('change', handleAvatarUpload);
+  }
+  
+  // Remove logo handling
+  if (removeLogo) {
+    removeLogo.addEventListener('click', handleRemoveLogo);
+  }
+  
+  // Avatar change buttons
+  const changeAvatarBtns = document.querySelectorAll('.change-avatar-btn');
+  changeAvatarBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const employeeId = btn.getAttribute('data-employee');
+      handleChangeAvatar(employeeId);
+    });
+  });
+  
+  // Load current branding on initialization
+  loadCurrentBranding();
+}
+
+async function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Validate file
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    showNotification('Invalid file type. Please select PNG, JPG, or SVG files only.', 'error');
+    return;
+  }
+  
+  if (file.size > 2 * 1024 * 1024) {
+    showNotification('File size must be less than 2MB.', 'error');
+    return;
+  }
+  
+  try {
+    showNotification('Uploading logo...', 'info');
+    
+    const formData = new FormData();
+    formData.append('logo', file);
+    
+    const response = await fetch('/api/storage/logo', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      showNotification('Logo uploaded successfully!', 'success');
+      updateLogoDisplay(result.logo_url);
+      updateSidebarLogo(result.logo_url);
+    } else {
+      throw new Error(result.details || result.error || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('Logo upload error:', error);
+    showNotification(`Logo upload failed: ${error.message}`, 'error');
+  }
+  
+  // Clear the input
+  event.target.value = '';
+}
+
+let currentAvatarEmployee = null;
+
+function handleChangeAvatar(employeeId) {
+  currentAvatarEmployee = employeeId;
+  document.getElementById('avatar-file-input').click();
+}
+
+async function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file || !currentAvatarEmployee) return;
+  
+  // Validate file
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+  if (!allowedTypes.includes(file.type)) {
+    showNotification('Invalid file type. Please select PNG or JPG files only.', 'error');
+    return;
+  }
+  
+  if (file.size > 1024 * 1024) {
+    showNotification('File size must be less than 1MB.', 'error');
+    return;
+  }
+  
+  try {
+    showNotification(`Uploading avatar for ${employees[currentAvatarEmployee]?.name}...`, 'info');
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('employee_id', currentAvatarEmployee);
+    
+    const response = await fetch('/api/storage/employee-avatar', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      showNotification(`Avatar updated for ${employees[currentAvatarEmployee]?.name}!`, 'success');
+      updateEmployeeAvatar(currentAvatarEmployee, result.avatar_url);
+    } else {
+      throw new Error(result.details || result.error || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    showNotification(`Avatar upload failed: ${error.message}`, 'error');
+  }
+  
+  // Clear the input and reset current employee
+  event.target.value = '';
+  currentAvatarEmployee = null;
+}
+
+async function handleRemoveLogo() {
+  try {
+    showNotification('Removing logo...', 'info');
+    
+    const response = await fetch('/api/storage/logo', {
+      method: 'DELETE'
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      showNotification('Logo removed successfully!', 'success');
+      updateLogoDisplay(null);
+      updateSidebarLogo(null);
+    } else {
+      throw new Error(result.details || result.error || 'Remove failed');
+    }
+  } catch (error) {
+    console.error('Logo removal error:', error);
+    showNotification(`Logo removal failed: ${error.message}`, 'error');
+  }
+}
+
+function updateLogoDisplay(logoUrl) {
+  const currentLogoContainer = document.getElementById('current-logo-container');
+  const currentLogoPreview = document.getElementById('current-logo-preview');
+  const noLogoMessage = document.getElementById('no-logo-message');
+  
+  if (logoUrl) {
+    currentLogoPreview.src = logoUrl;
+    currentLogoContainer.style.display = 'block';
+    noLogoMessage.style.display = 'none';
+  } else {
+    currentLogoContainer.style.display = 'none';
+    noLogoMessage.style.display = 'block';
+  }
+}
+
+function updateSidebarLogo(logoUrl) {
+  const sidebarLogo = document.getElementById('sidebar-logo');
+  const logoIcon = document.querySelector('.logo-icon');
+  
+  if (logoUrl) {
+    sidebarLogo.src = logoUrl;
+    sidebarLogo.style.display = 'block';
+    logoIcon.style.display = 'none';
+  } else {
+    sidebarLogo.style.display = 'none';
+    logoIcon.style.display = 'flex';
+  }
+}
+
+function updateEmployeeAvatar(employeeId, avatarUrl) {
+  // Update in branding page
+  const avatarPreview = document.getElementById(`avatar-preview-${employeeId}`);
+  if (avatarPreview) {
+    avatarPreview.src = avatarUrl;
+  }
+  
+  // Update in chat interface
+  const chatAvatar = document.getElementById('current-employee-avatar');
+  if (chatAvatar && currentEmployee === employeeId) {
+    chatAvatar.src = avatarUrl;
+  }
+  
+  // Update in team member list
+  const teamMemberAvatar = document.querySelector(`[data-employee="${employeeId}"] .member-avatar img`);
+  if (teamMemberAvatar) {
+    teamMemberAvatar.src = avatarUrl;
+  }
+  
+  // Update employee configuration
+  if (employees[employeeId]) {
+    employees[employeeId].avatar = avatarUrl;
+  }
+}
+
+async function loadCurrentBranding() {
+  try {
+    const response = await fetch('/api/branding');
+    const branding = await response.json();
+    
+    if (response.ok) {
+      // Update logo display
+      if (branding.logo_url) {
+        updateLogoDisplay(branding.logo_url);
+        updateSidebarLogo(branding.logo_url);
+      }
+      
+      // Update color inputs
+      if (branding.primary_color) {
+        const primaryInput = document.getElementById('primaryInput');
+        const primaryPicker = document.getElementById('primaryPicker');
+        if (primaryInput) primaryInput.value = branding.primary_color;
+        if (primaryPicker) primaryPicker.value = branding.primary_color;
+      }
+      
+      if (branding.secondary_color) {
+        const secondaryInput = document.getElementById('secondaryInput');
+        const secondaryPicker = document.getElementById('secondaryPicker');
+        if (secondaryInput) secondaryInput.value = branding.secondary_color;
+        if (secondaryPicker) secondaryPicker.value = branding.secondary_color;
+      }
+      
+      if (branding.accent_color) {
+        const accentInput = document.getElementById('accentInput');
+        const accentPicker = document.getElementById('accentPicker');
+        if (accentInput) accentInput.value = branding.accent_color;
+        if (accentPicker) accentPicker.value = branding.accent_color;
+      }
+    }
+    
+    // Load employee profiles
+    await loadEmployeeProfiles();
+    
+  } catch (error) {
+    console.error('Error loading branding:', error);
+  }
+}
+
+async function loadEmployeeProfiles() {
+  try {
+    const response = await fetch('/api/branding/employee-profiles');
+    const profiles = await response.json();
+    
+    if (response.ok && profiles.length > 0) {
+      profiles.forEach(profile => {
+        if (profile.profile_picture_url) {
+          updateEmployeeAvatar(profile.employee_id, profile.profile_picture_url);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error loading employee profiles:', error);
   }
 }
 

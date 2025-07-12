@@ -68,6 +68,16 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.sidebar-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
 .company-info h3 {
     font-size: 18px;
     font-weight: 600;
@@ -942,6 +952,116 @@ body {
 .upload-area p {
     color: var(--text-secondary);
     margin-bottom: 16px;
+}
+
+/* Logo and Avatar Specific Styles */
+.current-logo-display {
+    margin-bottom: 20px;
+}
+
+.logo-preview {
+    max-width: 200px;
+    max-height: 100px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.no-asset-message {
+    padding: 20px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+}
+
+.employee-avatars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.employee-avatar-item {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.employee-avatar-item:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.avatar-preview {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.employee-avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.avatar-preview:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.change-avatar-btn {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.change-avatar-btn:hover {
+    background: #2563eb;
+    transform: scale(1.1);
+}
+
+.employee-avatar-item .employee-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.employee-avatar-item .employee-info p {
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 /* Status Styles */
