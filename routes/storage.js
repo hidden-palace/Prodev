@@ -183,7 +183,7 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
     const uploadResult = await storageService.uploadEmployeeAvatar(req.file, employee_id);
     
     // Update database with new avatar URL using upsert to bypass RLS
-    const { data: result, error } = await supabaseService.client
+    const { data: result, error: dbError } = await supabaseService.client
       .from('employee_profiles')
       .upsert({ 
         employee_id: employee_id, 
@@ -195,9 +195,9 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ Database update error:', error);
-      throw error;
+    if (dbError) {
+      console.error('❌ Database update error:', dbError);
+      throw dbError;
     }
 
     console.log('✅ Avatar upload completed successfully for employee:', employee_id);
