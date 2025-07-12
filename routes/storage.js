@@ -191,7 +191,7 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
 
     // Upload to storage
     const uploadResult = await storageService.uploadEmployeeAvatar(req.file, employee_id);
-
+    
     // Update database with new avatar URL
     const { data: existing } = await supabaseService.client
       .from('employee_profiles')

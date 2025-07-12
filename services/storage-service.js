@@ -94,7 +94,7 @@ class StorageService {
 
       // Upload to Supabase Storage
       const { data, error } = await this.supabaseService.client.storage
-        .from('employee_avatars')
+        .from('employee-avatars')
         .upload(uniqueFileName, fileBuffer, {
           cacheControl: '3600',
           upsert: false,
@@ -108,7 +108,7 @@ class StorageService {
 
       // Get public URL
       const { data: urlData } = this.supabaseService.client.storage
-        .from('employee_avatars')
+        .from('employee-avatars')
         .getPublicUrl(uniqueFileName);
 
       console.log('✅ Avatar uploaded successfully:', urlData.publicUrl);
