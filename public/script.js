@@ -247,7 +247,7 @@ async function handleLogoUpload(event) {
   // Validate file
   const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
   if (!allowedTypes.includes(file.type)) {
-    showNotification('Invalid file type. Please select PNG, JPG, or SVG files only.', 'error');
+    showNotification('Invalid file type. Please select PNG, JPEG, or SVG files only.', 'error');
     return;
   }
   
@@ -262,19 +262,28 @@ async function handleLogoUpload(event) {
     const formData = new FormData();
     formData.append('logo', file);
     
+    console.log('📤 Starting logo upload:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    });
+    
     const response = await fetch('/api/storage/logo', {
       method: 'POST',
       body: formData
     });
     
     const result = await response.json();
+    console.log('📥 Upload response:', result);
     
     if (response.ok) {
       showNotification('Logo uploaded successfully!', 'success');
       updateLogoDisplay(result.logo_url);
       updateSidebarLogo(result.logo_url);
     } else {
-      throw new Error(result.details || result.error || 'Upload failed');
+      const errorMessage = result.details || result.error || 'Upload failed';
+      const suggestion = result.suggestion ? `\n\nSuggestion: ${result.suggestion}` : '';
+      throw new Error(errorMessage + suggestion);
     }
   } catch (error) {
     console.error('Logo upload error:', error);
@@ -299,7 +308,7 @@ async function handleAvatarUpload(event) {
   // Validate file
   const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
   if (!allowedTypes.includes(file.type)) {
-    showNotification('Invalid file type. Please select PNG or JPG files only.', 'error');
+    showNotification('Invalid file type. Please select PNG or JPEG files only.', 'error');
     return;
   }
   
@@ -315,18 +324,28 @@ async function handleAvatarUpload(event) {
     formData.append('avatar', file);
     formData.append('employee_id', currentAvatarEmployee);
     
+    console.log('📤 Starting avatar upload:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      employeeId: currentAvatarEmployee
+    });
+    
     const response = await fetch('/api/storage/employee-avatar', {
       method: 'POST',
       body: formData
     });
     
     const result = await response.json();
+    console.log('📥 Avatar upload response:', result);
     
     if (response.ok) {
       showNotification(`Avatar updated for ${employees[currentAvatarEmployee]?.name}!`, 'success');
       updateEmployeeAvatar(currentAvatarEmployee, result.avatar_url);
     } else {
-      throw new Error(result.details || result.error || 'Upload failed');
+      const errorMessage = result.details || result.error || 'Upload failed';
+      const suggestion = result.suggestion ? `\n\nSuggestion: ${result.suggestion}` : '';
+      throw new Error(errorMessage + suggestion);
     }
   } catch (error) {
     console.error('Avatar upload error:', error);

@@ -56,6 +56,22 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       mimetype: req.file.mimetype,
       size: req.file.size
     });
+    
+    // Additional validation
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        error: 'Invalid file type',
+        details: 'Only PNG, JPEG, and SVG files are allowed for logos.'
+      });
+    }
+    
+    if (req.file.size > 2 * 1024 * 1024) {
+      return res.status(400).json({
+        error: 'File too large',
+        details: 'Logo file size must be less than 2MB.'
+      });
+    }
 
     // Upload to storage
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
@@ -106,11 +122,15 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     const errorResponse = {
       error: 'Logo upload failed',
       details: error.message,
+      suggestion: error.message.includes('Bucket not found') ? 
+        'Storage buckets need to be created. Please run the storage migration.' : 
+        'Check your Supabase configuration and file format.',
       context: {
         hasFile: !!req.file,
         fileName: req.file?.originalname,
         fileSize: req.file?.size,
         mimeType: req.file?.mimetype,
+        supabaseConfigured: !!(process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY),
         timestamp: new Date().toISOString()
       }
     };
