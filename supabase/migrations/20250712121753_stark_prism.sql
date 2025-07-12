@@ -21,11 +21,11 @@ VALUES (
   ARRAY['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
 ) ON CONFLICT (id) DO NOTHING;
 
--- Create employee_avatars bucket
+-- Create employee-avatars bucket
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
-  'employee_avatars',
-  'employee_avatars',
+  'employee-avatars',
+  'employee-avatars',
   true,
   1048576, -- 1MB limit
   ARRAY['image/png', 'image/jpeg', 'image/jpg']
@@ -58,26 +58,26 @@ CREATE POLICY "Authenticated users can delete logos"
   TO authenticated
   USING (bucket_id = 'logos');
 
--- Policy for employee_avatars bucket - allow public read and authenticated upload
+-- Policy for employee-avatars bucket - allow public read and authenticated upload
 CREATE POLICY "Public can view employee avatars"
   ON storage.objects
   FOR SELECT
-  USING (bucket_id = 'employee_avatars');
+  USING (bucket_id = 'employee-avatars');
 
 CREATE POLICY "Authenticated users can upload employee avatars"
   ON storage.objects
   FOR INSERT
   TO authenticated
-  WITH CHECK (bucket_id = 'employee_avatars');
+  WITH CHECK (bucket_id = 'employee-avatars');
 
 CREATE POLICY "Authenticated users can update employee avatars"
   ON storage.objects
   FOR UPDATE
   TO authenticated
-  USING (bucket_id = 'employee_avatars');
+  USING (bucket_id = 'employee-avatars');
 
 CREATE POLICY "Authenticated users can delete employee avatars"
   ON storage.objects
   FOR DELETE
   TO authenticated
-  USING (bucket_id = 'employee_avatars');
+  USING (bucket_id = 'employee-avatars');
