@@ -294,7 +294,7 @@ async function handleLogoUpload(event) {
       const suggestion = result.suggestion ? `\n\nSuggestion: ${result.suggestion}` : '';
       throw new Error(errorMessage + suggestion);
     }
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Logo upload error:', error);
     showNotification(`Logo upload failed: ${error.message}`, 'error');
   }
@@ -356,7 +356,7 @@ async function handleAvatarUpload(event) {
       const suggestion = result.suggestion ? `\n\nSuggestion: ${result.suggestion}` : '';
       throw new Error(errorMessage + suggestion);
     }
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Avatar upload error:', error);
     showNotification(`Avatar upload failed: ${error.message}`, 'error');
   }
@@ -383,7 +383,7 @@ async function handleRemoveLogo() {
     } else {
       throw new Error(result.details || result.error || 'Remove failed');
     }
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Logo removal error:', error);
     showNotification(`Logo removal failed: ${error.message}`, 'error');
   }
@@ -481,7 +481,7 @@ async function loadCurrentBranding() {
     // Load employee profiles
     await loadEmployeeProfiles();
     
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Error loading branding:', error);
   }
 }
@@ -498,7 +498,7 @@ async function loadEmployeeProfiles() {
         }
       });
     }
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Error loading employee profiles:', error);
   }
 }
@@ -796,7 +796,7 @@ async function handleChatSubmit(e) {
       addMessage(`Request status: ${data.status}`, 'assistant');
     }
     
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Chat error:', error);
     
     // Remove typing indicator
@@ -1176,7 +1176,7 @@ async function loadLeadsData() {
       console.error('Failed to load leads:', data);
       showNotification('Failed to load leads data', 'error');
     }
-  } catch (error) {
+  } catch (uploadError) {
     console.error('Failed to load leads data:', error);
     showNotification('Error loading leads data', 'error');
   }
