@@ -92,10 +92,10 @@
                     <pre>${JSON.stringify(data, null, 2)}</pre>
                 `;
                 updateStatus('Branding API test completed!', 'success');
-            } catch (error) {
+            } catch (caughtError) {
                 document.getElementById('branding-result').innerHTML = `
                     <h4>❌ Error:</h4>
-                    <pre>${error.message}</pre>
+                    <pre>${caughtError.message}</pre>
                 `;
                 updateStatus('Branding API test failed!', 'error');
             }
@@ -122,8 +122,8 @@
                 `;
                 
                 document.getElementById('branding-result').innerHTML = html;
-            } catch (error) {
-                document.getElementById('branding-result').innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            } catch (caughtError) {
+                document.getElementById('branding-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
             }
         }
 
@@ -138,10 +138,10 @@
                     <pre>${JSON.stringify(data, null, 2)}</pre>
                 `;
                 updateStatus('Employee profiles API test completed!', 'success');
-            } catch (error) {
+            } catch (caughtError) {
                 document.getElementById('profiles-result').innerHTML = `
                     <h4>❌ Error:</h4>
-                    <pre>${error.message}</pre>
+                    <pre>${caughtError.message}</pre>
                 `;
                 updateStatus('Employee profiles API test failed!', 'error');
             }
@@ -171,8 +171,8 @@
                 }
                 
                 document.getElementById('profiles-result').innerHTML = html;
-            } catch (error) {
-                document.getElementById('profiles-result').innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            } catch (caughtError) {
+                document.getElementById('profiles-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
             }
         }
 
@@ -189,10 +189,10 @@
                     <pre>${JSON.stringify(data, null, 2)}</pre>
                 `;
                 updateStatus('Enhanced leads API test completed!', 'success');
-            } catch (error) {
+            } catch (caughtError) {
                 document.getElementById('leads-result').innerHTML = `
                     <h4>❌ Error:</h4>
-                    <pre>${error.message}</pre>
+                    <pre>${caughtError.message}</pre>
                 `;
                 updateStatus('Enhanced leads API test failed!', 'error');
             }
@@ -226,8 +226,8 @@
                 `;
                 
                 document.getElementById('leads-result').innerHTML = html;
-            } catch (error) {
-                document.getElementById('leads-result').innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            } catch (caughtError) {
+                document.getElementById('leads-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
             }
         }
 
