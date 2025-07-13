@@ -6,6 +6,8 @@ const path = require('path');
 
 const config = require('./config');
 const { errorHandler } = require('./middleware/validation');
+const { enhancedErrorHandler, requestLogger } = require('./middleware/error-middleware');
+const errorLoggingRoutes = require('./routes/error-logging');
 const assistantRoutes = require('./routes/assistant');
 const leadsRoutes = require('./routes/leads');
 const brandingRoutes = require('./routes/branding');
@@ -68,6 +70,9 @@ app.use(express.json({
 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Enhanced request logging
+app.use(requestLogger);
+
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -102,6 +107,7 @@ app.use('/api', assistantRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/branding', brandingRoutes);
 app.use('/api/storage', storageRoutes);
+app.use('/api', errorLoggingRoutes);
 
 // Serve chat interface at root
 app.get('/', (req, res) => {
@@ -186,8 +192,8 @@ app.use('*', (req, res) => {
   res.status(404).json(response);
 });
 
-// Global error handler (must be last)
-app.use(errorHandler);
+// Enhanced global error handler (must be last)
+app.use(enhancedErrorHandler);
 
 // Graceful shutdown handling
 const server = app.listen(config.server.port, () => {

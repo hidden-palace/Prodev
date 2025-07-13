@@ -2388,4 +2388,5 @@ body {
     .pagination-controls {
         justify-content: center;
     }
+@import url('./error-styles.css');
 }
