@@ -143,7 +143,7 @@ async function networkFirstWithCache(request) {
     if (request.url.includes('/api/')) {
       return new Response(
         JSON.stringify({
-          error: 'Offline',
+          err: 'Offline',
           message: 'This data is not available offline'
         }),
         {

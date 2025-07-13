@@ -153,7 +153,7 @@ class OfflineManager {
           resolve(null);
         }
       };
-      request.onerror = () => reject(request.caughtError);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -225,7 +225,7 @@ class OfflineManager {
             }
             
             await store.put(action);
-            failed++;
+            throw new Error('No offline data available');
           }
         }
 
