@@ -61,9 +61,9 @@ app.use(express.json({
       JSON.parse(buf);
     } catch (jsonParseError) {
       console.error('Invalid JSON in request body:', jsonParseError.message);
-      const error = new Error('Invalid JSON in request body');
-      error.status = 400;
-      throw error;
+      const errMsg = new Error('Invalid JSON in request body');
+      errMsg.status = 400;
+      throw errMsg;
     }
   }
 }));
@@ -80,12 +80,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] ${req.method} ${req.path} - ${req.ip}`);
-  
-  // Log request body for API endpoints (but not for static files)
+
   if (req.path.startsWith('/api') && req.method !== 'GET') {
     console.log('Request body:', req.body);
   }
-  
+
   next();
 });
 
@@ -97,7 +96,7 @@ app.get('/health', (req, res) => {
     version: '1.0.0',
     environment: config.server.nodeEnv
   };
-  
+
   console.log('Health check response:', response);
   res.json(response);
 });
@@ -166,7 +165,7 @@ app.get('/api-docs', (req, res) => {
       }
     }
   };
-  
+
   console.log('API docs response:', response);
   res.json(response);
 });
@@ -187,12 +186,12 @@ app.use('*', (req, res) => {
       'GET /api/leads/statistics - Lead statistics'
     ]
   };
-  
+
   console.log('404 response:', response);
   res.status(404).json(response);
 });
 
-// Enhanced global error handler (must be last)
+// Enhanced global error handler
 app.use(enhancedErrorHandler);
 
 // Graceful shutdown handling
@@ -251,7 +250,6 @@ process.on('SIGINT', () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-  // Don't exit the process in production, but log the error
   if (config.server.nodeEnv !== 'production') {
     process.exit(1);
   }
@@ -260,7 +258,6 @@ process.on('unhandledRejection', (reason, promise) => {
 // Handle uncaught exceptions
 process.on('uncaughtException', (uncaughtError) => {
   console.error('❌ Uncaught Exception:', uncaughtError);
-  // Exit the process as this is a serious error
   process.exit(1);
 });
 
