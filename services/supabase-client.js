@@ -364,16 +364,16 @@ class SupabaseService {
    */
   async updateLead(leadId, updates) {
     try {
-      const { data, error: supabaseError } = await this.client
+      const { data, error: updateLeadError } = await this.client
         .from('leads')
         .update(updates)
         .eq('id', leadId)
         .select()
         .single();
 
-      if (supabaseError) {
-        console.error('❌ Error updating lead:', supabaseError);
-        throw supabaseError;
+      if (updateLeadError) {
+        console.error('❌ Error updating lead:', updateLeadError);
+        throw updateLeadError;
       }
 
       console.log(`✅ Lead ${leadId} updated successfully`);
@@ -389,13 +389,13 @@ class SupabaseService {
    */
   async getLeadStatistics() {
     try {
-      const { data, error: supabaseError } = await this.client
+      const { data, error: statsError } = await this.client
         .from('leads')
         .select('average_score, validated, outreach_sent, response_received, converted, employee_id, created_at');
 
-      if (supabaseError) {
-        console.error('❌ Error fetching lead statistics:', supabaseError);
-        throw supabaseError;
+      if (statsError) {
+        console.error('❌ Error fetching lead statistics:', statsError);
+        throw statsError;
       }
 
       const stats = {
@@ -433,14 +433,14 @@ class SupabaseService {
    */
   async deleteLead(leadId) {
     try {
-      const { error: supabaseError } = await this.client
+      const { error: deleteLeadError } = await this.client
         .from('leads')
         .delete()
         .eq('id', leadId);
 
-      if (supabaseError) {
-        console.error('❌ Error deleting lead:', supabaseError);
-        throw supabaseError;
+      if (deleteLeadError) {
+        console.error('❌ Error deleting lead:', deleteLeadError);
+        throw deleteLeadError;
       }
 
       console.log(`✅ Lead ${leadId} deleted successfully`);
