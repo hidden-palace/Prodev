@@ -56,16 +56,6 @@ function initializeNavigation() {
             loadSectionData(targetSection);
         });
     });
-    
-    // Mobile menu toggle
-    const mobileToggle = document.querySelector('.mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    
-    if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('mobile-open');
-        });
-    }
 }
 
 /**
@@ -201,6 +191,12 @@ function applyBranding(branding) {
         if (branding.logo_url) {
             logo.src = branding.logo_url;
             logo.style.display = 'block';
+            
+            // Hide no-logo message
+            const noLogoMessage = document.getElementById('no-logo-message');
+            if (noLogoMessage) {
+                noLogoMessage.style.display = 'none';
+            }
         }
     });
     
@@ -208,12 +204,27 @@ function applyBranding(branding) {
     const root = document.documentElement;
     if (branding.primary_color) {
         root.style.setProperty('--primary-color', branding.primary_color);
+        const primaryInput = document.getElementById('primary-color');
+        if (primaryInput) {
+            primaryInput.value = branding.primary_color;
+            primaryInput.nextElementSibling.value = branding.primary_color;
+        }
     }
     if (branding.secondary_color) {
         root.style.setProperty('--secondary-color', branding.secondary_color);
+        const secondaryInput = document.getElementById('secondary-color');
+        if (secondaryInput) {
+            secondaryInput.value = branding.secondary_color;
+            secondaryInput.nextElementSibling.value = branding.secondary_color;
+        }
     }
     if (branding.accent_color) {
         root.style.setProperty('--accent-color', branding.accent_color);
+        const accentInput = document.getElementById('accent-color');
+        if (accentInput) {
+            accentInput.value = branding.accent_color;
+            accentInput.nextElementSibling.value = branding.accent_color;
+        }
     }
 }
 
@@ -535,7 +546,12 @@ function addMessageToChat(role, content) {
 function clearChatMessages() {
     const messagesContainer = document.querySelector('.chat-messages');
     if (messagesContainer) {
+        // Keep the welcome message, remove others
+        const welcomeMessage = messagesContainer.querySelector('.welcome-message');
         messagesContainer.innerHTML = '';
+        if (welcomeMessage) {
+            messagesContainer.appendChild(welcomeMessage);
+        }
     }
 }
 
@@ -634,10 +650,17 @@ async function handleLogoUpload(e) {
         if (response.ok) {
             showNotification('Logo uploaded successfully!', 'success');
             // Update logo in UI
-            const logoElements = document.querySelectorAll('.sidebar-logo, .company-logo img');
+            const logoElements = document.querySelectorAll('.sidebar-logo, .company-logo img, .logo-preview');
             logoElements.forEach(logo => {
                 logo.src = data.logo_url;
+                logo.style.display = 'block';
             });
+            
+            // Hide no-logo message
+            const noLogoMessage = document.getElementById('no-logo-message');
+            if (noLogoMessage) {
+                noLogoMessage.style.display = 'none';
+            }
         } else {
             throw new Error(data.message || 'Upload failed');
         }
@@ -671,6 +694,8 @@ async function handleColorChange(e) {
         if (response.ok) {
             // Apply color immediately
             document.documentElement.style.setProperty(`--${colorType}-color`, colorValue);
+            // Update text input
+            e.target.nextElementSibling.value = colorValue;
             showNotification('Color updated successfully!', 'success');
         } else {
             throw new Error('Failed to update color');
@@ -708,9 +733,11 @@ async function handleAvatarUpload(e) {
         if (response.ok) {
             showNotification('Avatar uploaded successfully!', 'success');
             // Update avatar in UI
-            const avatarElements = document.querySelectorAll(`[data-employee="${employeeId}"] img`);
+            const avatarElements = document.querySelectorAll(`[data-employee="${employeeId}"] img, .employee-avatar-img`);
             avatarElements.forEach(avatar => {
-                avatar.src = data.avatar_url;
+                if (avatar.closest(`[data-employee="${employeeId}"]`) || avatar.classList.contains('employee-avatar-img')) {
+                    avatar.src = data.avatar_url;
+                }
             });
         } else {
             throw new Error(data.message || 'Upload failed');
@@ -899,18 +926,61 @@ function updateStatusDisplay(statusData) {
     }
 }
 
+/**
+ * Load employee data (placeholder)
+ */
+function loadEmployeeData() {
+    console.log('Loading employee data...');
+}
+
+/**
+ * Send quick message
+ */
+function sendQuickMessage(message) {
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.value = message;
+        const event = new Event('submit');
+        document.getElementById('chat-form').dispatchEvent(event);
+    }
+}
+
+/**
+ * Clear chat
+ */
+function clearChat() {
+    clearChatMessages();
+    currentThread = null;
+    currentRun = null;
+    showNotification('Chat cleared', 'info');
+}
+
+/**
+ * Toggle mobile menu
+ */
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('mobile-open');
+    }
+}
+
 // Global functions for inline event handlers
 window.editLead = function(leadId) {
     console.log('Edit lead:', leadId);
-    // Implement edit functionality
+    showNotification('Edit functionality coming soon', 'info');
 };
 
 window.deleteLead = function(leadId) {
     if (confirm('Are you sure you want to delete this lead?')) {
         console.log('Delete lead:', leadId);
-        // Implement delete functionality
+        showNotification('Delete functionality coming soon', 'info');
     }
 };
+
+window.sendQuickMessage = sendQuickMessage;
+window.clearChat = clearChat;
+window.toggleMobileMenu = toggleMobileMenu;
 
 // Error handling
 window.addEventListener('error', function(e) {
