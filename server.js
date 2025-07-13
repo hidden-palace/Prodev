@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 const config = require('./config');
-const { errorHandler } = require('./middleware/validation');
 const { enhancedErrorHandler, requestLogger } = require('./middleware/error-middleware');
 const errorLoggingRoutes = require('./routes/error-logging');
 const assistantRoutes = require('./routes/assistant');
