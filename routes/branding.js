@@ -24,7 +24,7 @@ router.get('/', async (req, res, next) => {
     }
 
     // Use upsert to ensure a row exists, then fetch it
-    const { data: upsertData, error: supabaseError } = await supabaseService.client
+    const { data: upsertData, error: upsertError } = await supabaseService.client
       .from('company_branding')
       .upsert({ 
         id: '00000000-0000-0000-0000-000000000001',
@@ -39,9 +39,9 @@ router.get('/', async (req, res, next) => {
       .select()
       .single();
 
-    if (supabaseError) {
-      console.error('Error upserting branding:', supabaseError);
-      throw supabaseError;
+    if (upsertError) {
+      console.error('Error upserting branding:', upsertError);
+      throw upsertError;
     }
 
     res.json(upsertData);
@@ -82,24 +82,24 @@ router.post('/logo', async (req, res, next) => {
     let result;
     if (existing) {
       // Update existing record
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: updateError } = await supabaseService.client
         .from('company_branding')
         .update({ logo_url })
         .eq('id', existing.id)
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (updateError) throw updateError;
       result = data;
     } else {
       // Create new record
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: insertError } = await supabaseService.client
         .from('company_branding')
         .insert({ logo_url })
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (insertError) throw insertError;
       result = data;
     }
 
@@ -175,24 +175,24 @@ router.post('/employee-profile', async (req, res, next) => {
     let result;
     if (existing) {
       // Update existing profile
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: updateProfileError } = await supabaseService.client
         .from('employee_profiles')
         .update({ profile_picture_url })
         .eq('employee_id', employee_id)
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (updateProfileError) throw updateProfileError;
       result = data;
     } else {
       // Create new profile
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: insertProfileError } = await supabaseService.client
         .from('employee_profiles')
         .insert({ employee_id, profile_picture_url })
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (insertProfileError) throw insertProfileError;
       result = data;
     }
 
@@ -237,24 +237,24 @@ router.put('/colors', async (req, res, next) => {
     let result;
     if (existing) {
       // Update existing record
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: updateColorsError } = await supabaseService.client
         .from('company_branding')
         .update(updateData)
         .eq('id', existing.id)
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (updateColorsError) throw updateColorsError;
       result = data;
     } else {
       // Create new record
-      const { data, error: supabaseError } = await supabaseService.client
+      const { data, error: insertColorsError } = await supabaseService.client
         .from('company_branding')
         .insert(updateData)
         .select()
         .single();
 
-      if (supabaseError) throw supabaseError;
+      if (insertColorsError) throw insertColorsError;
       result = data;
     }
 
