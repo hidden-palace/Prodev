@@ -77,7 +77,7 @@ router.get('/assistant-info', async (req, res, next) => {
     // Handle specific OpenAI errors
     if (assistantError.status === 404) {
       return res.status(404).json({
-        error: 'Assistant not found',
+        message: 'Assistant not found',
         details: 'The specified assistant ID does not exist or is not accessible.'
       });
     }
@@ -434,19 +434,19 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       throw new Error(`Unexpected assistant status: ${result.status}`);
     }
     
-  } catch (requestError) {
+  } catch (err) {
     console.error('=== BULLETPROOF ASK REQUEST ERROR ===');
     console.error('Error timestamp:', new Date().toISOString());
     console.error('Employee ID:', employeeId);
     console.error('Assistant ID:', assistantId);
     console.error('Thread ID:', threadId);
     console.error('Run ID:', runId);
-    console.error('Error:', requestError);
+    console.error('Error:', err);
     
     // Enhanced error response with context
     let errorResponse = {
-      error: 'Request processing failed',
-      details: requestError.message,
+      message: 'Request processing failed',
+      details: err.message,
       context: {
         employee_id: employeeId,
         employee_name: employeeId ? config.employees[employeeId]?.name : null,
@@ -458,7 +458,7 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       }
     };
     
-    next(requestError);
+    next(err);
   }
 });
 
@@ -639,11 +639,11 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
     console.error('=== BULLETPROOF WEBHOOK RESPONSE ERROR ===');
     console.error('Error timestamp:', new Date().toISOString());
     console.error('Processed response:', processedResponse);
-    console.error('Error:', webhookError);
+    console.error('Error:', err);
     
     const errorResponse = {
-      error: 'Webhook response processing failed',
-      details: webhookError.message,
+      message: 'Webhook response processing failed',
+      details: err.message,
       context: {
         tool_call_id: processedResponse?.tool_call_id,
         thread_id: processedResponse?.thread_id,
@@ -655,7 +655,7 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
       }
     };
     
-    next(webhookError);
+    next(err);
   }
 });
 
@@ -741,7 +741,7 @@ router.get('/status', async (req, res) => {
   } catch (statusError) {
     console.error('Error in status endpoint:', statusError);
     res.status(500).json({
-      error: 'Failed to get status',
+      message: 'Failed to get status',
       details: statusError.message,
       timestamp: new Date().toISOString()
     });
@@ -755,7 +755,7 @@ router.get('/debug/isolation', (req, res) => {
   try {
     if (!webhookHandler) {
       return res.status(503).json({ 
-        error: 'Webhook handler not initialized',
+        message: 'Webhook handler not initialized',
         details: 'Service is not properly configured',
         timestamp: new Date().toISOString()
       });
@@ -785,7 +785,7 @@ router.get('/debug/isolation', (req, res) => {
   } catch (debugError) {
     console.error('Error in debug isolation endpoint:', debugError);
     res.status(500).json({
-      error: 'Failed to get isolation debug info',
+      message: 'Failed to get isolation debug info',
       details: debugError.message,
       timestamp: new Date().toISOString()
     });
@@ -801,14 +801,14 @@ router.post('/debug/reset-employee', (req, res) => {
     
     if (!employee_id) {
       return res.status(400).json({
-        error: 'Missing employee_id',
+        message: 'Missing employee_id',
         details: 'employee_id is required for reset operation'
       });
     }
     
     if (!webhookHandler) {
       return res.status(503).json({ 
-        error: 'Webhook handler not initialized',
+        message: 'Webhook handler not initialized',
         details: 'Service is not properly configured'
       });
     }
@@ -828,7 +828,7 @@ router.post('/debug/reset-employee', (req, res) => {
   } catch (resetError) {
     console.error('Error in emergency reset:', resetError);
     res.status(500).json({
-      error: 'Failed to reset employee',
+      message: 'Failed to reset employee',
       details: resetError.message,
       timestamp: new Date().toISOString()
     });
