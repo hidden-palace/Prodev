@@ -34,7 +34,7 @@ class StorageService {
       const fileBuffer = file.buffer || file;
       
       // Upload to Supabase Storage
-      const { data, error } = await this.supabaseService.client.storage
+      const { data, error: supabaseError } = await this.supabaseService.client.storage
         .from('logos')
         .upload(uniqueFileName, fileBuffer, {
           cacheControl: '3600',
@@ -42,9 +42,9 @@ class StorageService {
           contentType: fileType
         });
 
-      if (error) {
-        console.error('❌ Storage upload error:', error);
-        throw error;
+      if (supabaseError) {
+        console.error('❌ Storage upload error:', supabaseError);
+        throw supabaseError;
       }
 
       // Get public URL
@@ -93,7 +93,7 @@ class StorageService {
       const fileBuffer = file.buffer || file;
 
       // Upload to Supabase Storage
-      const { data, error } = await this.supabaseService.client.storage
+      const { data, error: supabaseError } = await this.supabaseService.client.storage
         .from('employee-avatars')
         .upload(uniqueFileName, fileBuffer, {
           cacheControl: '3600',
@@ -101,9 +101,9 @@ class StorageService {
           contentType: fileType
         });
 
-      if (error) {
-        console.error('❌ Storage upload error:', error);
-        throw error;
+      if (supabaseError) {
+        console.error('❌ Storage upload error:', supabaseError);
+        throw supabaseError;
       }
 
       // Get public URL
@@ -117,7 +117,7 @@ class StorageService {
       console.log(`🔍 DEBUG: About to upsert employee_id: '${employeeId}' with profile_picture_url: '${urlData.publicUrl}'`);
 
       // Update database with new avatar URL using upsert to bypass RLS
-      const { data: result, error } = await this.supabaseService.client
+      const { data: result, error: supabaseError } = await this.supabaseService.client
         .from('employee_profiles')
         .upsert({ 
           employee_id: employeeId, 
@@ -129,9 +129,9 @@ class StorageService {
         .select()
         .single();
 
-      if (error) {
-        console.error('❌ Database update error:', error);
-        throw error;
+      if (supabaseError) {
+        console.error('❌ Database update error:', supabaseError);
+        throw supabaseError;
       }
 
       return {
@@ -151,13 +151,13 @@ class StorageService {
    */
   async deleteFile(bucket, fileName) {
     try {
-      const { error } = await this.supabaseService.client.storage
+      const { error: supabaseError } = await this.supabaseService.client.storage
         .from(bucket)
         .remove([fileName]);
 
-      if (error) {
-        console.error('❌ Error deleting file:', error);
-        throw error;
+      if (supabaseError) {
+        console.error('❌ Error deleting file:', supabaseError);
+        throw supabaseError;
       }
 
       console.log('✅ File deleted successfully:', fileName);
