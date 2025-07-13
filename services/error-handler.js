@@ -39,18 +39,18 @@ class ErrorHandler {
     // Global error handlers
     window.addEventListener('unhandledrejection', (event) => {
       console.error('Unhandled promise rejection:', event.reason);
-      this.handleError(event.reason, 'unhandled_promise');
+      this.handleCaughtError(event.reason, 'unhandled_promise');
       event.preventDefault();
     });
 
     window.addEventListener('error', (event) => {
       console.error('JavaScript error:', event.error);
-      this.handleError(event.error, 'javascript_error');
+      this.handleCaughtError(event.error, 'javascript_error');
     });
   }
 
-  async handleError(error, context = 'unknown', options = {}) {
-    const errorInfo = this.categorizeError(error, context);
+  async handleCaughtError(caughtError, context = 'unknown', options = {}) {
+    const errorInfo = this.categorizeError(caughtError, context);
     
     // Log error
     this.logError(errorInfo);
@@ -76,9 +76,9 @@ class ErrorHandler {
     }
   }
 
-  categorizeError(error, context) {
+  categorizeError(caughtError, context) {
     const errorInfo = {
-      original: error,
+      original: caughtError,
       context,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
@@ -87,38 +87,38 @@ class ErrorHandler {
     };
 
     // Network errors
-    if (!this.isOnline || error.message?.includes('fetch') || error.message?.includes('network')) {
+    if (!this.isOnline || caughtError.message?.includes('fetch') || caughtError.message?.includes('network')) {
       errorInfo.type = 'network';
       errorInfo.severity = 'medium';
       errorInfo.userMessage = 'Network is unreachable. Please check your internet connection.';
       errorInfo.retryable = true;
     }
     // API errors
-    else if (error.status && error.status >= 400 && error.status < 500) {
+    else if (caughtError.status && caughtError.status >= 400 && caughtError.status < 500) {
       errorInfo.type = 'api';
       errorInfo.severity = 'high';
       errorInfo.userMessage = 'An error occurred while communicating with the server.';
     }
     // Validation errors
-    else if (error.message?.includes('validation') || error.message?.includes('invalid')) {
+    else if (caughtError.message?.includes('validation') || caughtError.message?.includes('invalid')) {
       errorInfo.type = 'validation';
       errorInfo.severity = 'low';
       errorInfo.retryable = false;
     }
     // Authentication errors
-    else if (error.status === 401 || error.message?.includes('unauthorized')) {
+    else if (caughtError.status === 401 || caughtError.message?.includes('unauthorized')) {
       errorInfo.type = 'authentication';
       errorInfo.severity = 'high';
       errorInfo.retryable = false;
     }
     // Permission errors
-    else if (error.status === 403 || error.message?.includes('forbidden')) {
+    else if (caughtError.status === 403 || caughtError.message?.includes('forbidden')) {
       errorInfo.type = 'permission';
       errorInfo.severity = 'medium';
       errorInfo.retryable = false;
     }
     // Rate limit errors
-    else if (error.message?.includes('rate limit') || error.status === 429) {
+    else if (caughtError.message?.includes('rate limit') || caughtError.status === 429) {
       errorInfo.type = 'rate_limit';
       errorInfo.severity = 'medium';
       errorInfo.userMessage = 'Too many requests. Please try again later.';

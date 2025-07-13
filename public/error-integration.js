@@ -45,7 +45,7 @@ function initializeErrorHandling() {
 function setupGlobalErrorBoundaries() {
   // Catch and handle all unhandled errors
   window.addEventListener('error', (event) => {
-    errorHandler.handleError(event.error, 'global_error', {
+    errorHandler.handleCaughtError(event.error, 'global_error', {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno
@@ -54,7 +54,7 @@ function setupGlobalErrorBoundaries() {
 
   // Catch and handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    errorHandler.handleError(event.reason, 'unhandled_promise', {
+    errorHandler.handleCaughtError(event.reason, 'unhandled_promise', {
       promise: event.promise
     });
     event.preventDefault();
@@ -142,9 +142,9 @@ function setupFormSubmissionHandling(form) {
       // Trigger custom success event
       form.dispatchEvent(new CustomEvent('formSuccess', { detail: result }));
       
-    } catch (error) {
+    } catch (caughtError) {
       await errorHandler.handleFormSubmission(data, async () => {
-        throw error;
+        throw caughtError;
       }, { queueable: form.dataset.queueable === 'true' });
     } finally {
       // Restore button state
@@ -168,8 +168,8 @@ function setupAPIInterception() {
       }
       
       return await originalFetch(url, options);
-    } catch (error) {
-      return errorHandler.handleError(error, 'fetch_request', {
+    } catch (caughtError) {
+      return errorHandler.handleCaughtError(caughtError, 'fetch_request', {
         url,
         method: options.method || 'GET'
       });
@@ -314,8 +314,8 @@ window.ErrorUtils = {
   async handleAsync(operation, context = 'async_operation', options = {}) {
     try {
       return await operation();
-    } catch (error) {
-      return errorHandler.handleError(error, context, options);
+    } catch (caughtError) {
+      return errorHandler.handleCaughtError(caughtError, context, options);
     }
   },
   
@@ -327,13 +327,13 @@ window.ErrorUtils = {
       try {
         const result = fn.apply(this, args);
         if (result instanceof Promise) {
-          return result.catch(error => 
-            errorHandler.handleError(error, context, { args })
+          return result.catch(caughtError => 
+            errorHandler.handleCaughtError(caughtError, context, { args })
           );
         }
         return result;
-      } catch (error) {
-        return errorHandler.handleError(error, context, { args });
+      } catch (caughtError) {
+        return errorHandler.handleCaughtError(caughtError, context, { args });
       }
     };
   },

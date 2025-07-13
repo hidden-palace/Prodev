@@ -48,12 +48,12 @@ class APIClient {
       }
 
       return await response.json();
-    } catch (fetchErr) {
-      if (fetchErr.name === 'AbortError') {
+    } catch (caughtError) {
+      if (caughtError.name === 'AbortError') {
         // Handle request timeout
-        return errorHandler.handleError(fetchErr, 'timeout');
+        return errorHandler.handleCaughtError(caughtError, 'timeout');
       }
-      throw fetchErr;
+      throw caughtError;
     }
   }
 
@@ -61,9 +61,9 @@ class APIClient {
     try {
       const responses = await Promise.all(requests.map((req) => this.request(req.method, req.url, req.options)));
       return responses;
-    } catch (error) {
-      const handledError = await errorHandler.handleError(error, 'batch_request');
-      throw handledError;
+    } catch (caughtError) {
+      const handledCaughtError = await errorHandler.handleCaughtError(caughtError, 'batch_request');
+      throw handledCaughtError;
     }
   }
 }
