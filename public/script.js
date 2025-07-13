@@ -11,6 +11,5 @@
 +}));
 +
  document.head.appendChild(Object.assign(document.createElement('script'), {
+// Load client-side modules
    src: '/error-integration.js',
-   type: 'text/javascript'
- }));
