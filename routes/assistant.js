@@ -444,7 +444,7 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
     console.error('Error:', requestError);
     
     // Enhanced error response with context
-    const errorResponse = {
+    let errorResponse = {
       error: 'Request processing failed',
       details: requestError.message,
       context: {
