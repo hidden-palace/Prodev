@@ -641,7 +641,7 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
     console.error('Processed response:', processedResponse);
     console.error('Error:', err);
     
-    const errorResponse = {
+    const webhookErrorResponse = {
       message: 'Webhook response processing failed',
       details: err.message,
       context: {
