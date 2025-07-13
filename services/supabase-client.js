@@ -112,14 +112,14 @@ class SupabaseService {
         };
       });
 
-      const { data, error: supabaseError } = await this.client
+      const { data, error: insertError } = await this.client
         .from('leads')
         .insert(processedLeads)
         .select();
 
-      if (supabaseError) {
-        console.error('❌ Error saving leads to Supabase:', supabaseError);
-        throw supabaseError;
+      if (insertError) {
+        console.error('❌ Error saving leads to Supabase:', insertError);
+        throw insertError;
       }
 
       console.log(`✅ Successfully saved ${data.length} leads to database`);
