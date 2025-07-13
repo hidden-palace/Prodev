@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadEmployeeProfiles();
     loadDashboardData();
     
+    // Set default employee
+    selectEmployee('brenden');
+    
     console.log('✅ Application initialized successfully');
 });
 
@@ -270,10 +273,13 @@ async function loadDashboardData() {
         const [statusResponse, leadsResponse] = await Promise.all([
             fetch('/api/status'),
             fetch('/api/leads/statistics')
-        ]);
+        ]).catch(error => {
+            console.warn('Some API endpoints may not be available:', error);
+            return [null, null];
+        });
         
-        const statusData = await statusResponse.json();
-        const leadsData = await leadsResponse.json();
+        const statusData = statusResponse ? await statusResponse.json() : null;
+        const leadsData = leadsResponse ? await leadsResponse.json() : null;
         
         // Update dashboard UI
         updateDashboardMetrics(statusData, leadsData);
@@ -283,7 +289,7 @@ async function loadDashboardData() {
     } catch (error) {
         console.error('❌ Failed to load dashboard data:', error);
         hideLoading('dashboard-content');
-        showNotification('Failed to load dashboard data', 'error');
+        showNotification('Some dashboard data may be unavailable', 'warning');
     }
 }
 
@@ -414,6 +420,8 @@ function getScoreClass(score) {
  * Select employee for chat
  */
 function selectEmployee(employeeId) {
+    console.log(`🔄 Switching to employee: ${employeeId}`);
+    
     currentEmployee = employeeId;
     
     // Update UI
@@ -433,27 +441,58 @@ function selectEmployee(employeeId) {
     currentThread = null;
     currentRun = null;
     
+    // Show welcome message for selected employee
+    showWelcomeMessage(employeeId);
+    
     console.log(`👤 Selected employee: ${employeeId}`);
 }
 
 /**
+ * Show welcome message for employee
+ */
+function showWelcomeMessage(employeeId) {
+    const welcomeMessages = {
+        'brenden': 'Hi! I\'m AI Brenden, your Lead Research Specialist. I can help you find and qualify potential leads for your business. What kind of leads are you looking for today?',
+        'van': 'Hello! I\'m AI Van, your Digital Marketing Designer. I can help you create landing pages, design marketing materials, and develop digital campaigns. How can I assist you?',
+        'angel': 'Hi there! I\'m AI Angel, your Voice Outreach Manager. I\'m currently being configured for voice calling capabilities. In the meantime, I can help you plan your outreach strategy!'
+    };
+    
+    const message = welcomeMessages[employeeId] || 'Hello! How can I help you today?';
+    setTimeout(() => {
+        addMessageToChat('assistant', message);
+    }, 500);
+}
+/**
  * Update chat header with employee info
  */
 function updateChatHeader(employeeId) {
-    // This would be implemented based on your employee configuration
     const employeeConfig = {
-        brenden: { name: 'AI Brenden', role: 'Lead Research Specialist' },
-        van: { name: 'AI Van', role: 'Digital Marketing Designer' },
-        angel: { name: 'AI Angel', role: 'Voice Outreach Manager' }
+        brenden: { 
+            name: 'AI Brenden', 
+            role: 'Lead Research Specialist',
+            description: 'Specializes in finding and qualifying high-quality leads for your business'
+        },
+        van: { 
+            name: 'AI Van', 
+            role: 'Digital Marketing Designer',
+            description: 'Creates compelling landing pages and marketing materials'
+        },
+        angel: { 
+            name: 'AI Angel', 
+            role: 'Voice Outreach Manager',
+            description: 'Handles voice calling and outreach campaigns (currently in setup)'
+        }
     };
     
     const employee = employeeConfig[employeeId];
     if (employee) {
         const nameElement = document.querySelector('.employee-details h3');
         const roleElement = document.querySelector('.role-tag');
+        const descElement = document.querySelector('.employee-description p');
         
         if (nameElement) nameElement.textContent = employee.name;
         if (roleElement) roleElement.textContent = employee.role;
+        if (descElement) descElement.textContent = employee.description;
     }
 }
 
@@ -479,6 +518,9 @@ async function handleChatSubmit(e) {
         messageInput.value = '';
         updateCharacterCount();
         
+        // Show typing indicator
+        showTypingIndicator();
+        
         // Send to API
         const response = await fetch('/api/ask', {
             method: 'POST',
@@ -494,6 +536,9 @@ async function handleChatSubmit(e) {
         
         const data = await response.json();
         
+        // Hide typing indicator
+        hideTypingIndicator();
+        
         if (response.ok) {
             currentThread = data.thread_id;
             currentRun = data.run_id;
@@ -501,9 +546,9 @@ async function handleChatSubmit(e) {
             if (data.status === 'completed') {
                 addMessageToChat('assistant', data.message);
             } else if (data.status === 'requires_action') {
-                addMessageToChat('assistant', 'Processing your request with external tools...');
+                addMessageToChat('assistant', `${getEmployeeName(currentEmployee)} is processing your request with external tools...`);
                 // Poll for completion
-                pollForCompletion(data.thread_id, data.run_id);
+                pollForCompletion(data.thread_id, data.run_id, currentEmployee);
             }
         } else {
             throw new Error(data.message || 'Request failed');
@@ -511,11 +556,57 @@ async function handleChatSubmit(e) {
         
     } catch (error) {
         console.error('❌ Chat error:', error);
+        hideTypingIndicator();
         addMessageToChat('assistant', 'Sorry, I encountered an error processing your request.');
         showNotification('Failed to send message', 'error');
     } finally {
         isProcessing = false;
         updateSendButton(false);
+    }
+}
+
+/**
+ * Get employee display name
+ */
+function getEmployeeName(employeeId) {
+    const employeeNames = {
+        'brenden': 'AI Brenden',
+        'van': 'AI Van', 
+        'angel': 'AI Angel'
+    };
+    return employeeNames[employeeId] || 'AI Assistant';
+}
+
+/**
+ * Show typing indicator
+ */
+function showTypingIndicator() {
+    const messagesContainer = document.querySelector('.chat-messages');
+    if (!messagesContainer) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message assistant typing-message';
+    typingDiv.innerHTML = `
+        <div class="message-content">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+/**
+ * Hide typing indicator
+ */
+function hideTypingIndicator() {
+    const typingMessage = document.querySelector('.typing-message');
+    if (typingMessage) {
+        typingMessage.remove();
     }
 }
 
@@ -558,19 +649,21 @@ function clearChatMessages() {
 /**
  * Poll for completion of async operations
  */
-async function pollForCompletion(threadId, runId) {
+async function pollForCompletion(threadId, runId, employeeId) {
     const maxAttempts = 30;
     let attempts = 0;
     
     const poll = async () => {
         try {
-            const response = await fetch(`/api/run-status?thread_id=${threadId}&run_id=${runId}&employee_id=${currentEmployee}`);
+            const response = await fetch(`/api/run-status?thread_id=${threadId}&run_id=${runId}&employee_id=${employeeId}`);
             const data = await response.json();
             
             if (data.status === 'completed') {
+                hideTypingIndicator();
                 addMessageToChat('assistant', data.message);
                 return;
             } else if (data.status === 'failed') {
+                hideTypingIndicator();
                 addMessageToChat('assistant', 'Sorry, the request failed to complete.');
                 return;
             }
@@ -579,10 +672,12 @@ async function pollForCompletion(threadId, runId) {
             if (attempts < maxAttempts) {
                 setTimeout(poll, 2000);
             } else {
+                hideTypingIndicator();
                 addMessageToChat('assistant', 'Request timed out. Please try again.');
             }
         } catch (error) {
             console.error('❌ Polling error:', error);
+            hideTypingIndicator();
             addMessageToChat('assistant', 'Error checking request status.');
         }
     };
