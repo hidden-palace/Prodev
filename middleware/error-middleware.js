@@ -21,7 +21,7 @@ function enhancedErrorHandler(err, req, res, next) {
 
   const statusCode = err.status || 500;
   const responseBody = {
-    error: err.message || 'Internal server error',
+    message: err.message || 'Internal server error',
     timestamp: new Date().toISOString()
   };
 
