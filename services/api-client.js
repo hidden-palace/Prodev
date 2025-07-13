@@ -14,13 +14,10 @@ class APIClient {
     };
   }
 
-  /**
-   * Make HTTP request with comprehensive error handling
-   */
-  async request(endpoint, options = {}) {
+  async request(method, endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const config = {
-      timeout: options.timeout || this.defaultTimeout,
+      method,
       headers: {
         ...this.defaultHeaders,
         ...options.headers
@@ -37,147 +34,38 @@ class APIClient {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), config.timeout);
-
-      const response = await fetch(url, {
-        ...config,
-        signal: controller.signal
-      });
-
+      const response = await fetch(url, { ...config, signal: controller.signal });
       clearTimeout(timeoutId);
 
       // Handle non-200 responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.message || `HTTP ${response.status}`);
-        error.status = response.status;
-        error.response = response;
-        error.data = errorData;
-        throw error;
+        const httpError = new Error(errorData.message || `HTTP ${response.status}`);
+        httpError.status = response.status;
+        httpError.response = response;
+        httpError.data = errorData;
+        throw httpError;
       }
 
-      const data = await response.json();
-      return data;
-
-    } catch (fetchError) {
-      // Handle different types of fetch errors
-      if (fetchError.name === 'AbortError') {
-        const timeoutError = new Error('Request timeout');
-        timeoutError.type = 'timeout';
-        throw timeoutError;
+      return await response.json();
+    } catch (fetchErr) {
+      if (fetchErr.name === 'AbortError') {
+        // Handle request timeout
+        return errorHandler.handleError(fetchErr, 'timeout');
       }
-
-      if (!navigator.onLine) {
-        const networkError = new Error('Network unavailable');
-        networkError.type = 'network';
-        throw networkError;
-      }
-
-      throw fetchError;
+      throw fetchErr;
     }
   }
 
-  /**
-   * GET request with error handling
-   */
-  async get(endpoint, options = {}) {
-    return errorHandler.handleAPICall(
-      () => this.request(endpoint, { ...options, method: 'GET' }),
-      { queueable: false, retry: true }
-    );
-  }
-
-  /**
-   * POST request with error handling
-   */
-  async post(endpoint, data, options = {}) {
-    return errorHandler.handleAPICall(
-      () => this.request(endpoint, {
-        ...options,
-        method: 'POST',
-        body: JSON.stringify(data)
-      }),
-      { queueable: options.queueable, retry: options.retry }
-    );
-  }
-
-  /**
-   * PUT request with error handling
-   */
-  async put(endpoint, data, options = {}) {
-    return errorHandler.handleAPICall(
-      () => this.request(endpoint, {
-        ...options,
-        method: 'PUT',
-        body: JSON.stringify(data)
-      }),
-      { queueable: options.queueable, retry: options.retry }
-    );
-  }
-
-  /**
-   * DELETE request with error handling
-   */
-  async delete(endpoint, options = {}) {
-    return errorHandler.handleAPICall(
-      () => this.request(endpoint, { ...options, method: 'DELETE' }),
-      { queueable: false, retry: true }
-    );
-  }
-
-  /**
-   * Upload file with progress and error handling
-   */
-  async uploadFile(endpoint, file, options = {}) {
-    const formData = new FormData();
-    formData.append(options.fieldName || 'file', file);
-
-    // Add additional fields if provided
-    if (options.additionalFields) {
-      Object.entries(options.additionalFields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+  async batchRequest(requests) {
+    try {
+      const responses = await Promise.all(requests.map((req) => this.request(req.method, req.url, req.options)));
+      return responses;
+    } catch (error) {
+      const handledError = await errorHandler.handleError(error, 'batch_request');
+      throw handledError;
     }
-
-    return errorHandler.handleAPICall(
-      () => this.request(endpoint, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          // Don't set Content-Type for FormData, let browser set it
-          ...options.headers
-        }
-      }),
-      { queueable: false, retry: false }
-    );
-  }
-
-  /**
-   * Batch requests with error handling
-   */
-  async batch(requests) {
-    const results = [];
-    const errors = [];
-
-    for (const request of requests) {
-      try {
-        const result = await this.request(request.endpoint, request.options);
-        results.push({ success: true, data: result, request });
-      } catch (error) {
-        const handledError = await errorHandler.handleError(error, 'batch_request');
-        errors.push({ success: false, error: handledError, request });
-        results.push({ success: false, error: handledError, request });
-      }
-    }
-
-    return {
-      results,
-      successful: results.filter(r => r.success),
-      failed: results.filter(r => !r.success),
-      hasErrors: errors.length > 0
-    };
   }
 }
 
-// Export singleton instance
-const apiClient = new APIClient();
-export default apiClient;
+export default APIClient;
