@@ -64,8 +64,8 @@ router.get('/errors/stats', async (req, res, next) => {
 router.get('/errors/recent', async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
-    const errors = await getRecentErrors(limit);
-    res.json(errors);
+    const recentErrorsList = await getRecentErrors(limit);
+    res.json(recentErrorsList);
   } catch (recentError) {
     console.error('Failed to get recent errors:', recentError);
     next(recentError);
@@ -223,7 +223,7 @@ async function getRecentErrors(limit = 50) {
       .sort()
       .slice(-limit);
 
-    const errors = [];
+    const recentErrorsList = [];
 
     for (const file of errorFiles) {
       try {
@@ -235,14 +235,14 @@ async function getRecentErrors(limit = 50) {
         delete errorData.ip;
         delete errorData.userAgent;
         
-        errors.push(errorData);
+        recentErrorsList.push(errorData);
 
       } catch (parseError) {
         console.error('Failed to parse error file:', file, parseError);
       }
     }
 
-    return errors.reverse(); // Most recent first
+    return recentErrorsList.reverse(); // Most recent first
 
   } catch (recentError) {
     console.error('Failed to get recent errors:', recentError);
