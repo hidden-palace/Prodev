@@ -120,8 +120,8 @@ class FormValidator {
   /**
    * Display field errors
    */
-  showFieldErrors(field, errors) {
-    errors.forEach(errObj => {
+  showFieldErrors(field, fieldErrors) {
+    fieldErrors.forEach(errObj => {
       const errorElement = document.createElement('div');
       errorElement.className = 'field-error';
       errorElement.textContent = errObj.message;
