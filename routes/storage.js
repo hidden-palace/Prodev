@@ -77,7 +77,7 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
 
     // Update database with new logo URL using upsert
-    const { data: result, error: supabaseError } = await supabaseService.client
+    const { data: result, error: dbUpdateError } = await supabaseService.client
       .from('company_branding')
       .upsert({ 
         id: '00000000-0000-0000-0000-000000000001', // Use a fixed UUID for single row
@@ -89,9 +89,9 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       .select()
       .single();
 
-    if (supabaseError) {
-      console.error('❌ Database update error:', supabaseError);
-      throw supabaseError;
+    if (dbUpdateError) {
+      console.error('❌ Database update error:', dbUpdateError);
+      throw dbUpdateError;
     }
 
     console.log('✅ Logo upload completed successfully');
@@ -183,7 +183,7 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
     const uploadResult = await storageService.uploadEmployeeAvatar(req.file, employee_id);
     
     // Update database with new avatar URL using upsert to bypass RLS
-    const { data: result, error: supabaseError } = await supabaseService.client
+    const { data: result, error: avatarUpdateError } = await supabaseService.client
       .from('employee_profiles')
       .upsert({ 
         employee_id: employee_id, 
@@ -195,9 +195,9 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       .select()
       .single();
 
-    if (supabaseError) {
-      console.error('❌ Database update error:', supabaseError);
-      throw supabaseError;
+    if (avatarUpdateError) {
+      console.error('❌ Database update error:', avatarUpdateError);
+      throw avatarUpdateError;
     }
 
     console.log('✅ Avatar upload completed successfully for employee:', employee_id);
@@ -252,12 +252,12 @@ router.delete('/logo', async (req, res, next) => {
 
     if (existing && existing.logo_url) {
       // Update database to remove logo URL
-      const { error: supabaseError } = await supabaseService.client
+      const { error: logoRemoveError } = await supabaseService.client
         .from('company_branding')
         .update({ logo_url: null })
         .eq('id', existing.id);
 
-      if (supabaseError) throw supabaseError;
+      if (logoRemoveError) throw logoRemoveError;
     }
 
     res.json({
