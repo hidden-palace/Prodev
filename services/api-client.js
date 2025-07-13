@@ -3,7 +3,7 @@
  * Provides robust API communication with automatic error handling
  */
 
-import errorHandler from './error-handler.js';
+import appErrorHandler from './error-handler.js';
 
 class APIClient {
   constructor(baseURL = '/api') {
@@ -51,7 +51,7 @@ class APIClient {
     } catch (caughtError) {
       if (caughtError.name === 'AbortError') {
         // Handle request timeout
-        return errorHandler.handleCaughtError(caughtError, 'timeout');
+        return appErrorHandler.handleCaughtError(caughtError, 'timeout');
       }
       throw caughtError;
     }
@@ -62,7 +62,7 @@ class APIClient {
       const responses = await Promise.all(requests.map((req) => this.request(req.method, req.url, req.options)));
       return responses;
     } catch (caughtError) {
-      const handledCaughtError = await errorHandler.handleCaughtError(caughtError, 'batch_request');
+      const handledCaughtError = await appErrorHandler.handleCaughtError(caughtError, 'batch_request');
       throw handledCaughtError;
     }
   }

@@ -3,6 +3,8 @@
  * Handles offline functionality, data synchronization, and cache management
  */
 
+import appErrorHandler from './error-handler.js';
+
 class OfflineManager {
   constructor() {
     this.isOnline = navigator.onLine;
@@ -420,8 +422,8 @@ class OfflineManager {
     console.log(`[${type.toUpperCase()}] ${message}`);
     
     // You can integrate this with your existing notification system
-    if (window.errorHandler && window.errorHandler.showNotification) {
-      window.errorHandler.showNotification(message, type);
+    if (window.appErrorHandler && window.appErrorHandler.showNotification) {
+      window.appErrorHandler.showNotification(message, type);
     }
   }
 

@@ -4,7 +4,7 @@
  */
 
 // Import error handling services
-import errorHandler from '../services/error-handler.js';
+import appErrorHandler from '../services/error-handler.js';
 import apiClient from '../services/api-client.js';
 import formValidator from '../services/form-validator.js';
 import offlineManager from '../services/offline-manager.js';
@@ -25,7 +25,7 @@ function initializeErrorHandling() {
   console.log('🛡️ Initializing comprehensive error handling...');
 
   // Make error handler globally available
-  window.errorHandler = errorHandler;
+  window.appErrorHandler = appErrorHandler;
   window.apiClient = apiClient;
   window.formValidator = formValidator;
   window.offlineManager = offlineManager;
@@ -45,7 +45,7 @@ function initializeErrorHandling() {
 function setupGlobalErrorBoundaries() {
   // Catch and handle all unhandled errors
   window.addEventListener('error', (event) => {
-    errorHandler.handleCaughtError(event.error, 'global_error', {
+    appErrorHandler.handleCaughtError(event.error, 'global_error', {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno
@@ -54,7 +54,7 @@ function setupGlobalErrorBoundaries() {
 
   // Catch and handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    errorHandler.handleCaughtError(event.reason, 'unhandled_promise', {
+    appErrorHandler.handleCaughtError(event.reason, 'unhandled_promise', {
       promise: event.promise
     });
     event.preventDefault();
@@ -143,7 +143,7 @@ function setupFormSubmissionHandling(form) {
       form.dispatchEvent(new CustomEvent('formSuccess', { detail: result }));
       
     } catch (caughtError) {
-      await errorHandler.handleFormSubmission(data, async () => {
+      await appErrorHandler.handleFormSubmission(data, async () => {
         throw caughtError;
       }, { queueable: form.dataset.queueable === 'true' });
     } finally {
@@ -169,7 +169,7 @@ function setupAPIInterception() {
       
       return await originalFetch(url, options);
     } catch (caughtError) {
-      return errorHandler.handleCaughtError(caughtError, 'fetch_request', {
+      return appErrorHandler.handleCaughtError(caughtError, 'fetch_request', {
         url,
         method: options.method || 'GET'
       });
@@ -315,7 +315,7 @@ window.ErrorUtils = {
     try {
       return await operation();
     } catch (caughtError) {
-      return errorHandler.handleCaughtError(caughtError, context, options);
+      return appErrorHandler.handleCaughtError(caughtError, context, options);
     }
   },
   
@@ -328,12 +328,12 @@ window.ErrorUtils = {
         const result = fn.apply(this, args);
         if (result instanceof Promise) {
           return result.catch(caughtError => 
-            errorHandler.handleCaughtError(caughtError, context, { args })
+            appErrorHandler.handleCaughtError(caughtError, context, { args })
           );
         }
         return result;
       } catch (caughtError) {
-        return errorHandler.handleCaughtError(caughtError, context, { args });
+        return appErrorHandler.handleCaughtError(caughtError, context, { args });
       }
     };
   },
@@ -373,7 +373,7 @@ window.ErrorUtils = {
 
 // Export for module usage
 export {
-  errorHandler,
+  appErrorHandler,
   apiClient,
   formValidator,
   offlineManager

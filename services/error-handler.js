@@ -3,7 +3,7 @@
  * Provides centralized error handling, logging, and user notifications
  */
 
-class ErrorHandler {
+class AppErrorHandler {
   constructor() {
     this.errorQueue = [];
     this.isOnline = navigator.onLine;
@@ -272,5 +272,5 @@ class ErrorHandler {
   }
 }
 
-const errorHandler = new ErrorHandler();
-export default errorHandler;
+const appErrorHandler = new AppErrorHandler();
+export default appErrorHandler;
