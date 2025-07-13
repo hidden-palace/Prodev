@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orchid Republic - AI Employee Management</title>
+    <title>AI Command Center - ProDev</title>
     <link rel="stylesheet" href="/styles.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <meta name="description" content="AI Employee Management System for Orchid Republic">
+    <meta name="description" content="AI Command Center - Powered by ProDev">
 </head>
 <body>
     <!-- Mobile Menu Toggle -->
@@ -23,12 +23,12 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="company-logo">
-                    <img src="/favicon.ico" alt="Orchid Republic" class="sidebar-logo" id="sidebar-logo">
+                    <div class="logo-icon">PC</div>
                     <div class="company-info">
-                        <h3>Orchid Republic</h3>
-                        <span class="tagline">AI-Powered Business Growth</span>
-                        <p>Intelligent Lead Generation</p>
-                        <small>Powered by Advanced AI Agents</small>
+                        <h3>AI Command Center</h3>
+                        <span class="tagline">Powered By ProDev</span>
+                        <p>AI-Powered Business Operations</p>
+                        <small>Command Center v2.0</small>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,30 @@
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
-                    Leads
+                    Lead Generation
+                </div>
+                
+                <div class="nav-item" data-section="calls">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    Voice Calls
+                </div>
+                
+                <div class="nav-item" data-section="campaigns">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"></polygon>
+                    </svg>
+                    Campaigns
+                </div>
+                
+                <div class="nav-item" data-section="landing-pages">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    Landing Pages
                 </div>
                 
                 <div class="nav-item" data-section="branding">
@@ -74,7 +97,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                     </svg>
-                    Status
+                    System Status
                 </div>
             </nav>
         </aside>
@@ -86,7 +109,7 @@
                 <div class="page-header">
                     <div>
                         <h1>Dashboard</h1>
-                        <p>Overview of your AI employee performance and lead generation metrics</p>
+                        <p>Monitor your AI employees and business operations in real-time</p>
                     </div>
                     <div class="header-actions">
                         <button class="btn secondary" id="refresh-dashboard">
@@ -95,41 +118,12 @@
                                 <polyline points="1 20 1 14 7 14"></polyline>
                                 <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
                             </svg>
-                            Refresh
+                            Configure
                         </button>
                     </div>
                 </div>
                 
                 <div class="dashboard-grid" id="dashboard-content">
-                    <!-- Key Metrics -->
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <h3>Lead Generation</h3>
-                            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">Total Leads</span>
-                            <span class="metric-value" id="total-leads">0</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">Validated</span>
-                            <span class="metric-value" id="validated-leads">0</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">Contacted</span>
-                            <span class="metric-value" id="contacted-leads">0</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">Converted</span>
-                            <span class="metric-value" id="converted-leads">0</span>
-                        </div>
-                    </div>
-
                     <!-- AI Employee Status -->
                     <div class="dashboard-card">
                         <div class="card-header">
@@ -140,30 +134,55 @@
                             </svg>
                         </div>
                         <div class="employee-status-list">
-                            <!-- Employee status items will be populated by JavaScript -->
+                            <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <div>
+                                    <div class="employee-name">AI Brenden - Lead Research</div>
+                                </div>
+                            </div>
+                            <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <div>
+                                    <div class="employee-name">AI Van - Content Design</div>
+                                </div>
+                            </div>
+                            <div class="employee-status-item">
+                                <div class="status-dot offline"></div>
+                                <div>
+                                    <div class="employee-name">AI Angel - Voice Calls</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- System Status -->
+                    <!-- Today's Metrics -->
                     <div class="dashboard-card">
                         <div class="card-header">
-                            <h3>System Status</h3>
+                            <h3>Today's Metrics</h3>
                             <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
                             </svg>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">Pending Operations</span>
-                            <span class="metric-value" id="pending-operations">0</span>
+                            <span class="metric-label">LEADS GENERATED</span>
+                            <span class="metric-value" id="leads-generated">0</span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">System Health</span>
-                            <span class="metric-value">Healthy</span>
+                            <span class="metric-label">LEADS VALIDATED</span>
+                            <span class="metric-value" id="leads-validated">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">LEADS CONTACTED</span>
+                            <span class="metric-value" id="leads-contacted">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">LEADS CONVERTED</span>
+                            <span class="metric-value" id="leads-converted">0</span>
                         </div>
                     </div>
 
                     <!-- Recent Activity -->
-                    <div class="dashboard-card wide">
+                    <div class="dashboard-card">
                         <div class="card-header">
                             <h3>Recent Activity</h3>
                             <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -174,15 +193,15 @@
                         <div class="activity-list">
                             <div class="activity-item">
                                 <div class="activity-time">2 min ago</div>
-                                <div class="activity-description">AI Brenden completed lead research for 15 new prospects</div>
+                                <div class="activity-description">AI Van created a professional services landing page for ProDev Consulting</div>
                             </div>
                             <div class="activity-item">
-                                <div class="activity-time">5 min ago</div>
-                                <div class="activity-description">AI Van generated marketing materials for 3 campaigns</div>
+                                <div class="activity-time">15 min ago</div>
+                                <div class="activity-description">AI Brenden found 23 new consulting leads in the technology sector</div>
                             </div>
                             <div class="activity-item">
-                                <div class="activity-time">12 min ago</div>
-                                <div class="activity-description">System processed 25 webhook responses successfully</div>
+                                <div class="activity-time">1 hour ago</div>
+                                <div class="activity-description">System health check completed - all services operational</div>
                             </div>
                         </div>
                     </div>
@@ -197,6 +216,13 @@
                         <div class="panel-header">
                             <h2>AI Team</h2>
                             <p>Select an AI employee to interact with</p>
+                            <button class="add-employee-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Employee
+                            </button>
                         </div>
                         
                         <div class="team-section">
@@ -328,7 +354,7 @@
                                             <circle cx="11" cy="11" r="8"></circle>
                                             <path d="M21 21l-4.35-4.35"></path>
                                         </svg>
-                                        Find leads in the florist industry
+                                        Find leads in the consulting industry
                                     </div>
                                     <div class="quick-action">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -344,7 +370,7 @@
                                             <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                         </svg>
-                                        Generate contact list for wedding vendors
+                                        Generate contact list for technology companies
                                     </div>
                                 </div>
 
@@ -392,21 +418,21 @@
                                         <div class="task-item completed">
                                             <div class="task-status"></div>
                                             <div>
-                                                <div class="task-title">Research florist businesses in California</div>
+                                                <div class="task-title">Research consulting businesses in California</div>
                                                 <div class="task-meta">Completed 2 hours ago • 45 leads found</div>
                                             </div>
                                         </div>
                                         <div class="task-item in-progress">
                                             <div class="task-status"></div>
                                             <div>
-                                                <div class="task-title">Validate contact information for wedding vendors</div>
+                                                <div class="task-title">Validate contact information for tech companies</div>
                                                 <div class="task-meta">In progress • 12/25 contacts validated</div>
                                             </div>
                                         </div>
                                         <div class="task-item pending">
                                             <div class="task-status"></div>
                                             <div>
-                                                <div class="task-title">Generate leads for event planning industry</div>
+                                                <div class="task-title">Generate leads for software development industry</div>
                                                 <div class="task-meta">Queued • Estimated completion: 30 minutes</div>
                                             </div>
                                         </div>
@@ -443,11 +469,11 @@
                 </div>
             </section>
 
-            <!-- Leads Section -->
+            <!-- Lead Generation Section -->
             <section id="leads" class="content-section">
                 <div class="page-header">
                     <div>
-                        <h1>Lead Management</h1>
+                        <h1>Lead Generation</h1>
                         <p>Manage and track your generated leads</p>
                     </div>
                     <div class="header-actions">
@@ -471,21 +497,13 @@
 
                 <div class="leads-filters">
                     <div class="filter-group">
-                        <label>Source</label>
-                        <select class="filter-select">
-                            <option>All Sources</option>
-                            <option>Google Maps</option>
-                            <option>Yellow Pages</option>
-                            <option>LinkedIn</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
                         <label>Industry</label>
                         <select class="filter-select">
                             <option>All Industries</option>
-                            <option>Florist</option>
-                            <option>Wedding</option>
-                            <option>Event Planning</option>
+                            <option>Technology</option>
+                            <option>Consulting</option>
+                            <option>Software Development</option>
+                            <option>Marketing</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -540,11 +558,219 @@
                 </div>
             </section>
 
+            <!-- Voice Calls Section -->
+            <section id="calls" class="content-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Voice Calls</h1>
+                        <p>AI Angel's voice calling capabilities - Currently under setup</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            Start Campaign
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calls-dashboard">
+                    <div class="call-stats">
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Calls Made</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">Connect Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Appointments Set</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0m</div>
+                            <div class="stat-label">Total Talk Time</div>
+                        </div>
+                    </div>
+
+                    <div class="call-campaigns">
+                        <h3>Voice Call Campaigns</h3>
+                        <div class="campaign-list">
+                            <div class="campaign-item">
+                                <div class="campaign-info">
+                                    <h4>AI Angel Setup Required</h4>
+                                    <p>Voice calling capabilities are currently being configured. Once AI Angel is fully operational, you'll be able to start voice outreach campaigns.</p>
+                                </div>
+                                <div class="campaign-stats">
+                                    <span>Status: Pending Configuration</span>
+                                </div>
+                                <div class="campaign-actions">
+                                    <button class="btn secondary" disabled>Configure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Campaigns Section -->
+            <section id="campaigns" class="content-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Campaigns</h1>
+                        <p>Manage your marketing campaigns and track performance</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Create Campaign
+                        </button>
+                    </div>
+                </div>
+
+                <div class="campaigns-grid">
+                    <!-- Active Campaigns -->
+                    <div class="campaign-card">
+                        <div class="campaign-header">
+                            <h3>ProDev Consulting Outreach</h3>
+                            <span class="campaign-status active">Active</span>
+                        </div>
+                        <div class="campaign-content">
+                            <p>Lead generation campaign targeting technology consulting prospects in major metropolitan areas.</p>
+                            <div class="campaign-metrics">
+                                <div class="metric">
+                                    <span class="metric-value">1,247</span>
+                                    <span class="metric-label">Impressions</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">156</span>
+                                    <span class="metric-label">Clicks</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">23</span>
+                                    <span class="metric-label">Conversions</span>
+                                </div>
+                            </div>
+                            <div class="campaign-actions">
+                                <button class="btn secondary">Edit</button>
+                                <button class="btn primary">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Draft Campaigns -->
+                    <div class="campaign-card">
+                        <div class="campaign-header">
+                            <h3>Software Development Leads</h3>
+                            <span class="campaign-status draft">Draft</span>
+                        </div>
+                        <div class="campaign-content">
+                            <p>Targeting software development companies for ProDev's development services.</p>
+                            <div class="campaign-metrics">
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Impressions</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Clicks</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Conversions</span>
+                                </div>
+                            </div>
+                            <div class="campaign-actions">
+                                <button class="btn secondary">Edit</button>
+                                <button class="btn primary">Launch</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Landing Pages Section -->
+            <section id="landing-pages" class="content-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Landing Pages</h1>
+                        <p>Design and deploy landing pages for your campaigns</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Create Page
+                        </button>
+                    </div>
+                </div>
+
+                <div class="landing-pages-grid">
+                    <!-- Create New Page Card -->
+                    <div class="page-card create-new">
+                        <div class="create-content">
+                            <svg class="create-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <h3>Create New Landing Page</h3>
+                            <p>Start with a template or build from scratch</p>
+                        </div>
+                    </div>
+
+                    <!-- Existing Landing Pages -->
+                    <div class="page-card">
+                        <div class="page-preview">
+                            <img src="/landing pages.png" alt="ProDev Consulting Services">
+                        </div>
+                        <div class="page-info">
+                            <h3>ProDev Consulting Services</h3>
+                            <p>Professional consulting services landing page with lead capture form.</p>
+                            <div class="page-stats">
+                                <span>1,247 views</span>
+                                <span>156 conversions</span>
+                                <span>12.5% conversion rate</span>
+                            </div>
+                            <div class="page-actions">
+                                <button class="btn secondary">Edit</button>
+                                <button class="btn primary">View Live</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="page-card">
+                        <div class="page-preview">
+                            <img src="/branding.png" alt="Technology Solutions">
+                        </div>
+                        <div class="page-info">
+                            <h3>Technology Solutions</h3>
+                            <p>Showcase of ProDev's technology consulting and development capabilities.</p>
+                            <div class="page-stats">
+                                <span>892 views</span>
+                                <span>67 conversions</span>
+                                <span>7.5% conversion rate</span>
+                            </div>
+                            <div class="page-actions">
+                                <button class="btn secondary">Edit</button>
+                                <button class="btn primary">View Live</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Branding Section -->
             <section id="branding" class="content-section">
                 <div class="page-header">
                     <div>
-                        <h1>Brand Management</h1>
+                        <h1>Branding</h1>
                         <p>Customize your company branding and employee profiles</p>
                     </div>
                 </div>
@@ -554,7 +780,9 @@
                     <div class="brand-section">
                         <h3>Company Logo</h3>
                         <div class="current-logo-display">
-                            <img id="current-logo" class="logo-preview" src="/favicon.ico" alt="Current logo">
+                            <div class="logo-preview">
+                                <div class="logo-icon">PC</div>
+                            </div>
                         </div>
                         <div class="asset-upload" id="logo-upload-area">
                             <div class="upload-area">
@@ -578,21 +806,21 @@
                         <h3>Brand Colors</h3>
                         <div class="color-palette">
                             <div class="color-group">
-                                <label>Primary Color</label>
+                                <label>Primary Color (Deep Blue)</label>
                                 <div class="color-input-group">
-                                    <input type="color" value="#ec4899" data-color="primary">
-                                    <input type="text" value="#ec4899" data-color="primary">
+                                    <input type="color" value="#3b82f6" data-color="primary">
+                                    <input type="text" value="#3b82f6" data-color="primary">
                                 </div>
                             </div>
                             <div class="color-group">
-                                <label>Secondary Color</label>
+                                <label>Secondary Color (Light Gray)</label>
                                 <div class="color-input-group">
                                     <input type="color" value="#64748b" data-color="secondary">
                                     <input type="text" value="#64748b" data-color="secondary">
                                 </div>
                             </div>
                             <div class="color-group">
-                                <label>Accent Color</label>
+                                <label>Accent Color (Orange)</label>
                                 <div class="color-input-group">
                                     <input type="color" value="#f97316" data-color="accent">
                                     <input type="text" value="#f97316" data-color="accent">
@@ -669,7 +897,7 @@
                 </div>
             </section>
 
-            <!-- Status Section -->
+            <!-- System Status Section -->
             <section id="status" class="content-section">
                 <div class="page-header">
                     <div>
