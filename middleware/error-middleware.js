@@ -3,8 +3,6 @@
  */
 
 const config = require('../config');
-// If you're using categorizeError, make sure it's imported correctly like below:
-// const { categorizeError } = require('../utils/categorize-error'); // Uncomment if used
 
 /**
  * Global error handler: logs error and sends JSON response
