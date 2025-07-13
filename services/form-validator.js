@@ -40,7 +40,7 @@ class FormValidator {
    * Validate a single field's value against its rules
    */
   validateField(fieldName, value, rules) {
-    const errors = [];
+    const validationIssues = [];
 
     for (const rule of rules) {
       let validator, params, message;
@@ -60,26 +60,26 @@ class FormValidator {
         continue;
       }
 
-      const validationError = validatorFunction(value, ...params);
-      if (validationError) {
-        errors.push({
+      const validationIssue = validatorFunction(value, ...params);
+      if (validationIssue) {
+        validationIssues.push({
           field: fieldName,
           rule: validator,
-          message: message || validationError
+          message: message || validationIssue
         });
         break; // Stop at first error for this field
       }
     }
 
-    return errors;
+    return validationIssues;
   }
 
   /**
    * Clear previous errors on a field
    */
   clearFieldErrors(field) {
-    const errorElements = field.parentElement.querySelectorAll('.field-error');
-    errorElements.forEach(elem => elem.remove());
+    const issueElements = field.parentElement.querySelectorAll('.field-error');
+    issueElements.forEach(elem => elem.remove());
   }
 
   /**
@@ -97,14 +97,14 @@ class FormValidator {
 
       const validateFieldRealTime = () => {
         const value = field.value;
-        const fieldErrors = this.validateField(fieldName, value, rules[fieldName]);
+        const fieldIssues = this.validateField(fieldName, value, rules[fieldName]);
 
         // Clear previous errors
         this.clearFieldErrors(field);
 
         // Show new errors
-        if (fieldErrors.length > 0) {
-          this.showFieldErrors(field, fieldErrors);
+        if (fieldIssues.length > 0) {
+          this.showFieldErrors(field, fieldIssues);
         }
       };
 
@@ -120,12 +120,12 @@ class FormValidator {
   /**
    * Display field errors
    */
-  showFieldErrors(field, fieldErrors) {
-    fieldErrors.forEach(errObj => {
-      const errorElement = document.createElement('div');
-      errorElement.className = 'field-error';
-      errorElement.textContent = errObj.message;
-      field.parentElement.appendChild(errorElement);
+  showFieldErrors(field, fieldIssues) {
+    fieldIssues.forEach(issueObj => {
+      const issueElement = document.createElement('div');
+      issueElement.className = 'field-error';
+      issueElement.textContent = issueObj.message;
+      field.parentElement.appendChild(issueElement);
     });
   }
 }

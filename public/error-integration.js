@@ -4,7 +4,7 @@
  */
 
 // Import error handling services
-import appErrorHandler from '../services/error-handler.js';
+import applicationErrorHandler from '../services/error-handler.js';
 import apiClient from '../services/api-client.js';
 import formValidator from '../services/form-validator.js';
 import offlineManager from '../services/offline-manager.js';
@@ -25,7 +25,7 @@ function initializeErrorHandling() {
   console.log('🛡️ Initializing comprehensive error handling...');
 
   // Make error handler globally available
-  window.appErrorHandler = appErrorHandler;
+  window.applicationErrorHandler = applicationErrorHandler;
   window.apiClient = apiClient;
   window.formValidator = formValidator;
   window.offlineManager = offlineManager;
@@ -45,7 +45,7 @@ function initializeErrorHandling() {
 function setupGlobalErrorBoundaries() {
   // Catch and handle all unhandled errors
   window.addEventListener('error', (event) => {
-    appErrorHandler.handleCaughtError(event.error, 'global_error', {
+    applicationErrorHandler.handleCaughtError(event.error, 'global_exception', {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno
@@ -54,7 +54,7 @@ function setupGlobalErrorBoundaries() {
 
   // Catch and handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    appErrorHandler.handleCaughtError(event.reason, 'unhandled_promise', {
+    applicationErrorHandler.handleCaughtError(event.reason, 'unhandled_promise', {
       promise: event.promise
     });
     event.preventDefault();
@@ -132,7 +132,7 @@ function setupFormSubmissionHandling(form) {
       });
       
       // Handle success
-      errorHandler.showNotification('Form submitted successfully!', 'success');
+      applicationErrorHandler.showNotification('Form submitted successfully!', 'success');
       
       // Reset form if specified
       if (form.dataset.resetOnSuccess !== 'false') {
@@ -142,9 +142,9 @@ function setupFormSubmissionHandling(form) {
       // Trigger custom success event
       form.dispatchEvent(new CustomEvent('formSuccess', { detail: result }));
       
-    } catch (caughtError) {
-      await appErrorHandler.handleFormSubmission(data, async () => {
-        throw caughtError;
+    } catch (caughtException) {
+      await applicationErrorHandler.handleFormSubmission(data, async () => {
+        throw caughtException;
       }, { queueable: form.dataset.queueable === 'true' });
     } finally {
       // Restore button state
@@ -168,8 +168,8 @@ function setupAPIInterception() {
       }
       
       return await originalFetch(url, options);
-    } catch (caughtError) {
-      return appErrorHandler.handleCaughtError(caughtError, 'fetch_request', {
+    } catch (caughtException) {
+      return applicationErrorHandler.handleCaughtError(caughtException, 'fetch_request', {
         url,
         method: options.method || 'GET'
       });
@@ -314,8 +314,8 @@ window.ErrorUtils = {
   async handleAsync(operation, context = 'async_operation', options = {}) {
     try {
       return await operation();
-    } catch (caughtError) {
-      return appErrorHandler.handleCaughtError(caughtError, context, options);
+    } catch (caughtException) {
+      return applicationErrorHandler.handleCaughtError(caughtException, context, options);
     }
   },
   
@@ -327,13 +327,13 @@ window.ErrorUtils = {
       try {
         const result = fn.apply(this, args);
         if (result instanceof Promise) {
-          return result.catch(caughtError => 
-            appErrorHandler.handleCaughtError(caughtError, context, { args })
+          return result.catch(caughtException => 
+            applicationErrorHandler.handleCaughtError(caughtException, context, { args })
           );
         }
         return result;
-      } catch (caughtError) {
-        return appErrorHandler.handleCaughtError(caughtError, context, { args });
+      } catch (caughtException) {
+        return applicationErrorHandler.handleCaughtError(caughtException, context, { args });
       }
     };
   },
@@ -373,7 +373,7 @@ window.ErrorUtils = {
 
 // Export for module usage
 export {
-  appErrorHandler,
+  applicationErrorHandler,
   apiClient,
   formValidator,
   offlineManager

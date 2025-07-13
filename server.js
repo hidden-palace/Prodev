@@ -6,7 +6,7 @@ const path = require('path');
 
 const config = require('./config');
 const { validateAskRequest, validateWebhookResponse } = require('./middleware/validation');
-const { enhancedErrorHandler, requestLogger } = require('./middleware/error-middleware');
+const { enhancedExceptionHandler, requestLogger } = require('./middleware/error-middleware');
 const errorLoggingRoutes = require('./routes/error-logging');
 const assistantRoutes = require('./routes/assistant');
 const leadsRoutes = require('./routes/leads');
@@ -143,7 +143,7 @@ app.get('*', (req, res) => {
 });
 
 // Global error handler (must be last)
-app.use(enhancedErrorHandler);
+app.use(enhancedExceptionHandler);
 
 // Global process error handlers
 process.on('uncaughtException', (uncaughtError) => {

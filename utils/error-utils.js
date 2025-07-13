@@ -1,9 +1,9 @@
 // File: utils/error-utils.js
 
-function categorizeError(errorMessage) {
-  if (!errorMessage || typeof errorMessage !== 'string') return 'unknown';
+function categorizeError(inputMessage) {
+  if (!inputMessage || typeof inputMessage !== 'string') return 'unknown';
 
-  const message = errorMessage.toLowerCase();
+  const message = inputMessage.toLowerCase();
 
   if (message.includes('authentication')) return 'auth_error';
   if (message.includes('rate limit')) return 'rate_limit';

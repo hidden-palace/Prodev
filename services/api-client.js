@@ -3,7 +3,7 @@
  * Provides robust API communication with automatic error handling
  */
 
-import appErrorHandler from './error-handler.js';
+import applicationErrorHandler from './error-handler.js';
 
 class APIClient {
   constructor(baseURL = '/api') {
@@ -39,21 +39,21 @@ class APIClient {
 
       // Handle non-200 responses
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const httpError = new Error(errorData.message || `HTTP ${response.status}`);
-        httpError.status = response.status;
-        httpError.response = response;
-        httpError.data = errorData;
-        throw httpError;
+        const exceptionData = await response.json().catch(() => ({}));
+        const httpException = new Error(exceptionData.message || `HTTP ${response.status}`);
+        httpException.status = response.status;
+        httpException.response = response;
+        httpException.data = exceptionData;
+        throw httpException;
       }
 
       return await response.json();
-    } catch (caughtError) {
-      if (caughtError.name === 'AbortError') {
+    } catch (caughtException) {
+      if (caughtException.name === 'AbortError') {
         // Handle request timeout
-        return appErrorHandler.handleCaughtError(caughtError, 'timeout');
+        return applicationErrorHandler.handleCaughtError(caughtException, 'timeout');
       }
-      throw caughtError;
+      throw caughtException;
     }
   }
 
@@ -61,9 +61,9 @@ class APIClient {
     try {
       const responses = await Promise.all(requests.map((req) => this.request(req.method, req.url, req.options)));
       return responses;
-    } catch (caughtError) {
-      const handledCaughtError = await appErrorHandler.handleCaughtError(caughtError, 'batch_request');
-      throw handledCaughtError;
+    } catch (caughtException) {
+      const handledException = await applicationErrorHandler.handleCaughtError(caughtException, 'batch_request');
+      throw handledException;
     }
   }
 }

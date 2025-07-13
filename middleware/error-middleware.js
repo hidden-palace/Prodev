@@ -7,21 +7,21 @@ const config = require('../config');
 /**
  * Global error handler: logs error and sends JSON response
  */
-function enhancedErrorHandler(err, req, res, next) {
-  console.error('=== API ERROR ===');
-  console.error('Error:', err);
-  console.error('Stack:', err.stack);
+function enhancedExceptionHandler(exception, req, res, next) {
+  console.error('=== API EXCEPTION ===');
+  console.error('Exception:', exception);
+  console.error('Stack:', exception.stack);
   console.error('Request URL:', req.url);
   console.error('Request Method:', req.method);
   console.error('Request Body:', req.body);
 
   if (res.headersSent) {
-    return next(err);
+    return next(exception);
   }
 
-  const statusCode = err.status || 500;
+  const statusCode = exception.status || 500;
   const responseBody = {
-    message: err.message || 'Internal server error',
+    message: exception.message || 'Internal server exception',
     timestamp: new Date().toISOString()
   };
 
@@ -41,6 +41,6 @@ function requestLogger(req, res, next) {
 }
 
 module.exports = {
-  enhancedErrorHandler,
+  enhancedExceptionHandler,
   requestLogger
 };
