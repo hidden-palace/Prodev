@@ -6,34 +6,79 @@
 class FormValidator {
   constructor() {
     this.rules = new Map();
+    this.customValidators = new Map();
+    this.initializeValidators();
+  }
+
+  /**
+   * Initialize built-in validators
+   */
+  initializeValidators() {
+    this.customValidators.set('required', (value) => {
+      if (!value || value.trim() === '') {
+        return 'This field is required';
+      }
+      return null;
+    });
+
+    this.customValidators.set('email', (value) => {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return 'Please enter a valid email address';
+      }
+      return null;
+    });
+
+    this.customValidators.set('minLength', (value, minLength) => {
+      if (value && value.length < minLength) {
+        return `Must be at least ${minLength} characters long`;
+      }
+      return null;
+    });
+
+    this.customValidators.set('maxLength', (value, maxLength) => {
+      if (value && value.length > maxLength) {
+        return `Must be no more than ${maxLength} characters long`;
+      }
+      return null;
+    });
+
+    this.customValidators.set('phone', (value) => {
+      if (value && !/^[\+]?[1-9][\d]{0,15}$/.test(value.replace(/[\s\-\(\)]/g, ''))) {
+        return 'Please enter a valid phone number';
+      }
+      return null;
+    });
   }
 
   /**
    * Define validation rules for a form
    */
-  addValidationRules(formId, rules) {
+  setRules(formId, rules) {
     this.rules.set(formId, rules);
   }
 
   /**
    * Validate all fields in a form on submit
    */
-  validate(formElement) {
+  validateFormElement(formElement) {
     const formId = formElement.id || formElement.dataset.formId;
     const rules = this.rules.get(formId);
 
-    if (!rules) return [];
+    if (!rules) return { valid: true, errors: [] };
 
-    const errors = [];
+    const validationErrors = [];
     Object.entries(rules).forEach(([fieldName, fieldRules]) => {
       const field = formElement.querySelector(`[name="${fieldName}"]`);
       if (!field) return;
-      const fieldErrors = this.validateField(fieldName, field.value, fieldRules);
-      if (fieldErrors.length > 0) {
-        errors.push(...fieldErrors);
+      const fieldValidationErrors = this.validateField(fieldName, field.value, fieldRules);
+      if (fieldValidationErrors.length > 0) {
+        validationErrors.push(...fieldValidationErrors);
       }
     });
-    return errors;
+    return {
+      valid: validationErrors.length === 0,
+      errors: validationErrors
+    };
   }
 
   /**

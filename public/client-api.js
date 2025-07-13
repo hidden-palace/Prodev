@@ -1,0 +1,91 @@
+/**
+ * Client-Side API Handler
+ * Lightweight API client for browser environment
+ */
+
+class ClientAPI {
+  constructor(baseURL = '/api') {
+    this.baseURL = baseURL;
+    this.defaultTimeout = 30000;
+    this.defaultHeaders = {
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async request(method, endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const config = {
+      method,
+      headers: {
+        ...this.defaultHeaders,
+        ...options.headers
+      },
+      ...options
+    };
+
+    // Add auth token if available
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.defaultTimeout);
+      
+      const response = await fetch(url, { 
+        ...config, 
+        signal: controller.signal 
+      });
+      
+      clearTimeout(timeoutId);
+
+      // Handle non-200 responses
+      if (!response.ok) {
+        const responseData = await response.json().catch(() => ({}));
+        const httpFailure = new Error(responseData.message || `HTTP ${response.status}`);
+        httpFailure.status = response.status;
+        httpFailure.response = response;
+        httpFailure.data = responseData;
+        throw httpFailure;
+      }
+
+      return await response.json();
+    } catch (caughtFailure) {
+      if (caughtFailure.name === 'AbortError') {
+        const timeoutFailure = new Error('Request timeout');
+        timeoutFailure.type = 'timeout';
+        throw timeoutFailure;
+      }
+      throw caughtFailure;
+    }
+  }
+
+  async get(endpoint, options = {}) {
+    return this.request('GET', endpoint, options);
+  }
+
+  async post(endpoint, data, options = {}) {
+    return this.request('POST', endpoint, {
+      ...options,
+      body: JSON.stringify(data)
+    });
+  }
+
+  async put(endpoint, data, options = {}) {
+    return this.request('PUT', endpoint, {
+      ...options,
+      body: JSON.stringify(data)
+    });
+  }
+
+  async delete(endpoint, options = {}) {
+    return this.request('DELETE', endpoint, options);
+  }
+}
+
+// Create singleton instance
+const clientAPI = new ClientAPI();
+
+// Make globally available
+window.clientAPI = clientAPI;
