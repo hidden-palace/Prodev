@@ -32,7 +32,6 @@ const validateWebhookResponse = (req, res, next) => {
     run_id: run_id || 'MISSING'
   });
 
-  // ENHANCED: Check for empty strings as well as missing values
   const requiredFields = [
     { field: 'tool_call_id', value: tool_call_id, valid: tool_call_id && tool_call_id.trim() !== '' },
     { field: 'output', value: output, valid: output !== undefined && output !== null },
@@ -56,7 +55,6 @@ const validateWebhookResponse = (req, res, next) => {
     });
   }
 
-  // Validate field types
   if (typeof tool_call_id !== 'string' || typeof thread_id !== 'string' || typeof run_id !== 'string') {
     return res.status(400).json({
       error: 'Invalid field types',
@@ -76,69 +74,64 @@ const errorHandler = (err, req, res, next) => {
   console.error('Request Method:', req.method);
   console.error('Request Body:', req.body);
 
-  // Ensure we always send JSON responses
   res.setHeader('Content-Type', 'application/json');
 
-  // Prevent sending response if already sent
   if (res.headersSent) {
     console.error('Headers already sent, cannot send error response');
     return next(err);
   }
 
-  // Default error response
   let statusCode = 500;
   let message = 'Internal server error';
   let details = null;
 
-  // FIXED: Safe error message handling with multiple fallbacks
-  let errorMessage = 'Unknown error occurred';
-  
-  if (validationError) {
-    if (typeof validationError === 'string') {
-      errorMessage = validationError;
-    } else if (validationError.message && typeof validationError.message === 'string') {
-      errorMessage = validationError.message;
-    } else if (validationError.details && typeof validationError.details === 'string') {
-      errorMessage = validationError.details;
-    } else if (validationError.error && typeof validationError.error === 'string') {
-      errorMessage = validationError.error;
+  let errorMessage = err?.message || 'Unknown error occurred';
+
+  if (err) {
+    if (typeof err === 'string') {
+      errorMessage = err;
+    } else if (err.message && typeof err.message === 'string') {
+      errorMessage = err.message;
+    } else if (err.details && typeof err.details === 'string') {
+      errorMessage = err.details;
+    } else if (err.error && typeof err.error === 'string') {
+      errorMessage = err.error;
     }
   }
 
-  // Handle specific error types with safe string operations
-  if (errorMessage.includes && errorMessage.includes('OpenAI API authentication failed')) {
+  if (errorMessage.includes('OpenAI API authentication failed')) {
     statusCode = 401;
     message = 'Authentication error';
     details = 'OpenAI API key is invalid or missing. Please check your configuration.';
-  } else if (errorMessage.includes && errorMessage.includes('OpenAI API rate limit exceeded')) {
+  } else if (errorMessage.includes('OpenAI API rate limit exceeded')) {
     statusCode = 429;
     message = 'Rate limit exceeded';
     details = 'Too many requests to OpenAI API. Please try again later.';
-  } else if (errorMessage.includes && errorMessage.includes('Failed to create conversation thread')) {
+  } else if (errorMessage.includes('Failed to create conversation thread')) {
     statusCode = 503;
     message = 'Service temporarily unavailable';
     details = 'Unable to connect to OpenAI services';
-  } else if (errorMessage.includes && errorMessage.includes('Failed to run assistant')) {
+  } else if (errorMessage.includes('Failed to run assistant')) {
     statusCode = 502;
     message = 'Assistant service error';
     details = 'Unable to process request with AI assistant';
-  } else if (errorMessage.includes && errorMessage.includes('while a run') && errorMessage.includes('is active')) {
+  } else if (errorMessage.includes('while a run') && errorMessage.includes('is active')) {
     statusCode = 409;
     message = 'Thread busy';
     details = 'Cannot add messages while assistant is processing. Please wait for the current operation to complete.';
-  } else if (errorMessage.includes && errorMessage.includes('No pending tool call found')) {
+  } else if (errorMessage.includes('No pending tool call found')) {
     statusCode = 404;
     message = 'Tool call not found';
     details = errorMessage;
-  } else if (errorMessage.includes && errorMessage.includes('mismatch')) {
+  } else if (errorMessage.includes('mismatch')) {
     statusCode = 400;
     message = 'Request correlation error';
     details = errorMessage;
-  } else if (errorMessage.includes && errorMessage.includes('not properly configured')) {
+  } else if (errorMessage.includes('not properly configured')) {
     statusCode = 503;
     message = 'Service configuration error';
     details = 'Server is not properly configured. Please check environment variables.';
-  } else if (errorMessage.includes && errorMessage.includes('timeout')) {
+  } else if (errorMessage.includes('timeout')) {
     statusCode = 408;
     message = 'Request timeout';
     details = 'The request took too long to process. Please try again.';
@@ -156,7 +149,6 @@ const errorHandler = (err, req, res, next) => {
     res.status(statusCode).json(errorResponse);
   } catch (responseError) {
     console.error('Failed to send error response:', responseError);
-    // Last resort - try to send a basic response
     try {
       res.status(500).end('{"error":"Internal server error","details":"Failed to send proper error response"}');
     } catch (criticalError) {
