@@ -26,8 +26,8 @@ class OfflineManager {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
         console.log('Service Worker registered:', registration);
-      } catch (error) {
-        console.error('Service Worker registration failed:', error);
+      } catch (caughtError) {
+        console.error('Service Worker registration failed:', caughtError);
       }
     }
 
@@ -153,7 +153,7 @@ class OfflineManager {
           resolve(null);
         }
       };
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.caughtError);
     });
   }
 
@@ -212,12 +212,12 @@ class OfflineManager {
             await store.put(action);
             
             successful++;
-          } catch (error) {
-            console.error('Failed to sync action:', action, error);
+          } catch (caughtError) {
+            console.error('Failed to sync action:', action, caughtError);
             
             // Increment attempts
             action.attempts++;
-            action.lastError = error.message;
+            action.lastError = caughtError.message;
             
             // Mark as failed if too many attempts
             if (action.attempts >= 3) {
@@ -237,7 +237,7 @@ class OfflineManager {
 
         resolve();
       };
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.caughtError);
     });
   }
 
@@ -328,7 +328,7 @@ class OfflineManager {
           resolve();
         }
       };
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(request.caughtError);
     });
   }
 
@@ -401,14 +401,14 @@ class OfflineManager {
       }
 
       return { success: true, data };
-    } catch (error) {
+    } catch (caughtError) {
       // If request fails, try cache as fallback
       const cachedData = await this.getOfflineData(cacheKey);
       if (cachedData) {
         console.log('Request failed, serving from cache:', url);
         return { success: true, data: cachedData, fromCache: true };
       }
-      throw error;
+      throw caughtError;
     }
   }
 

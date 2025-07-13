@@ -37,8 +37,8 @@ self.addEventListener('install', (event) => {
         console.log('Static files cached successfully');
         return self.skipWaiting();
       })
-      .catch((error) => {
-        console.error('Failed to cache static files:', error);
+      .catch((caughtError) => {
+        console.error('Failed to cache static files:', caughtError);
       })
   );
 });
@@ -105,8 +105,8 @@ async function cacheFirst(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
-    console.error('Cache-first strategy failed:', error);
+  } catch (caughtError) {
+    console.error('Cache-first strategy failed:', caughtError);
     return new Response('Offline - content not available', { status: 503 });
   }
 }
@@ -128,7 +128,7 @@ async function networkFirstWithCache(request) {
     }
     
     return networkResponse;
-  } catch (error) {
+  } catch (caughtError) {
     console.log('Network failed, trying cache for:', request.url);
     
     const cachedResponse = await caches.match(request);
@@ -163,7 +163,7 @@ async function networkFirstWithCache(request) {
 async function networkFirst(request) {
   try {
     return await fetch(request);
-  } catch (error) {
+  } catch (caughtError) {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
@@ -197,8 +197,8 @@ async function syncOfflineActions() {
         type: 'SYNC_OFFLINE_ACTIONS'
       });
     });
-  } catch (error) {
-    console.error('Failed to sync offline actions:', error);
+  } catch (caughtError) {
+    console.error('Failed to sync offline actions:', caughtError);
   }
 }
 
