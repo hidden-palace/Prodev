@@ -6,7 +6,7 @@ const path = require('path');
 
 const config = require('./config');
 const { validateAskRequest, validateWebhookResponse } = require('./middleware/validation');
-const { enhancedExceptionHandler, requestLogger } = require('./middleware/error-middleware');
+const { enhancedFailureHandler, requestLogger } = require('./middleware/error-middleware');
 const errorLoggingRoutes = require('./routes/error-logging');
 const assistantRoutes = require('./routes/assistant');
 const leadsRoutes = require('./routes/leads');
@@ -143,13 +143,13 @@ app.get('*', (req, res) => {
 });
 
 // Global error handler (must be last)
-app.use(enhancedExceptionHandler);
+app.use(enhancedFailureHandler);
 
 // Global process error handlers
-process.on('uncaughtException', (uncaughtError) => {
-  console.error('=== UNCAUGHT EXCEPTION ===');
-  console.error('Error:', uncaughtError);
-  console.error('Stack:', uncaughtError.stack);
+process.on('uncaughtException', (uncaughtFailure) => {
+  console.error('=== UNCAUGHT FAILURE ===');
+  console.error('Failure:', uncaughtFailure);
+  console.error('Stack:', uncaughtFailure.stack);
   console.error('Process will exit...');
   
   // Graceful shutdown
@@ -157,7 +157,7 @@ process.on('uncaughtException', (uncaughtError) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('=== UNHANDLED PROMISE REJECTION ===');
+  console.error('=== UNHANDLED PROMISE FAILURE ===');
   console.error('Promise:', promise);
   console.error('Reason:', reason);
   
@@ -213,15 +213,15 @@ const server = app.listen(PORT, () => {
 });
 
 // Handle server startup errors
-server.on('error', (serverError) => {
-  if (serverError.code === 'EADDRINUSE') {
+server.on('error', (serverFailure) => {
+  if (serverFailure.code === 'EADDRINUSE') {
     console.error(`❌ Port ${PORT} is already in use`);
     console.error('Please either:');
     console.error('1. Stop the process using that port');
     console.error('2. Change the PORT in your .env file');
     console.error('3. Use a different port: PORT=3001 npm start');
   } else {
-    console.error('❌ Server startup error:', serverError);
+    console.error('❌ Server startup failure:', serverFailure);
   }
   process.exit(1);
 });

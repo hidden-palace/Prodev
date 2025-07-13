@@ -39,12 +39,12 @@ class APIClient {
 
       // Handle non-200 responses
       if (!response.ok) {
-        const exceptionData = await response.json().catch(() => ({}));
-        const httpException = new Error(exceptionData.message || `HTTP ${response.status}`);
-        httpException.status = response.status;
-        httpException.response = response;
-        httpException.data = exceptionData;
-        throw httpException;
+        const responseData = await response.json().catch(() => ({}));
+        const httpFailure = new Error(responseData.message || `HTTP ${response.status}`);
+        httpFailure.status = response.status;
+        httpFailure.response = response;
+        httpFailure.data = responseData;
+        throw httpFailure;
       }
 
       return await response.json();
@@ -62,8 +62,8 @@ class APIClient {
       const responses = await Promise.all(requests.map((req) => this.request(req.method, req.url, req.options)));
       return responses;
     } catch (caughtException) {
-      const handledException = await applicationErrorHandler.handleCaughtError(caughtException, 'batch_request');
-      throw handledException;
+      const handledFailure = await appErrorHandler.handleCaughtError(caughtException, 'batch_request');
+      throw handledFailure;
     }
   }
 }

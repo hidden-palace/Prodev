@@ -50,34 +50,34 @@ class ApplicationErrorHandler {
   }
 
   async handleCaughtError(caughtException, context = 'unknown', options = {}) {
-    const errorInfo = this.categorizeError(caughtException, context);
+    const exceptionInfo = this.categorizeException(caughtException, context);
     
     // Log error
-    this.logError(errorInfo);
+    this.logException(exceptionInfo);
     
     // Handle based on error type
-    switch (errorInfo.type) {
+    switch (exceptionInfo.type) {
       case 'network':
-        return this.handleNetworkError(errorInfo, options);
+        return this.handleNetworkException(exceptionInfo, options);
       case 'api':
-        return this.handleAPIError(errorInfo, options);
+        return this.handleAPIException(exceptionInfo, options);
       case 'validation':
-        return this.handleValidationError(errorInfo, options);
+        return this.handleValidationException(exceptionInfo, options);
       case 'authentication':
-        return this.handleAuthError(errorInfo, options);
+        return this.handleAuthException(exceptionInfo, options);
       case 'permission':
-        return this.handlePermissionError(errorInfo, options);
+        return this.handlePermissionException(exceptionInfo, options);
       case 'rate_limit':
-        return this.handleRateLimitError(errorInfo, options);
+        return this.handleRateLimitException(exceptionInfo, options);
       case 'server_error':
-        return this.handleServerError(errorInfo, options);
+        return this.handleServerException(exceptionInfo, options);
       default:
-        return this.handleGenericError(errorInfo, options);
+        return this.handleGenericException(exceptionInfo, options);
     }
   }
 
-  categorizeError(caughtException, context) {
-    const errorInfo = {
+  categorizeException(caughtException, context) {
+    const exceptionInfo = {
       original: caughtException,
       context,
       timestamp: new Date().toISOString(),
@@ -88,64 +88,64 @@ class ApplicationErrorHandler {
 
     // Network errors
     if (!this.isOnline || caughtException.message?.includes('fetch') || caughtException.message?.includes('network')) {
-      errorInfo.type = 'network';
-      errorInfo.severity = 'medium';
-      errorInfo.userMessage = 'Network is unreachable. Please check your internet connection.';
-      errorInfo.retryable = true;
+      exceptionInfo.type = 'network';
+      exceptionInfo.severity = 'medium';
+      exceptionInfo.userMessage = 'Network is unreachable. Please check your internet connection.';
+      exceptionInfo.retryable = true;
     }
     // API errors
     else if (caughtException.status && caughtException.status >= 400 && caughtException.status < 500) {
-      errorInfo.type = 'api';
-      errorInfo.severity = 'high';
-      errorInfo.userMessage = 'An error occurred while communicating with the server.';
+      exceptionInfo.type = 'api';
+      exceptionInfo.severity = 'high';
+      exceptionInfo.userMessage = 'An exception occurred while communicating with the server.';
     }
     // Validation errors
     else if (caughtException.message?.includes('validation') || caughtException.message?.includes('invalid')) {
-      errorInfo.type = 'validation';
-      errorInfo.severity = 'low';
-      errorInfo.retryable = false;
+      exceptionInfo.type = 'validation';
+      exceptionInfo.severity = 'low';
+      exceptionInfo.retryable = false;
     }
     // Authentication errors
     else if (caughtException.status === 401 || caughtException.message?.includes('unauthorized')) {
-      errorInfo.type = 'authentication';
-      errorInfo.severity = 'high';
-      errorInfo.retryable = false;
+      exceptionInfo.type = 'authentication';
+      exceptionInfo.severity = 'high';
+      exceptionInfo.retryable = false;
     }
     // Permission errors
     else if (caughtException.status === 403 || caughtException.message?.includes('forbidden')) {
-      errorInfo.type = 'permission';
-      errorInfo.severity = 'medium';
-      errorInfo.retryable = false;
+      exceptionInfo.type = 'permission';
+      exceptionInfo.severity = 'medium';
+      exceptionInfo.retryable = false;
     }
     // Rate limit errors
     else if (caughtException.message?.includes('rate limit') || caughtException.status === 429) {
-      errorInfo.type = 'rate_limit';
-      errorInfo.severity = 'medium';
-      errorInfo.userMessage = 'Too many requests. Please try again later.';
-      errorInfo.retryable = true;
+      exceptionInfo.type = 'rate_limit';
+      exceptionInfo.severity = 'medium';
+      exceptionInfo.userMessage = 'Too many requests. Please try again later.';
+      exceptionInfo.retryable = true;
     }
     // Server errors
     else {
-      errorInfo.type = 'server_error';
-      errorInfo.severity = 'high';
-      errorInfo.userMessage = 'An unexpected error occurred. Please try again later.';
-      errorInfo.retryable = false;
+      exceptionInfo.type = 'server_exception';
+      exceptionInfo.severity = 'high';
+      exceptionInfo.userMessage = 'An unexpected exception occurred. Please try again later.';
+      exceptionInfo.retryable = false;
     }
 
-    return errorInfo;
+    return exceptionInfo;
   }
 
-  logException(errorInfo) {
-    console.group('Error Information');
-    console.error('Type:', errorInfo.type);
-    console.error('Context:', errorInfo.context);
-    console.error('Error Object:', errorInfo.original);
+  logException(exceptionInfo) {
+    console.group('Exception Information');
+    console.error('Type:', exceptionInfo.type);
+    console.error('Context:', exceptionInfo.context);
+    console.error('Exception Object:', exceptionInfo.original);
     console.groupEnd();
   }
 
   // Handle different types of errors
 
-  async handleNetworkException(errorInfo, options) {
+  async handleNetworkException(exceptionInfo, options) {
     if (!this.isOnline) {
       // Queue the item for later if possible
       if (options.queueable) {
@@ -156,7 +156,7 @@ class ApplicationErrorHandler {
       return { success: false, message: 'You appear to be offline. Please connect to the internet and try again.' };
     }
 
-    switch (errorInfo.original.status) {
+    switch (exceptionInfo.original.status) {
       case 500:
       case 502:
       case 503:
@@ -168,8 +168,8 @@ class ApplicationErrorHandler {
     }
   }
 
-  async handleAPIException(errorInfo, options) {
-    if (errorInfo.original.status === 404) {
+  async handleAPIException(exceptionInfo, options) {
+    if (exceptionInfo.original.status === 404) {
       this.showNotification('The requested resource was not found.', 'error');
       return { success: false, status: 404 };
     }
@@ -177,24 +177,24 @@ class ApplicationErrorHandler {
       this.showNotification('Conflict detected. The resource may have been modified by another user.', 'warning');
       return { success: false, status: 409 };
     }
-    if (errorInfo.original.status === 422) {
+    if (exceptionInfo.original.status === 422) {
       this.showNotification('Validation failed. Please check your input.', 'error');
       return { success: false, status: 422 };
     }
-    if (errorInfo.original.status === 429) {
+    if (exceptionInfo.original.status === 429) {
       this.showNotification('Too many requests. Please wait a moment and try again.', 'warning');
-      return this.handleRateLimitError(errorInfo, options);
+      return this.handleRateLimitException(exceptionInfo, options);
     }
-    if (errorInfo.original.status >= 500) {
+    if (exceptionInfo.original.status >= 500) {
       this.showNotification('Server error. Please try again later.', 'error');
-      return { success: false, status: errorInfo.original.status, retryable: false };
+      return { success: false, status: exceptionInfo.original.status, retryable: false };
     }
     // Fallback
     this.showNotification('An unexpected error occurred. Please try again.', 'error');
     return { success: false, retryable: false };
   }
 
-  handleValidationException(errorInfo, options) {
+  handleValidationException(exceptionInfo, options) {
     const validationException = errorInfo.original;
     
     if (validationException.details && Array.isArray(validationException.details)) {
@@ -212,13 +212,13 @@ class ApplicationErrorHandler {
     return { success: false };
   }
 
-  async handleRateLimitException(errorInfo, options) {
-    const retryAfter = errorInfo.original.retryAfter || 60;
+  async handleRateLimitException(exceptionInfo, options) {
+    const retryAfter = exceptionInfo.original.retryAfter || 60;
     this.showNotification(`Rate limit exceeded. Retrying after ${retryAfter} seconds.`, 'info');
     return new Promise((resolve) => setTimeout(() => resolve({ success: false, queued: true }), retryAfter * 1000));
   }
 
-  handleAuthException(errorInfo, options) {
+  handleAuthException(exceptionInfo, options) {
     this.showNotification('Authentication required. Please log in to continue.', 'error');
     
     // Clear any stored auth tokens
@@ -233,17 +233,17 @@ class ApplicationErrorHandler {
     return { success: false, requiresAuth: true };
   }
 
-  handlePermissionException(errorInfo, options) {
+  handlePermissionException(exceptionInfo, options) {
     this.showNotification('You do not have permission to perform this action.', 'error');
     return { success: false };
   }
 
-  handleServerException(errorInfo, options) {
+  handleServerException(exceptionInfo, options) {
     this.showNotification('Server error. Please try again later.', 'error');
     return { success: false };
   }
 
-  handleGenericException(errorInfo, options) {
+  handleGenericException(exceptionInfo, options) {
     this.showNotification('An unknown error occurred. Please try again.', 'error');
     return { success: false };
   }

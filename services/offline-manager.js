@@ -28,8 +28,8 @@ class OfflineManager {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
         console.log('Service Worker registered:', registration);
-      } catch (caughtError) {
-        console.error('Service Worker registration failed:', caughtError);
+      } catch (caughtFailure) {
+        console.error('Service Worker registration failed:', caughtFailure);
       }
     }
 
@@ -214,12 +214,12 @@ class OfflineManager {
             await store.put(action);
             
             successful++;
-          } catch (caughtError) {
-            console.error('Failed to sync action:', action, caughtError);
+          } catch (caughtFailure) {
+            console.error('Failed to sync action:', action, caughtFailure);
             
             // Increment attempts
             action.attempts++;
-            action.lastError = caughtError.message;
+            action.lastFailure = caughtFailure.message;
             
             // Mark as failed if too many attempts
             if (action.attempts >= 3) {
@@ -270,7 +270,7 @@ class OfflineManager {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status}`);
+      throw new Error(`API call failed with status: ${response.status}`);
     }
 
     return await response.json();
@@ -291,7 +291,7 @@ class OfflineManager {
     });
 
     if (!response.ok) {
-      throw new Error(`Form submission failed: ${response.status}`);
+      throw new Error(`Form submission failed with status: ${response.status}`);
     }
 
     return await response.json();
@@ -303,7 +303,7 @@ class OfflineManager {
   async executeFileUpload(action) {
     // File uploads are more complex to handle offline
     // This would require storing the file data in IndexedDB
-    throw new Error('File upload sync not implemented yet');
+    throw new Error('File upload synchronization not implemented yet');
   }
 
   /**
@@ -422,7 +422,7 @@ class OfflineManager {
     console.log(`[${type.toUpperCase()}] ${message}`);
     
     // You can integrate this with your existing notification system
-    if (window.applicationErrorHandler && window.applicationErrorHandler.showNotification) {
+    if (window.appErrorHandler && window.appErrorHandler.showNotification) {
       window.applicationErrorHandler.showNotification(message, type);
     }
   }

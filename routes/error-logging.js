@@ -14,34 +14,34 @@ const router = express.Router();
  */
 router.post('/errors', async (req, res, next) => {
   try {
-    const exceptionData = {
+    const logData = {
       ...req.body,
       serverTimestamp: new Date().toISOString(),
       userAgent: req.get('User-Agent'),
       ip: req.ip,
-      requestId: req.requestId || `error_${Date.now()}`
+      requestId: req.requestId || `log_${Date.now()}`
     };
 
     // Log to console
-    console.error('CLIENT_EXCEPTION:', JSON.stringify(exceptionData, null, 2));
+    console.error('CLIENT_LOG:', JSON.stringify(logData, null, 2));
 
     // Store error for analysis
-    await storeClientException(exceptionData);
+    await storeClientLog(logData);
 
     // Send to monitoring service if configured
     if (process.env.ERROR_MONITORING_URL) {
-      await sendToMonitoringService(exceptionData);
+      await sendToMonitoringService(logData);
     }
 
     res.json({
       success: true,
-      message: 'Exception logged successfully',
-      exceptionId: exceptionData.requestId
+      message: 'Log entry recorded successfully',
+      logId: logData.requestId
     });
 
-  } catch (loggingException) {
-    console.error('Failed to log client exception:', loggingException);
-    next(loggingException);
+  } catch (loggingFailure) {
+    console.error('Failed to log client entry:', loggingFailure);
+    next(loggingFailure);
   }
 });
 
@@ -50,11 +50,11 @@ router.post('/errors', async (req, res, next) => {
  */
 router.get('/errors/stats', async (req, res, next) => {
   try {
-    const stats = await getExceptionStatistics();
+    const stats = await getLogStatistics();
     res.json(stats);
-  } catch (statsException) {
-    console.error('Failed to get exception statistics:', statsException);
-    next(statsException);
+  } catch (statsFailure) {
+    console.error('Failed to get log statistics:', statsFailure);
+    next(statsFailure);
   }
 });
 
@@ -64,50 +64,50 @@ router.get('/errors/stats', async (req, res, next) => {
 router.get('/errors/recent', async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
-    const recentExceptionsList = await getRecentExceptions(limit);
-    res.json(recentExceptionsList);
-  } catch (recentException) {
-    console.error('Failed to get recent exceptions:', recentException);
-    next(recentException);
+    const recentLogsList = await getRecentLogs(limit);
+    res.json(recentLogsList);
+  } catch (recentFailure) {
+    console.error('Failed to get recent logs:', recentFailure);
+    next(recentFailure);
   }
 });
 
 /**
  * Store client exception for analysis
  */
-async function storeClientException(exceptionData) {
+async function storeClientLog(logData) {
   try {
-    const exceptionDir = path.join(__dirname, '../logs/client-exceptions');
+    const logDir = path.join(__dirname, '../logs/client-logs');
     
     // Ensure directory exists
     try {
-      await fs.access(exceptionDir);
+      await fs.access(logDir);
     } catch {
-      await fs.mkdir(exceptionDir, { recursive: true });
+      await fs.mkdir(logDir, { recursive: true });
     }
 
-    // Store exception with timestamp
-    const filename = `client_exception_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.json`;
-    const filepath = path.join(exceptionDir, filename);
+    // Store log with timestamp
+    const filename = `client_log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.json`;
+    const filepath = path.join(logDir, filename);
     
-    await fs.writeFile(filepath, JSON.stringify(exceptionData, null, 2));
-    console.log('Client exception stored:', filepath);
+    await fs.writeFile(filepath, JSON.stringify(logData, null, 2));
+    console.log('Client log stored:', filepath);
 
     // Also append to daily log file
-    const dailyLogFile = path.join(exceptionDir, `exceptions_${new Date().toISOString().split('T')[0]}.log`);
-    const logEntry = `${exceptionData.serverTimestamp} - ${exceptionData.type || 'unknown'} - ${exceptionData.message || 'No message'}\n`;
+    const dailyLogFile = path.join(logDir, `logs_${new Date().toISOString().split('T')[0]}.log`);
+    const logEntry = `${logData.serverTimestamp} - ${logData.type || 'unknown'} - ${logData.message || 'No message'}\n`;
     
     await fs.appendFile(dailyLogFile, logEntry);
 
-  } catch (storageException) {
-    console.error('Failed to store client exception:', storageException);
+  } catch (storageFailure) {
+    console.error('Failed to store client log:', storageFailure);
   }
 }
 
 /**
  * Send exception to external monitoring service
  */
-async function sendToMonitoringService(exceptionData) {
+async function sendToMonitoringService(logData) {
   try {
     const monitoringUrl = process.env.ERROR_MONITORING_URL;
     const apiKey = process.env.ERROR_MONITORING_API_KEY;
@@ -121,7 +121,7 @@ async function sendToMonitoringService(exceptionData) {
         ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
       },
       body: JSON.stringify(errorData),
-      body: JSON.stringify(exceptionData),
+      body: JSON.stringify(logData),
       timeout: 5000
     });
 
@@ -129,78 +129,78 @@ async function sendToMonitoringService(exceptionData) {
       throw new Error(`Monitoring service responded with ${response.status}`);
     }
 
-    console.log('Exception sent to monitoring service successfully');
+    console.log('Log sent to monitoring service successfully');
 
-  } catch (monitoringException) {
-    console.error('Failed to send exception to monitoring service:', monitoringException);
+  } catch (monitoringFailure) {
+    console.error('Failed to send log to monitoring service:', monitoringFailure);
   }
 }
 
 /**
  * Get exception statistics
  */
-async function getExceptionStatistics() {
+async function getLogStatistics() {
   try {
-    const exceptionDir = path.join(__dirname, '../logs/client-exceptions');
+    const logDir = path.join(__dirname, '../logs/client-logs');
     
     try {
-      await fs.access(exceptionDir);
+      await fs.access(logDir);
     } catch {
       return {
-        totalExceptions: 0,
-        exceptionsByType: {},
-        exceptionsByDay: {},
-        recentExceptions: 0
+        totalLogs: 0,
+        logsByType: {},
+        logsByDay: {},
+        recentLogs: 0
       };
     }
 
-    const files = await fs.readdir(exceptionDir);
-    const exceptionFiles = files.filter(file => file.startsWith('client_exception_') && file.endsWith('.json'));
+    const files = await fs.readdir(logDir);
+    const logFiles = files.filter(file => file.startsWith('client_log_') && file.endsWith('.json'));
 
     const stats = {
-      totalExceptions: exceptionFiles.length,
-      exceptionsByType: {},
-      exceptionsByDay: {},
-      recentExceptions: 0
+      totalLogs: logFiles.length,
+      logsByType: {},
+      logsByDay: {},
+      recentLogs: 0
     };
 
     const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
 
-    for (const file of exceptionFiles.slice(-100)) { // Process last 100 exceptions
+    for (const file of logFiles.slice(-100)) { // Process last 100 logs
       try {
-        const filepath = path.join(exceptionDir, file);
+        const filepath = path.join(logDir, file);
         const content = await fs.readFile(filepath, 'utf8');
-        const exceptionData = JSON.parse(content);
+        const logData = JSON.parse(content);
 
         // Count by type
-        const type = exceptionData.type || 'unknown';
-        stats.exceptionsByType[type] = (stats.exceptionsByType[type] || 0) + 1;
+        const type = logData.type || 'unknown';
+        stats.logsByType[type] = (stats.logsByType[type] || 0) + 1;
 
         // Count by day
-        const day = exceptionData.serverTimestamp?.split('T')[0] || 'unknown';
-        stats.exceptionsByDay[day] = (stats.exceptionsByDay[day] || 0) + 1;
+        const day = logData.serverTimestamp?.split('T')[0] || 'unknown';
+        stats.logsByDay[day] = (stats.logsByDay[day] || 0) + 1;
 
-        // Count recent exceptions
-        const exceptionTime = new Date(exceptionData.serverTimestamp).getTime();
-        if (exceptionTime > oneDayAgo) {
-          stats.recentExceptions++;
+        // Count recent logs
+        const logTime = new Date(logData.serverTimestamp).getTime();
+        if (logTime > oneDayAgo) {
+          stats.recentLogs++;
         }
 
-      } catch (parseException) {
-        console.error('Failed to parse exception file:', file, parseException);
+      } catch (parseFailure) {
+        console.error('Failed to parse log file:', file, parseFailure);
       }
     }
 
     return stats;
 
-  } catch (statsException) {
-    console.error('Failed to generate exception statistics:', statsException);
+  } catch (statsFailure) {
+    console.error('Failed to generate log statistics:', statsFailure);
     return {
-      totalExceptions: 0,
-      exceptionsByType: {},
-      exceptionsByDay: {},
-      recentExceptions: 0,
-      exception: statsException.message
+      totalLogs: 0,
+      logsByType: {},
+      logsByDay: {},
+      recentLogs: 0,
+      failure: statsFailure.message
     };
   }
 }
@@ -208,45 +208,45 @@ async function getExceptionStatistics() {
 /**
  * Get recent exceptions
  */
-async function getRecentExceptions(limit = 50) {
+async function getRecentLogs(limit = 50) {
   try {
-    const exceptionDir = path.join(__dirname, '../logs/client-exceptions');
+    const logDir = path.join(__dirname, '../logs/client-logs');
     
     try {
-      await fs.access(exceptionDir);
+      await fs.access(logDir);
     } catch {
       return [];
     }
 
-    const files = await fs.readdir(exceptionDir);
-    const exceptionFiles = files
-      .filter(file => file.startsWith('client_exception_') && file.endsWith('.json'))
+    const files = await fs.readdir(logDir);
+    const logFiles = files
+      .filter(file => file.startsWith('client_log_') && file.endsWith('.json'))
       .sort()
       .slice(-limit);
 
-    const recentExceptionsList = [];
+    const recentLogsList = [];
 
-    for (const file of exceptionFiles) {
+    for (const file of logFiles) {
       try {
-        const filepath = path.join(exceptionDir, file);
+        const filepath = path.join(logDir, file);
         const content = await fs.readFile(filepath, 'utf8');
-        const exceptionData = JSON.parse(content);
+        const logData = JSON.parse(content);
         
         // Remove sensitive information
-        delete exceptionData.ip;
-        delete exceptionData.userAgent;
+        delete logData.ip;
+        delete logData.userAgent;
         
-        recentExceptionsList.push(exceptionData);
+        recentLogsList.push(logData);
 
-      } catch (parseException) {
-        console.error('Failed to parse exception file:', file, parseException);
+      } catch (parseFailure) {
+        console.error('Failed to parse log file:', file, parseFailure);
       }
     }
 
-    return recentExceptionsList.reverse(); // Most recent first
+    return recentLogsList.reverse(); // Most recent first
 
-  } catch (recentException) {
-    console.error('Failed to get recent exceptions:', recentException);
+  } catch (recentFailure) {
+    console.error('Failed to get recent logs:', recentFailure);
     return [];
   }
 }
@@ -254,37 +254,37 @@ async function getRecentExceptions(limit = 50) {
 /**
  * Cleanup old exception files
  */
-async function cleanupOldExceptions() {
+async function cleanupOldLogs() {
   try {
-    const exceptionDir = path.join(__dirname, '../logs/client-exceptions');
+    const logDir = path.join(__dirname, '../logs/client-logs');
     
     try {
-      await fs.access(exceptionDir);
+      await fs.access(logDir);
     } catch {
       return;
     }
 
-    const files = await fs.readdir(exceptionDir);
+    const files = await fs.readdir(logDir);
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
 
     for (const file of files) {
-      if (file.startsWith('client_exception_') && file.endsWith('.json')) {
-        const filepath = path.join(exceptionDir, file);
+      if (file.startsWith('client_log_') && file.endsWith('.json')) {
+        const filepath = path.join(logDir, file);
         const stats = await fs.stat(filepath);
         
         if (stats.mtime.getTime() < thirtyDaysAgo) {
           await fs.unlink(filepath);
-          console.log('Deleted old exception file:', file);
+          console.log('Deleted old log file:', file);
         }
       }
     }
 
-  } catch (cleanupException) {
-    console.error('Failed to cleanup old exceptions:', cleanupException);
+  } catch (cleanupFailure) {
+    console.error('Failed to cleanup old logs:', cleanupFailure);
   }
 }
 
 // Run cleanup daily
-setInterval(cleanupOldExceptions, 24 * 60 * 60 * 1000);
+setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000);
 
 module.exports = router;

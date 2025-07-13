@@ -132,7 +132,7 @@ function setupFormSubmissionHandling(form) {
       });
       
       // Handle success
-      applicationErrorHandler.showNotification('Form submitted successfully!', 'success');
+      appErrorHandler.showNotification('Form submitted successfully!', 'success');
       
       // Reset form if specified
       if (form.dataset.resetOnSuccess !== 'false') {
@@ -142,9 +142,10 @@ function setupFormSubmissionHandling(form) {
       // Trigger custom success event
       form.dispatchEvent(new CustomEvent('formSuccess', { detail: result }));
       
-    } catch (caughtException) {
-      await applicationErrorHandler.handleFormSubmission(data, async () => {
-        throw caughtException;
+    } catch (caughtFailure) {
+      await appErrorHandler.handleCaughtError(caughtFailure, 'form_submission', {
+        formId: form.id,
+        queueable: form.dataset.queueable === 'true'
       }, { queueable: form.dataset.queueable === 'true' });
     } finally {
       // Restore button state
@@ -168,8 +169,8 @@ function setupAPIInterception() {
       }
       
       return await originalFetch(url, options);
-    } catch (caughtException) {
-      return applicationErrorHandler.handleCaughtError(caughtException, 'fetch_request', {
+    } catch (caughtFailure) {
+      return appErrorHandler.handleCaughtError(caughtFailure, 'fetch_request', {
         url,
         method: options.method || 'GET'
       });
@@ -314,8 +315,8 @@ window.ErrorUtils = {
   async handleAsync(operation, context = 'async_operation', options = {}) {
     try {
       return await operation();
-    } catch (caughtException) {
-      return applicationErrorHandler.handleCaughtError(caughtException, context, options);
+    } catch (caughtFailure) {
+      return appErrorHandler.handleCaughtError(caughtFailure, context, options);
     }
   },
   
@@ -327,13 +328,13 @@ window.ErrorUtils = {
       try {
         const result = fn.apply(this, args);
         if (result instanceof Promise) {
-          return result.catch(caughtException => 
-            applicationErrorHandler.handleCaughtError(caughtException, context, { args })
+          return result.catch(caughtFailure => 
+            appErrorHandler.handleCaughtError(caughtFailure, context, { args })
           );
         }
         return result;
-      } catch (caughtException) {
-        return applicationErrorHandler.handleCaughtError(caughtException, context, { args });
+      } catch (caughtFailure) {
+        return appErrorHandler.handleCaughtError(caughtFailure, context, { args });
       }
     };
   },
