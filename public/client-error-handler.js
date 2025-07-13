@@ -19,8 +19,8 @@ class ClientErrorHandler {
     });
   }
 
-  async handleCaughtFailure(caughtFailure, context = 'unknown', options = {}) {
-    const failureInfo = this.categorizeFailure(caughtFailure, context);
+  async handleCaughtFailure(caughtErr, context = 'unknown', options = {}) {
+    const failureInfo = this.categorizeFailure(caughtErr, context);
     
     // Log failure
     this.logFailure(failureInfo);
@@ -38,9 +38,9 @@ class ClientErrorHandler {
     }
   }
 
-  categorizeFailure(caughtFailure, context) {
+  categorizeFailure(caughtErr, context) {
     const failureInfo = {
-      original: caughtFailure,
+      original: caughtErr,
       context,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
@@ -49,20 +49,20 @@ class ClientErrorHandler {
     };
 
     // Network failures
-    if (!this.isOnline || caughtFailure.message?.includes('fetch') || caughtFailure.message?.includes('network')) {
+    if (!this.isOnline || caughtErr.message?.includes('fetch') || caughtErr.message?.includes('network')) {
       failureInfo.type = 'network';
       failureInfo.severity = 'medium';
       failureInfo.userMessage = 'Network connection issue. Please check your internet connection.';
       failureInfo.retryable = true;
     }
     // API failures
-    else if (caughtFailure.status && caughtFailure.status >= 400 && caughtFailure.status < 500) {
+    else if (caughtErr.status && caughtErr.status >= 400 && caughtErr.status < 500) {
       failureInfo.type = 'api';
       failureInfo.severity = 'high';
       failureInfo.userMessage = 'An issue occurred while communicating with the server.';
     }
     // Validation failures
-    else if (caughtFailure.message?.includes('validation') || caughtFailure.message?.includes('invalid')) {
+    else if (caughtErr.message?.includes('validation') || caughtErr.message?.includes('invalid')) {
       failureInfo.type = 'validation';
       failureInfo.severity = 'low';
       failureInfo.retryable = false;

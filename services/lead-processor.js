@@ -46,9 +46,9 @@ class LeadProcessor {
         message: `Successfully processed and saved ${savedLeads.length} leads`
       };
 
-    } catch (error) {
-      console.error('❌ Error processing lead data:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Failure processing lead data:', err);
+      throw err;
     }
   }
 
@@ -71,7 +71,7 @@ class LeadProcessor {
       }
       
       return false;
-    } catch (error) {
+    } catch (err) {
       return false;
     }
   }

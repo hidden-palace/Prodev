@@ -39,9 +39,9 @@ router.post('/errors', async (req, res, next) => {
       logId: logData.requestId
     });
 
-  } catch (loggingFailure) {
-    console.error('Failed to log client entry:', loggingFailure);
-    next(loggingFailure);
+  } catch (err) {
+    console.error('Failed to log client entry:', err);
+    next(err);
   }
 });
 
@@ -52,9 +52,9 @@ router.get('/errors/stats', async (req, res, next) => {
   try {
     const stats = await getLogStatistics();
     res.json(stats);
-  } catch (statsFailure) {
-    console.error('Failed to get log statistics:', statsFailure);
-    next(statsFailure);
+  } catch (err) {
+    console.error('Failed to get log statistics:', err);
+    next(err);
   }
 });
 
@@ -66,9 +66,9 @@ router.get('/errors/recent', async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 50;
     const recentLogsList = await getRecentLogs(limit);
     res.json(recentLogsList);
-  } catch (recentFailure) {
-    console.error('Failed to get recent logs:', recentFailure);
-    next(recentFailure);
+  } catch (err) {
+    console.error('Failed to get recent logs:', err);
+    next(err);
   }
 });
 
@@ -99,8 +99,8 @@ async function storeClientLog(logData) {
     
     await fs.appendFile(dailyLogFile, logEntry);
 
-  } catch (storageFailure) {
-    console.error('Failed to store client log:', storageFailure);
+  } catch (err) {
+    console.error('Failed to store client log:', err);
   }
 }
 
@@ -131,8 +131,8 @@ async function sendToMonitoringService(logData) {
 
     console.log('Log sent to monitoring service successfully');
 
-  } catch (monitoringFailure) {
-    console.error('Failed to send log to monitoring service:', monitoringFailure);
+  } catch (err) {
+    console.error('Failed to send log to monitoring service:', err);
   }
 }
 
@@ -186,21 +186,21 @@ async function getLogStatistics() {
           stats.recentLogs++;
         }
 
-      } catch (parseFailure) {
-        console.error('Failed to parse log file:', file, parseFailure);
+      } catch (err) {
+        console.error('Failed to parse log file:', file, err);
       }
     }
 
     return stats;
 
-  } catch (statsFailure) {
-    console.error('Failed to generate log statistics:', statsFailure);
+  } catch (err) {
+    console.error('Failed to generate log statistics:', err);
     return {
       totalLogs: 0,
       logsByType: {},
       logsByDay: {},
       recentLogs: 0,
-      failure: statsFailure.message
+      failure: err.message
     };
   }
 }
@@ -238,15 +238,15 @@ async function getRecentLogs(limit = 50) {
         
         recentLogsList.push(logData);
 
-      } catch (parseFailure) {
-        console.error('Failed to parse log file:', file, parseFailure);
+      } catch (err) {
+        console.error('Failed to parse log file:', file, err);
       }
     }
 
     return recentLogsList.reverse(); // Most recent first
 
-  } catch (recentFailure) {
-    console.error('Failed to get recent logs:', recentFailure);
+  } catch (err) {
+    console.error('Failed to get recent logs:', err);
     return [];
   }
 }
@@ -279,8 +279,8 @@ async function cleanupOldLogs() {
       }
     }
 
-  } catch (cleanupFailure) {
-    console.error('Failed to cleanup old logs:', cleanupFailure);
+  } catch (err) {
+    console.error('Failed to cleanup old logs:', err);
   }
 }
 

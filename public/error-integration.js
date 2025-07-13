@@ -94,9 +94,9 @@ function setupFormValidation() {
         // Trigger custom success event
         form.dispatchEvent(new CustomEvent('formSuccess', { detail: result }));
         
-      } catch (caughtFailure) {
+      } catch (err) {
         if (window.clientFailureHandler) {
-          await window.clientFailureHandler.handleCaughtFailure(caughtFailure, 'form_submission', {
+          await window.clientFailureHandler.handleCaughtFailure(err, 'form_submission', {
             formId: form.id
           });
         }
@@ -150,11 +150,11 @@ window.ErrorUtils = {
   async handleAsync(operation, context = 'async_operation', options = {}) {
     try {
       return await operation();
-    } catch (caughtFailure) {
+    } catch (err) {
       if (window.clientFailureHandler) {
-        return window.clientFailureHandler.handleCaughtFailure(caughtFailure, context, options);
+        return window.clientFailureHandler.handleCaughtFailure(err, context, options);
       }
-      throw caughtFailure;
+      throw err;
     }
   },
   
@@ -166,19 +166,19 @@ window.ErrorUtils = {
       try {
         const result = fn.apply(this, args);
         if (result instanceof Promise) {
-          return result.catch(caughtFailure => {
+          return result.catch(err => {
             if (window.clientFailureHandler) {
-              return window.clientFailureHandler.handleCaughtFailure(caughtFailure, context, { args });
+              return window.clientFailureHandler.handleCaughtFailure(err, context, { args });
             }
-            throw caughtFailure;
+            throw err;
           });
         }
         return result;
-      } catch (caughtFailure) {
+      } catch (err) {
         if (window.clientFailureHandler) {
-          return window.clientFailureHandler.handleCaughtFailure(caughtFailure, context, { args });
+          return window.clientFailureHandler.handleCaughtFailure(err, context, { args });
         }
-        throw caughtFailure;
+        throw err;
       }
     };
   },

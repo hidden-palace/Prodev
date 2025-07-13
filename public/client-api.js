@@ -51,13 +51,13 @@ class ClientAPI {
       }
 
       return await response.json();
-    } catch (caughtFailure) {
-      if (caughtFailure.name === 'AbortError') {
-        const timeoutFailure = new Error('Request timeout');
-        timeoutFailure.type = 'timeout';
-        throw timeoutFailure;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        const timeoutErr = new Error('Request timeout');
+        timeoutErr.type = 'timeout';
+        throw timeoutErr;
       }
-      throw caughtFailure;
+      throw err;
     }
   }
 

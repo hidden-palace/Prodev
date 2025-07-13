@@ -146,20 +146,20 @@ app.get('*', (req, res) => {
 app.use(enhancedFailureHandler);
 
 // Global process error handlers
-process.on('uncaughtException', (uncaughtFailure) => {
-  console.error('=== UNCAUGHT FAILURE ===');
-  console.error('Failure:', uncaughtFailure);
-  console.error('Stack:', uncaughtFailure.stack);
+process.on('uncaughtException', (err) => {
+  console.error('=== UNCAUGHT EXCEPTION ===');
+  console.error('Exception:', err);
+  console.error('Stack:', err.stack);
   console.error('Process will exit...');
   
   // Graceful shutdown
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('=== UNHANDLED PROMISE FAILURE ===');
+process.on('unhandledRejection', (err, promise) => {
+  console.error('=== UNHANDLED PROMISE REJECTION ===');
   console.error('Promise:', promise);
-  console.error('Reason:', reason);
+  console.error('Reason:', err);
   
   // In production, you might want to exit the process
   if (process.env.NODE_ENV === 'production') {
@@ -213,15 +213,15 @@ const server = app.listen(PORT, () => {
 });
 
 // Handle server startup errors
-server.on('error', (serverFailure) => {
-  if (serverFailure.code === 'EADDRINUSE') {
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
     console.error(`❌ Port ${PORT} is already in use`);
     console.error('Please either:');
     console.error('1. Stop the process using that port');
     console.error('2. Change the PORT in your .env file');
     console.error('3. Use a different port: PORT=3001 npm start');
   } else {
-    console.error('❌ Server startup failure:', serverFailure);
+    console.error('❌ Server startup failure:', err);
   }
   process.exit(1);
 });

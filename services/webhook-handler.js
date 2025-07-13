@@ -103,15 +103,15 @@ class WebhookHandler {
         const result = await this.sendWebhookWithRetry(payload, employeeConfig.webhookUrl, employeeId);
         results.push(result);
 
-      } catch (error) {
-        console.error(`💥 CRITICAL ERROR processing tool call ${toolCall.id} for ${employeeConfig.name}:`, error.message);
+      } catch (err) {
+        console.error(`💥 CRITICAL FAILURE processing tool call ${toolCall.id} for ${employeeConfig.name}:`, err.message);
         
         results.push({
           toolCallId: toolCall.id,
           employeeId: employeeId,
           employeeName: employeeConfig.name,
           status: 'error',
-          error: error.message,
+          message: err.message,
           retryable: false // Don't retry critical errors
         });
       }

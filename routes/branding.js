@@ -45,9 +45,9 @@ router.get('/', async (req, res, next) => {
     }
 
     res.json(upsertData);
-  } catch (brandingError) {
-    console.error('Error in branding GET:', brandingError);
-    next(brandingError);
+  } catch (err) {
+    console.error('Failure in branding GET:', err);
+    next(err);
   }
 });
 
@@ -109,9 +109,9 @@ router.post('/logo', async (req, res, next) => {
       message: 'Logo saved successfully',
       branding: result
     });
-  } catch (saveError) {
-    console.error('Error saving logo:', saveError);
-    next(saveError);
+  } catch (err) {
+    console.error('Failure saving logo:', err);
+    next(err);
   }
 });
 
@@ -138,9 +138,9 @@ router.get('/employee-profiles', async (req, res, next) => {
     }
 
     res.json(data || []);
-  } catch (profilesError) {
-    console.error('Error in employee profiles GET:', profilesError);
-    next(profilesError);
+  } catch (err) {
+    console.error('Failure in employee profiles GET:', err);
+    next(err);
   }
 });
 
@@ -202,9 +202,9 @@ router.post('/employee-profile', async (req, res, next) => {
       message: 'Profile picture saved successfully',
       profile: result
     });
-  } catch (profileSaveError) {
-    console.error('Error saving employee profile:', profileSaveError);
-    next(profileSaveError);
+  } catch (err) {
+    console.error('Failure saving employee profile:', err);
+    next(err);
   }
 });
 
@@ -264,9 +264,9 @@ router.put('/colors', async (req, res, next) => {
       message: 'Brand colors updated successfully',
       branding: result
     });
-  } catch (colorUpdateError) {
-    console.error('Error updating brand colors:', colorUpdateError);
-    next(colorUpdateError);
+  } catch (err) {
+    console.error('Failure updating brand colors:', err);
+    next(err);
   }
 });
 

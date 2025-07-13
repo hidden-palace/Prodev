@@ -102,14 +102,14 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       branding: result
     });
 
-  } catch (uploadError) {
-    console.error('❌ Error uploading logo:', uploadError);
+  } catch (err) {
+    console.error('❌ Failure uploading logo:', err);
     
     // Enhanced error response for debugging
-    const errorResponse = {
-      error: 'Logo upload failed',
-      details: uploadError.message,
-      suggestion: uploadError.message.includes('Bucket not found') ? 
+    const failureResponse = {
+      message: 'Logo upload failed',
+      details: err.message,
+      suggestion: err.message.includes('Bucket not found') ? 
         'The storage buckets may not exist. Please check your Supabase dashboard and ensure the "logos" bucket is created.' : 
         'Check your Supabase configuration and file format.',
       context: {
@@ -122,7 +122,7 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       }
     };
     
-    res.status(500).json(errorResponse);
+    res.status(500).json(failureResponse);
   }
 });
 
@@ -209,13 +209,13 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       profile: result
     });
 
-  } catch (uploadError) {
-    console.error('❌ Error uploading avatar:', uploadError);
+  } catch (err) {
+    console.error('❌ Failure uploading avatar:', err);
     
     // Enhanced error response for debugging
-    const errorResponse = {
-      error: 'Avatar upload failed',
-      details: uploadError.message,
+    const failureResponse = {
+      message: 'Avatar upload failed',
+      details: err.message,
       context: {
         hasFile: !!req.file,
         fileName: req.file?.originalname,
@@ -226,8 +226,8 @@ router.post('/employee-avatar', upload.single('avatar'), async (req, res, next) 
       }
     };
     
-    res.status(500).json(errorResponse);
-    next(uploadError);
+    res.status(500).json(failureResponse);
+    next(err);
   }
 });
 
@@ -265,9 +265,9 @@ router.delete('/logo', async (req, res, next) => {
       message: 'Logo removed successfully'
     });
 
-  } catch (deleteError) {
-    console.error('❌ Error removing logo:', deleteError);
-    next(deleteError);
+  } catch (err) {
+    console.error('❌ Failure removing logo:', err);
+    next(err);
   }
 });
 

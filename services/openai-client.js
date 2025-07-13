@@ -22,19 +22,19 @@ class OpenAIService {
       const thread = await this.client.beta.threads.create();
       console.log(`Created new thread: ${thread.id}`);
       return thread;
-    } catch (error) {
-      console.error('Error creating thread:', error);
+    } catch (err) {
+      console.error('Failure creating thread:', err);
       
       // Provide more specific error messages
-      if (error.status === 401) {
+      if (err.status === 401) {
         throw new Error('OpenAI API authentication failed. Please check your API key in the .env file.');
-      } else if (error.status === 429) {
+      } else if (err.status === 429) {
         throw new Error('OpenAI API rate limit exceeded. Please try again later.');
-      } else if (error.status === 500) {
+      } else if (err.status === 500) {
         throw new Error('OpenAI API server error. Please try again later.');
       }
       
-      throw new Error(`Failed to create conversation thread: ${error.message}`);
+      throw new Error(`Failed to create conversation thread: ${err.message}`);
     }
   }
 
@@ -49,9 +49,9 @@ class OpenAIService {
       });
       console.log(`Added message to thread ${threadId}`);
       return message;
-    } catch (error) {
-      console.error('Error adding message:', error);
-      throw new Error(`Failed to add message to thread: ${error.message}`);
+    } catch (err) {
+      console.error('Failure adding message:', err);
+      throw new Error(`Failed to add message to thread: ${err.message}`);
     }
   }
 
@@ -67,9 +67,9 @@ class OpenAIService {
       });
       console.log(`Started assistant run: ${run.id} on thread: ${threadId} with assistant: ${targetAssistantId}`);
       return run;
-    } catch (error) {
-      console.error('Error running assistant:', error);
-      throw new Error(`Failed to run assistant: ${error.message}`);
+    } catch (err) {
+      console.error('Failure running assistant:', err);
+      throw new Error(`Failed to run assistant: ${err.message}`);
     }
   }
 
@@ -128,9 +128,9 @@ class OpenAIService {
         if (attempts < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, intervalMs));
         }
-      } catch (error) {
-        console.error('Error polling run status:', error);
-        throw error;
+      } catch (err) {
+        console.error('Failure polling run status:', err);
+        throw err;
       }
     }
 
@@ -153,10 +153,10 @@ class OpenAIService {
 
       console.log(`Tool outputs submitted successfully for run ${runId}, new status: ${run.status}`);
       return run;
-    } catch (error) {
-      console.error('Error submitting tool outputs:', error);
+    } catch (err) {
+      console.error('Failure submitting tool outputs:', err);
       console.error('Tool outputs that failed:', toolOutputs);
-      throw new Error(`Failed to submit tool outputs: ${error.message}`);
+      throw new Error(`Failed to submit tool outputs: ${err.message}`);
     }
   }
 
@@ -170,9 +170,9 @@ class OpenAIService {
         order: 'desc'
       });
       return messages.data;
-    } catch (error) {
-      console.error('Error getting messages:', error);
-      throw new Error(`Failed to retrieve messages: ${error.message}`);
+    } catch (err) {
+      console.error('Failure getting messages:', err);
+      throw new Error(`Failed to retrieve messages: ${err.message}`);
     }
   }
 
@@ -184,11 +184,6 @@ class OpenAIService {
       const messages = await this.getMessages(threadId, 20); // Get more messages to find the latest assistant message
       const assistantMessage = messages.find(msg => msg.role === 'assistant');
       
-      if (!assistantMessage) {
-        console.error('No assistant message found in thread:', threadId);
-        console.error('Available messages:', messages.map(m => ({ role: m.role, id: m.id })));
-        throw new Error('No assistant message found');
-      }
 
       // Extract text content from the message
       const textContent = assistantMessage.content
@@ -203,9 +198,9 @@ class OpenAIService {
         content: textContent,
         created_at: assistantMessage.created_at
       };
-    } catch (error) {
-      console.error('Error getting latest assistant message:', error);
-      throw new Error(`Failed to get assistant response: ${error.message}`);
+    } catch (err) {
+      console.error('Failure getting latest assistant message:', err);
+      throw new Error(`Failed to get assistant response: ${err.message}`);
     }
   }
 }

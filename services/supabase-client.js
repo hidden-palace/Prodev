@@ -124,9 +124,9 @@ class SupabaseService {
 
       console.log(`✅ Successfully saved ${data.length} leads to database`);
       return data;
-    } catch (leadsError) {
-      console.error('❌ Error processing leads:', leadsError);
-      throw leadsError;
+    } catch (err) {
+      console.error('❌ Failure processing leads:', err);
+      throw err;
     }
   }
 
@@ -201,9 +201,9 @@ class SupabaseService {
         limit,
         totalPages: Math.ceil((count || 0) / limit)
       };
-    } catch (queryError) {
-      console.error('❌ Error getting leads:', queryError);
-      throw queryError;
+    } catch (err) {
+      console.error('❌ Failure getting leads:', err);
+      throw err;
     }
   }
 
@@ -378,9 +378,9 @@ class SupabaseService {
 
       console.log(`✅ Lead ${leadId} updated successfully`);
       return data;
-    } catch (updateError) {
-      console.error('❌ Error updating lead:', updateError);
-      throw updateError;
+    } catch (err) {
+      console.error('❌ Failure updating lead:', err);
+      throw err;
     }
   }
 
@@ -422,9 +422,9 @@ class SupabaseService {
       });
 
       return stats;
-    } catch (statsError) {
-      console.error('❌ Error getting lead statistics:', statsError);
-      throw statsError;
+    } catch (err) {
+      console.error('❌ Failure getting lead statistics:', err);
+      throw err;
     }
   }
 
@@ -445,9 +445,9 @@ class SupabaseService {
 
       console.log(`✅ Lead ${leadId} deleted successfully`);
       return true;
-    } catch (deleteError) {
-      console.error('❌ Error deleting lead:', deleteError);
-      throw deleteError;
+    } catch (err) {
+      console.error('❌ Failure deleting lead:', err);
+      throw err;
     }
   }
 }

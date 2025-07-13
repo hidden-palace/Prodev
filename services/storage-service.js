@@ -59,9 +59,9 @@ class StorageService {
         fileName: uniqueFileName
       };
 
-    } catch (uploadError) {
-      console.error('❌ Error uploading logo:', uploadError);
-      throw uploadError;
+    } catch (err) {
+      console.error('❌ Failure uploading logo:', err);
+      throw err;
     }
   }
 
@@ -140,9 +140,9 @@ class StorageService {
         fileName: uniqueFileName
       };
 
-    } catch (uploadError) {
-      console.error('❌ Error uploading avatar:', uploadError);
-      throw uploadError;
+    } catch (err) {
+      console.error('❌ Failure uploading avatar:', err);
+      throw err;
     }
   }
 
@@ -162,9 +162,9 @@ class StorageService {
 
       console.log('✅ File deleted successfully:', fileName);
       return true;
-    } catch (deleteError) {
-      console.error('❌ Error deleting file:', deleteError);
-      throw deleteError;
+    } catch (err) {
+      console.error('❌ Failure deleting file:', err);
+      throw err;
     }
   }
 
