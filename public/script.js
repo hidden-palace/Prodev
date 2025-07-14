@@ -126,6 +126,8 @@ function initializeChatInterface() {
   const newChatBtn = document.getElementById('newChatBtn');
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
+  const downloadLeadsBtn = document.getElementById('downloadLeadsBtn');
+  const exportFormatDropdown = document.getElementById('exportFormatDropdown');
   
   // Chat form submission
   if (chatForm) {
@@ -135,6 +137,11 @@ function initializeChatInterface() {
   // New chat button
   if (newChatBtn) {
     newChatBtn.addEventListener('click', startNewChat);
+  }
+  
+  // Download leads functionality
+  if (downloadLeadsBtn && exportFormatDropdown) {
+    initializeLeadsExport(downloadLeadsBtn, exportFormatDropdown);
   }
   
   // Tab switching
