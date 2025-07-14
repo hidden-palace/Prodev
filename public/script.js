@@ -16,7 +16,7 @@ const employees = {
       { icon: '🔍', text: 'Find florists in Los Angeles', action: 'Find florists in Los Angeles area' },
       { icon: '📊', text: 'Research wedding vendors', action: 'Research wedding vendors and event planners' },
       { icon: '🏢', text: 'Corporate clients search', action: 'Find corporate clients who need floral services' },
-      { icon: '📋', text: 'Scrape LinkedIn For VAs', action: 'Scrape LinkedIn For Leads' }
+      { icon: '📋', text: 'Scrape LinkedIn For VAs', action: 'Scrape LinkedIn For Virtual Assistants' }
     ]
   },
   van: {
