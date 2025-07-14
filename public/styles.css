@@ -1030,6 +1030,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.employee-avatar-card .upload-area:hover {
+  background-color: #f8fafc;
 }
 
 .employee-avatar-card .upload-area h4 {

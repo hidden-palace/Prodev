@@ -1020,6 +1020,18 @@ function editLead(leadId) {
 
 // Load saved color scheme on page load
 document.addEventListener('DOMContentLoaded', function() {
+  try {
+    console.log('🚀 Initializing application...');
+    
+    // Initialize all components
+    initializeElements();
+    initializeNavigation();
+    initializeEmployeeSelection();
+    initializeChatInterface();
+    initializeBranding();
+    initializeMobileMenu();
+    
+    // Load saved colors
   const savedColors = localStorage.getItem('orchid-colors');
   if (savedColors) {
     try {
@@ -1045,5 +1057,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('Failed to load saved colors:', error);
     }
+    
+    console.log('✅ Application initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize application:', error);
+  }
   }
 });

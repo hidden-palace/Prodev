@@ -836,6 +836,44 @@
                         <button class="btn primary" id="saveColorsBtn">Save Color Scheme</button>
                     </div>
 
+                    <!-- Company Logo Section -->
+                    <div class="brand-section">
+                        <h3>Company Logo</h3>
+                        <div class="asset-upload">
+                            <div class="upload-area" id="companyLogoUploadArea">
+                                <svg class="upload-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 14.899A7 7 0 0 1 15 12h3a5 5 0 0 1 0 10H4a7 7 0 0 1 0-14z"></path>
+                                    <polyline points="16 16 12 12 8 16"></polyline>
+                                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                                </svg>
+                                <h4>Drag & Drop or Click to Upload Logo</h4>
+                                <p>PNG, JPEG, SVG (Max 2MB)</p>
+                                <input type="file" id="companyLogoInput" accept="image/png,image/jpeg,image/svg+xml" style="display: none;">
+                            </div>
+                            <div class="logo-preview-container" style="margin-top: 20px; text-align: center;">
+                                <img id="companyLogoPreview" src="" alt="Logo Preview" style="max-width: 200px; max-height: 100px; border: 1px solid #eee; display: none; border-radius: 8px;">
+                            </div>
+                            <div class="logo-upload-actions" style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
+                                <button class="btn primary" id="saveCompanyLogoBtn">
+                                    <span class="btn-text">Save Logo</span>
+                                    <span class="btn-loading" style="display: none;">
+                                        <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+                                        </svg>
+                                        Saving...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Employee Profile Pictures Section -->
+                    <div class="brand-section">
+                        <h3>AI Employee Profile Pictures</h3>
+                        <div id="employeeAvatarsContainer" class="employee-avatars-grid">
+                            <!-- Employee avatar upload cards will be dynamically inserted here by JavaScript -->
+                        </div>
+                    </div>
                     
                     <div class="brand-section">
                         <h3>Logo & Assets</h3>
