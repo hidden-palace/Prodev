@@ -163,6 +163,21 @@ function initializeChatInterface() {
   // Auto-resize textarea
   if (messageInput) {
     messageInput.addEventListener('input', autoResizeTextarea);
+    
+    // Add Enter key to send message
+    messageInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        
+        // Only send if there's content and not already processing
+        if (messageInput.value.trim() && !isProcessing) {
+          const chatForm = document.getElementById('chatForm');
+          if (chatForm) {
+            handleChatSubmit(event);
+          }
+        }
+      }
+    });
   }
 }
 
