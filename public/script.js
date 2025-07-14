@@ -1,1092 +1,1047 @@
-/**
- * Main Application Script
- * Handles UI interactions, API calls, and application state
- */
-
 // Global state
 let currentEmployee = 'brenden';
-let currentThread = null;
-let currentRun = null;
+let currentThreadId = null;
 let isProcessing = false;
-let brandingData = null;
-let employeeProfiles = [];
+let conversationHistory = {}; // Store conversation history per employee
 
-// Initialize application when DOM is loaded
+// Employee configurations
+const employees = {
+  brenden: {
+    name: 'AI Brenden',
+    role: 'lead scraper',
+    specialty: 'Lead Research Specialist',
+    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    description: 'Expert data researcher specializing in B2B lead generation. I extract high-quality prospects from LinkedIn, Google Maps, and Yellow Pages with precision and attention to detail.',
+    quickActions: [
+      { icon: '🔍', text: 'Find florists in Los Angeles', action: 'Find florists in Los Angeles area' },
+      { icon: '📊', text: 'Research wedding vendors', action: 'Research wedding vendors and event planners' },
+      { icon: '🏢', text: 'Corporate clients search', action: 'Find corporate clients who need floral services' },
+      { icon: '📋', text: 'Validate lead data', action: 'Validate and score the latest lead data' }
+    ]
+  },
+  van: {
+    name: 'AI Van',
+    role: 'page operator',
+    specialty: 'Digital Marketing Designer',
+    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
+    quickActions: [
+      { icon: '🎨', text: 'Create Valentine\'s page', action: 'Create a Valentine\'s Day landing page for flower sales' },
+      { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
+      { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
+      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
+    ]
+  },
+  angel: {
+    name: 'AI Angel',
+    role: 'voice caller',
+    specialty: 'Voice Outreach Manager',
+    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    description: 'Professional voice outreach specialist for customer engagement and lead qualification. I handle phone campaigns with a personal touch.',
+    quickActions: [
+      { icon: '📞', text: 'Start call campaign', action: 'Start a voice outreach campaign for new leads' },
+      { icon: '📝', text: 'Prepare call script', action: 'Prepare a call script for florist outreach' },
+      { icon: '📊', text: 'Call performance review', action: 'Review call campaign performance and metrics' },
+      { icon: '🎯', text: 'Qualify leads', action: 'Qualify leads through voice conversations' }
+    ]
+  }
+};
+
+// DOM elements
+let chatMessages, messageInput, sendButton, charCount;
+
+// Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Application initializing...');
-    
-    // Initialize UI components
-    initializeNavigation();
-    initializeBranding();
-    initializeEmployees();
-    initializeDashboard();
-    
-    // Load initial data
-    loadBrandingData();
-    loadEmployeeProfiles();
-    loadDashboardData();
-    
-    // Set default employee
-    selectEmployee('brenden');
-    
-    console.log('✅ Application initialized successfully');
+  initializeElements();
+  initializeNavigation();
+  initializeEmployeeSelection();
+  initializeChatInterface();
+  initializeBranding();
+  initializeMobileMenu();
+  
+  // Load initial employee
+  switchEmployee('brenden');
+  
+  // Load dashboard metrics
+  loadDashboardMetrics();
+  
+  console.log('🚀 Orchid Republic Command Center initialized');
 });
 
-/**
- * Initialize navigation system
- */
+function initializeElements() {
+  chatMessages = document.getElementById('chatMessages');
+  messageInput = document.getElementById('messageInput');
+  sendButton = document.getElementById('sendButton');
+  charCount = document.getElementById('charCount');
+}
+
 function initializeNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const contentSections = document.querySelectorAll('.content-section');
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const targetSection = this.dataset.section;
-            
-            // Update active nav item
-            navItems.forEach(nav => nav.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show target section
-            contentSections.forEach(section => {
-                section.classList.remove('active');
-                if (section.id === targetSection) {
-                    section.classList.add('active');
-                }
-            });
-            
-            // Load section-specific data
-            loadSectionData(targetSection);
-        });
+  const navItems = document.querySelectorAll('.nav-item');
+  const contentSections = document.querySelectorAll('.content-section');
+  
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const sectionId = item.dataset.section;
+      
+      // Update active nav item
+      navItems.forEach(nav => nav.classList.remove('active'));
+      item.classList.add('active');
+      
+      // Show corresponding section
+      contentSections.forEach(section => section.classList.remove('active'));
+      const targetSection = document.getElementById(`${sectionId}-section`);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+      
+      // Load section-specific data
+      if (sectionId === 'leads') {
+        console.log('🎯 Switching to leads section, loading data...');
+        loadLeadsData();
+      } else if (sectionId === 'dashboard') {
+        console.log('🎯 Switching to dashboard section, loading metrics...');
+        loadDashboardMetrics();
+      }
     });
+  });
 }
 
-/**
- * Initialize branding functionality
- */
+function initializeEmployeeSelection() {
+  const teamMembers = document.querySelectorAll('.team-member');
+  
+  teamMembers.forEach(member => {
+    member.addEventListener('click', () => {
+      const employeeId = member.dataset.employee;
+      switchEmployee(employeeId);
+      
+      // Update active team member
+      teamMembers.forEach(m => m.classList.remove('active'));
+      member.classList.add('active');
+    });
+  });
+}
+
+function initializeChatInterface() {
+  const chatForm = document.getElementById('chatForm');
+  const newChatBtn = document.getElementById('newChatBtn');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  // Chat form submission
+  if (chatForm) {
+    chatForm.addEventListener('submit', handleChatSubmit);
+  }
+  
+  // New chat button
+  if (newChatBtn) {
+    newChatBtn.addEventListener('click', startNewChat);
+  }
+  
+  // Tab switching
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.tab;
+      
+      // Update active tab
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Show corresponding content
+      tabContents.forEach(content => content.classList.remove('active'));
+      const targetContent = document.getElementById(`${tabId}-tab`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    });
+  });
+  
+  // Character count
+  if (messageInput && charCount) {
+    messageInput.addEventListener('input', updateCharacterCount);
+  }
+  
+  // Auto-resize textarea
+  if (messageInput) {
+    messageInput.addEventListener('input', autoResizeTextarea);
+  }
+}
+
 function initializeBranding() {
-    // Logo upload
-    const logoInput = document.getElementById('logo-upload');
-    if (logoInput) {
-        logoInput.addEventListener('change', handleLogoUpload);
-    }
-    
-    // Color inputs
-    const colorInputs = document.querySelectorAll('input[type="color"]');
-    colorInputs.forEach(input => {
-        input.addEventListener('change', handleColorChange);
+  const primaryPicker = document.getElementById('primaryPicker');
+  const primaryInput = document.getElementById('primaryInput');
+  const secondaryPicker = document.getElementById('secondaryPicker');
+  const secondaryInput = document.getElementById('secondaryInput');
+  const accentPicker = document.getElementById('accentPicker');
+  const accentInput = document.getElementById('accentInput');
+  const saveColorsBtn = document.getElementById('saveColorsBtn');
+  
+  // Sync color picker with text input
+  if (primaryPicker && primaryInput) {
+    primaryPicker.addEventListener('change', (e) => {
+      primaryInput.value = e.target.value.toUpperCase();
+    });
+    primaryInput.addEventListener('change', (e) => {
+      primaryPicker.value = e.target.value;
+    });
+  }
+  
+  if (secondaryPicker && secondaryInput) {
+    secondaryPicker.addEventListener('change', (e) => {
+      secondaryInput.value = e.target.value.toUpperCase();
+    });
+    secondaryInput.addEventListener('change', (e) => {
+      secondaryPicker.value = e.target.value;
+    });
+  }
+  
+  if (accentPicker && accentInput) {
+    accentPicker.addEventListener('change', (e) => {
+      accentInput.value = e.target.value.toUpperCase();
+    });
+    accentInput.addEventListener('change', (e) => {
+      accentPicker.value = e.target.value;
+    });
+  }
+  
+  // Save colors
+  if (saveColorsBtn) {
+    saveColorsBtn.addEventListener('click', saveColorScheme);
+  }
+}
+
+function initializeMobileMenu() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.getElementById('sidebar');
+  
+  if (mobileMenuToggle && sidebar) {
+    mobileMenuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('mobile-open');
     });
     
-    // Employee avatar uploads
-    const avatarInputs = document.querySelectorAll('.avatar-upload');
-    avatarInputs.forEach(input => {
-        input.addEventListener('change', handleAvatarUpload);
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
     });
+  }
 }
 
-/**
- * Initialize employee chat interface
- */
-function initializeEmployees() {
-    // Team member selection
-    const teamMembers = document.querySelectorAll('.team-member');
-    teamMembers.forEach(member => {
-        member.addEventListener('click', function() {
-            const employeeId = this.dataset.employee;
-            selectEmployee(employeeId);
-        });
+function saveCurrentConversation() {
+  if (!chatMessages || !currentEmployee) return;
+  
+  // Save current conversation state with employee-specific thread
+  conversationHistory[currentEmployee] = {
+    threadId: currentThreadId, // This thread belongs to the current employee
+    messages: chatMessages.innerHTML,
+    timestamp: Date.now()
+  };
+  
+  console.log(`💾 Saved conversation for ${employees[currentEmployee]?.name}:`, {
+    employee: currentEmployee,
+    threadId: currentThreadId,
+    messageCount: chatMessages.children.length
+  });
+}
+
+function loadConversation(employeeId) {
+  if (!chatMessages) return;
+  
+  const savedConversation = conversationHistory[employeeId];
+  
+  if (savedConversation && savedConversation.messages) {
+    // Restore saved conversation with employee-specific thread
+    chatMessages.innerHTML = savedConversation.messages;
+    currentThreadId = savedConversation.threadId; // Use the thread that belongs to this employee
+    
+    // Re-attach event listeners to any interactive elements
+    reattachEventListeners();
+    
+    scrollToBottom();
+    
+    console.log(`📂 Loaded conversation for ${employees[employeeId]?.name}:`, {
+      employee: employeeId,
+      threadId: currentThreadId,
+      messageCount: chatMessages.children.length
     });
-    
-    // Chat form
-    const chatForm = document.getElementById('chat-form');
-    if (chatForm) {
-        chatForm.addEventListener('submit', handleChatSubmit);
-    }
-    
-    // Message input
-    const messageInput = document.getElementById('messageInput');
-    if (messageInput) {
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleChatSubmit(e);
-            }
-        });
-        
-        messageInput.addEventListener('input', updateCharacterCount);
-    }
-    
-    // Tab switching
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            switchTab(tabName);
-        });
-    });
-}
-
-/**
- * Initialize dashboard
- */
-function initializeDashboard() {
-    // Refresh button
-    const refreshBtn = document.getElementById('refresh-dashboard');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', loadDashboardData);
-    }
-    
-    // Export buttons
-    const exportBtns = document.querySelectorAll('.export-btn');
-    exportBtns.forEach(btn => {
-        btn.addEventListener('click', handleExport);
-    });
-}
-
-/**
- * Load section-specific data
- */
-function loadSectionData(section) {
-    switch (section) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'leads':
-            loadLeadsData();
-            break;
-        case 'employees':
-            loadEmployeeData();
-            break;
-        case 'branding':
-            loadBrandingData();
-            break;
-        case 'status':
-            loadStatusData();
-            break;
-    }
-}
-
-/**
- * Load branding data
- */
-async function loadBrandingData() {
-    try {
-        const response = await fetch('/api/branding');
-        brandingData = await response.json();
-        
-        // Apply branding to UI
-        applyBranding(brandingData);
-        
-        console.log('✅ Branding data loaded');
-    } catch (error) {
-        console.error('❌ Failed to load branding data:', error);
-        showNotification('Failed to load branding data', 'error');
-    }
-}
-
-/**
- * Apply branding to UI
- */
-function applyBranding(branding) {
-    // Update logo
-    const logoElements = document.querySelectorAll('.sidebar-logo, .company-logo img');
-    logoElements.forEach(logo => {
-        if (branding.logo_url) {
-            logo.src = branding.logo_url;
-            logo.style.display = 'block';
-            
-            // Hide no-logo message
-            const noLogoMessage = document.getElementById('no-logo-message');
-            if (noLogoMessage) {
-                noLogoMessage.style.display = 'none';
-            }
-        }
-    });
-    
-    // Update colors
-    const root = document.documentElement;
-    if (branding.primary_color) {
-        root.style.setProperty('--primary-color', branding.primary_color);
-        const primaryInput = document.getElementById('primary-color');
-        if (primaryInput) {
-            primaryInput.value = branding.primary_color;
-            primaryInput.nextElementSibling.value = branding.primary_color;
-        }
-    }
-    if (branding.secondary_color) {
-        root.style.setProperty('--secondary-color', branding.secondary_color);
-        const secondaryInput = document.getElementById('secondary-color');
-        if (secondaryInput) {
-            secondaryInput.value = branding.secondary_color;
-            secondaryInput.nextElementSibling.value = branding.secondary_color;
-        }
-    }
-    if (branding.accent_color) {
-        root.style.setProperty('--accent-color', branding.accent_color);
-        const accentInput = document.getElementById('accent-color');
-        if (accentInput) {
-            accentInput.value = branding.accent_color;
-            accentInput.nextElementSibling.value = branding.accent_color;
-        }
-    }
-}
-
-/**
- * Load employee profiles
- */
-async function loadEmployeeProfiles() {
-    try {
-        const response = await fetch('/api/branding/employee-profiles');
-        employeeProfiles = await response.json();
-        
-        // Update employee avatars
-        updateEmployeeAvatars();
-        
-        console.log('✅ Employee profiles loaded');
-    } catch (error) {
-        console.error('❌ Failed to load employee profiles:', error);
-    }
-}
-
-/**
- * Update employee avatars in UI
- */
-function updateEmployeeAvatars() {
-    employeeProfiles.forEach(profile => {
-        const avatarElements = document.querySelectorAll(`[data-employee="${profile.employee_id}"] img`);
-        avatarElements.forEach(avatar => {
-            if (profile.profile_picture_url) {
-                avatar.src = profile.profile_picture_url;
-            }
-        });
-    });
-}
-
-/**
- * Load dashboard data
- */
-async function loadDashboardData() {
-    try {
-        showLoading('dashboard-content');
-        
-        // Load multiple data sources
-        const [statusResponse, leadsResponse] = await Promise.all([
-            fetch('/api/status'),
-            fetch('/api/leads/statistics')
-        ]).catch(error => {
-            console.warn('Some API endpoints may not be available:', error);
-            return [null, null];
-        });
-        
-        const statusData = statusResponse ? await statusResponse.json() : null;
-        const leadsData = leadsResponse ? await leadsResponse.json() : null;
-        
-        // Update dashboard UI
-        updateDashboardMetrics(statusData, leadsData);
-        
-        hideLoading('dashboard-content');
-        console.log('✅ Dashboard data loaded');
-    } catch (error) {
-        console.error('❌ Failed to load dashboard data:', error);
-        hideLoading('dashboard-content');
-        showNotification('Some dashboard data may be unavailable', 'warning');
-    }
-}
-
-/**
- * Update dashboard metrics
- */
-function updateDashboardMetrics(statusData, leadsData) {
-    // Update employee status
-    const employeeList = document.querySelector('.employee-status-list');
-    if (employeeList && statusData.employees) {
-        employeeList.innerHTML = '';
-        Object.entries(statusData.employees).forEach(([id, employee]) => {
-            const statusDot = employee.assistant_configured && employee.webhook_configured ? 'online' : 'offline';
-            employeeList.innerHTML += `
-                <div class="employee-status-item">
-                    <div class="status-dot ${statusDot}"></div>
-                    <div>
-                        <div class="employee-name">${employee.name}</div>
-                        <div class="employee-role">${employee.role}</div>
-                    </div>
-                </div>
-            `;
-        });
-    }
-    
-    // Update lead metrics
-    if (leadsData) {
-        updateMetric('total-leads', leadsData.total || 0);
-        updateMetric('validated-leads', leadsData.validated || 0);
-        updateMetric('contacted-leads', leadsData.outreach_sent || 0);
-        updateMetric('converted-leads', leadsData.converted || 0);
-    }
-    
-    // Update pending operations
-    updateMetric('pending-operations', statusData.pending_tool_calls || 0);
-}
-
-/**
- * Update a metric value
- */
-function updateMetric(metricId, value) {
-    const element = document.getElementById(metricId);
-    if (element) {
-        element.textContent = value;
-    }
-}
-
-/**
- * Load leads data
- */
-async function loadLeadsData() {
-    try {
-        showLoading('leads-table-container');
-        
-        const response = await fetch('/api/leads?limit=50');
-        const data = await response.json();
-        
-        // Update leads table
-        updateLeadsTable(data.leads || []);
-        
-        hideLoading('leads-table-container');
-        console.log('✅ Leads data loaded');
-    } catch (error) {
-        console.error('❌ Failed to load leads data:', error);
-        hideLoading('leads-table-container');
-        showNotification('Failed to load leads data', 'error');
-    }
-}
-
-/**
- * Update leads table
- */
-function updateLeadsTable(leads) {
-    const tableBody = document.querySelector('.leads-table tbody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    leads.forEach(lead => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <div class="business-info">
-                    <strong>${lead.business_name || 'Unknown'}</strong>
-                    <small>${lead.industry || 'Unknown Industry'}</small>
-                </div>
-            </td>
-            <td>
-                <div class="contact-info">
-                    <strong>${lead.contact_name || 'No contact'}</strong>
-                    <small>${lead.email || 'No email'}</small>
-                    <small>${lead.phone || 'No phone'}</small>
-                </div>
-            </td>
-            <td>${lead.city || ''}, ${lead.state || ''}</td>
-            <td>
-                <span class="score ${getScoreClass(lead.average_score)}">
-                    ${lead.average_score ? lead.average_score.toFixed(1) : 'N/A'}
-                </span>
-            </td>
-            <td>
-                <span class="status ${lead.validated ? 'qualified' : 'new'}">
-                    ${lead.validated ? 'Validated' : 'New'}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="editLead('${lead.id}')">✏️</button>
-                    <button class="btn-icon" onclick="deleteLead('${lead.id}')">🗑️</button>
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-/**
- * Get score class for styling
- */
-function getScoreClass(score) {
-    if (!score) return 'low';
-    if (score >= 4) return 'high';
-    if (score >= 3) return 'medium';
-    return 'low';
-}
-
-/**
- * Select employee for chat
- */
-function selectEmployee(employeeId) {
-    console.log(`🔄 Switching to employee: ${employeeId}`);
-    
-    currentEmployee = employeeId;
-    
-    // Update UI
-    const teamMembers = document.querySelectorAll('.team-member');
-    teamMembers.forEach(member => {
-        member.classList.remove('active');
-        if (member.dataset.employee === employeeId) {
-            member.classList.add('active');
-        }
-    });
-    
-    // Update chat header
-    updateChatHeader(employeeId);
-    
-    // Clear current conversation
+  } else {
+    // Show welcome message for new conversation
     clearChatMessages();
-    currentThread = null;
-    currentRun = null;
+    showWelcomeMessage(employees[employeeId]);
+    currentThreadId = null; // No thread yet for this employee
     
-    // Show welcome message for selected employee
-    showWelcomeMessage(employeeId);
-    
-    console.log(`👤 Selected employee: ${employeeId}`);
+    console.log(`🆕 New conversation for ${employees[employeeId]?.name}:`, {
+      employee: employeeId,
+      threadId: currentThreadId
+    });
+  }
 }
 
-/**
- * Show welcome message for employee
- */
-function showWelcomeMessage(employeeId) {
-    const welcomeMessages = {
-        'brenden': 'Hi! I\'m AI Brenden, your Lead Research Specialist. I can help you find and qualify potential leads for your business. What kind of leads are you looking for today?',
-        'van': 'Hello! I\'m AI Van, your Digital Marketing Designer. I can help you create landing pages, design marketing materials, and develop digital campaigns. How can I assist you?',
-        'angel': 'Hi there! I\'m AI Angel, your Voice Outreach Manager. I\'m currently being configured for voice calling capabilities. In the meantime, I can help you plan your outreach strategy!'
-    };
-    
-    const message = welcomeMessages[employeeId] || 'Hello! How can I help you today?';
-    setTimeout(() => {
-        addMessageToChat('assistant', message);
-    }, 500);
-}
-/**
- * Update chat header with employee info
- */
-function updateChatHeader(employeeId) {
-    const employeeConfig = {
-        brenden: { 
-            name: 'AI Brenden', 
-            role: 'Lead Research Specialist',
-            description: 'Specializes in finding and qualifying high-quality leads for your business'
-        },
-        van: { 
-            name: 'AI Van', 
-            role: 'Digital Marketing Designer',
-            description: 'Creates compelling landing pages and marketing materials'
-        },
-        angel: { 
-            name: 'AI Angel', 
-            role: 'Voice Outreach Manager',
-            description: 'Handles voice calling and outreach campaigns (currently in setup)'
-        }
-    };
-    
-    const employee = employeeConfig[employeeId];
-    if (employee) {
-        const nameElement = document.querySelector('.employee-details h3');
-        const roleElement = document.querySelector('.role-tag');
-        const descElement = document.querySelector('.employee-description p');
-        
-        if (nameElement) nameElement.textContent = employee.name;
-        if (roleElement) roleElement.textContent = employee.role;
-        if (descElement) descElement.textContent = employee.description;
+function reattachEventListeners() {
+  // Re-attach event listeners for HTML preview buttons
+  const viewFullBtns = chatMessages.querySelectorAll('.view-full-btn');
+  viewFullBtns.forEach(btn => {
+    btn.onclick = () => toggleHtmlView(btn);
+  });
+  
+  const copyBtns = chatMessages.querySelectorAll('.copy-btn');
+  copyBtns.forEach(btn => {
+    const content = btn.getAttribute('data-content');
+    if (content) {
+      btn.onclick = () => copyToClipboard(btn, content);
     }
+  });
+  
+  const downloadBtns = chatMessages.querySelectorAll('.download-btn');
+  downloadBtns.forEach(btn => {
+    const content = btn.getAttribute('data-content');
+    if (content) {
+      btn.onclick = () => downloadHtml(content);
+    }
+  });
 }
 
-/**
- * Handle chat form submission
- */
-async function handleChatSubmit(e) {
-    e.preventDefault();
+function switchEmployee(employeeId) {
+  // Save current conversation before switching (with current employee's thread)
+  if (currentEmployee && currentEmployee !== employeeId) {
+    saveCurrentConversation();
+    console.log(`🔄 Switching from ${employees[currentEmployee]?.name} to ${employees[employeeId]?.name}`);
+  }
+  
+  // Update current employee
+  const previousEmployee = currentEmployee;
+  currentEmployee = employeeId;
+  
+  const employee = employees[employeeId];
+  if (!employee) return;
+  
+  // Update header information
+  const avatarImg = document.getElementById('current-employee-avatar');
+  const nameEl = document.getElementById('current-employee-name');
+  const roleEl = document.getElementById('current-employee-role');
+  const specialtyEl = document.getElementById('current-employee-specialty');
+  const descriptionEl = document.getElementById('employee-description');
+  const newChatBtn = document.getElementById('newChatBtn');
+  
+  if (avatarImg) avatarImg.src = employee.avatar;
+  if (nameEl) nameEl.textContent = employee.name;
+  if (roleEl) roleEl.textContent = employee.role;
+  if (specialtyEl) specialtyEl.textContent = employee.specialty;
+  if (descriptionEl) descriptionEl.textContent = employee.description;
+  if (newChatBtn) newChatBtn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      <path d="M12 7v6m3-3H9"></path>
+    </svg>
+    New Chat with ${employee.name}
+  `;
+  
+  // Update quick actions
+  updateQuickActions(employee.quickActions);
+  
+  // Load conversation for this employee (with their own thread)
+  loadConversation(employeeId);
+  
+  console.log(`✅ Successfully switched to ${employee.name} (${employeeId})`);
+}
+
+function updateQuickActions(quickActions) {
+  const quickActionsContainer = document.querySelector('.quick-actions');
+  if (!quickActionsContainer) return;
+  
+  quickActionsContainer.innerHTML = '';
+  
+  quickActions.forEach(action => {
+    const actionEl = document.createElement('div');
+    actionEl.className = 'quick-action';
+    actionEl.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 6v6l4 2"></path>
+      </svg>
+      <span>${action.icon} ${action.text}</span>
+    `;
     
-    if (isProcessing) return;
-    
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    try {
-        isProcessing = true;
-        updateSendButton(true);
-        
-        // Add user message to chat
-        addMessageToChat('user', message);
-        messageInput.value = '';
+    actionEl.addEventListener('click', () => {
+      if (messageInput) {
+        messageInput.value = action.action;
+        messageInput.focus();
         updateCharacterCount();
-        
-        // Show typing indicator
-        showTypingIndicator();
-        
-        // Send to API
-        const response = await fetch('/api/ask', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message,
-                employee: currentEmployee,
-                thread_id: currentThread
-            })
-        });
-        
-        const data = await response.json();
-        
-        // Hide typing indicator
-        hideTypingIndicator();
-        
-        if (response.ok) {
-            currentThread = data.thread_id;
-            currentRun = data.run_id;
-            
-            if (data.status === 'completed') {
-                addMessageToChat('assistant', data.message);
-            } else if (data.status === 'requires_action') {
-                addMessageToChat('assistant', `${getEmployeeName(currentEmployee)} is processing your request with external tools...`);
-                // Poll for completion
-                pollForCompletion(data.thread_id, data.run_id, currentEmployee);
-            }
-        } else {
-            throw new Error(data.message || 'Request failed');
-        }
-        
-    } catch (error) {
-        console.error('❌ Chat error:', error);
-        hideTypingIndicator();
-        addMessageToChat('assistant', 'Sorry, I encountered an error processing your request.');
-        showNotification('Failed to send message', 'error');
-    } finally {
-        isProcessing = false;
-        updateSendButton(false);
-    }
+      }
+    });
+    
+    quickActionsContainer.appendChild(actionEl);
+  });
 }
 
-/**
- * Get employee display name
- */
-function getEmployeeName(employeeId) {
-    const employeeNames = {
-        'brenden': 'AI Brenden',
-        'van': 'AI Van', 
-        'angel': 'AI Angel'
-    };
-    return employeeNames[employeeId] || 'AI Assistant';
-}
-
-/**
- * Show typing indicator
- */
-function showTypingIndicator() {
-    const messagesContainer = document.querySelector('.chat-messages');
-    if (!messagesContainer) return;
-    
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message assistant typing-message';
-    typingDiv.innerHTML = `
-        <div class="message-content">
-            <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    `;
-    
-    messagesContainer.appendChild(typingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-/**
- * Hide typing indicator
- */
-function hideTypingIndicator() {
-    const typingMessage = document.querySelector('.typing-message');
-    if (typingMessage) {
-        typingMessage.remove();
-    }
-}
-
-/**
- * Add message to chat interface
- */
-function addMessageToChat(role, content) {
-    const messagesContainer = document.querySelector('.chat-messages');
-    if (!messagesContainer) return;
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${role}`;
-    
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    messageDiv.innerHTML = `
-        <div class="message-content">${content}</div>
-        <div class="message-time">${time}</div>
-    `;
-    
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-/**
- * Clear chat messages
- */
 function clearChatMessages() {
-    const messagesContainer = document.querySelector('.chat-messages');
-    if (messagesContainer) {
-        // Keep the welcome message, remove others
-        const welcomeMessage = messagesContainer.querySelector('.welcome-message');
-        messagesContainer.innerHTML = '';
-        if (welcomeMessage) {
-            messagesContainer.appendChild(welcomeMessage);
-        }
-    }
+  if (chatMessages) {
+    chatMessages.innerHTML = '';
+  }
 }
 
-/**
- * Poll for completion of async operations
- */
-async function pollForCompletion(threadId, runId, employeeId) {
-    const maxAttempts = 30;
-    let attempts = 0;
-    
-    const poll = async () => {
-        try {
-            const response = await fetch(`/api/run-status?thread_id=${threadId}&run_id=${runId}&employee_id=${employeeId}`);
-            const data = await response.json();
-            
-            if (data.status === 'completed') {
-                hideTypingIndicator();
-                addMessageToChat('assistant', data.message);
-                return;
-            } else if (data.status === 'failed') {
-                hideTypingIndicator();
-                addMessageToChat('assistant', 'Sorry, the request failed to complete.');
-                return;
-            }
-            
-            attempts++;
-            if (attempts < maxAttempts) {
-                setTimeout(poll, 2000);
-            } else {
-                hideTypingIndicator();
-                addMessageToChat('assistant', 'Request timed out. Please try again.');
-            }
-        } catch (error) {
-            console.error('❌ Polling error:', error);
-            hideTypingIndicator();
-            addMessageToChat('assistant', 'Error checking request status.');
-        }
+function showWelcomeMessage(employee) {
+  if (!chatMessages) return;
+  
+  const welcomeEl = document.createElement('div');
+  welcomeEl.className = 'welcome-message';
+  welcomeEl.innerHTML = `
+    <div class="welcome-avatar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <div class="welcome-content">
+      <h4>Hi! I'm ${employee.name}, your ${employee.specialty}.</h4>
+      <p>Ask me to help with ${employee.role === 'lead scraper' ? 'lead generation and research' : employee.role === 'page operator' ? 'landing page design and marketing' : 'voice outreach and customer engagement'} or use the quick actions above.</p>
+    </div>
+  `;
+  
+  chatMessages.appendChild(welcomeEl);
+  scrollToBottom();
+}
+
+function startNewChat() {
+  console.log(`🗑️ Starting new chat with ${employees[currentEmployee]?.name} - clearing conversation history`);
+  
+  // Clear current conversation from memory for this employee only
+  if (currentEmployee) {
+    delete conversationHistory[currentEmployee];
+  }
+  
+  // Reset thread and UI for current employee
+  currentThreadId = null;
+  clearChatMessages();
+  showWelcomeMessage(employees[currentEmployee]);
+  
+  if (messageInput) {
+    messageInput.value = '';
+    messageInput.focus();
+    updateCharacterCount();
+  }
+  
+  console.log(`✅ New chat started with ${employees[currentEmployee]?.name}`);
+}
+
+async function handleChatSubmit(e) {
+  e.preventDefault();
+  
+  if (isProcessing || !messageInput || !messageInput.value.trim()) {
+    return;
+  }
+  
+  const message = messageInput.value.trim();
+  
+  console.log(`💬 Sending message to ${employees[currentEmployee]?.name}:`, {
+    employee: currentEmployee,
+    threadId: currentThreadId,
+    messageLength: message.length
+  });
+  
+  // Add user message to chat
+  addMessage(message, 'user');
+  
+  // Clear input and update UI
+  messageInput.value = '';
+  updateCharacterCount();
+  setProcessingState(true);
+  
+  // Show typing indicator
+  const typingIndicator = showTypingIndicator();
+  
+  try {
+    const requestBody = {
+      message: message,
+      employee: currentEmployee, // Ensure we're sending to the correct employee
+      thread_id: currentThreadId // Use employee-specific thread (or null for new thread)
     };
     
-    setTimeout(poll, 2000);
-}
-
-/**
- * Update send button state
- */
-function updateSendButton(disabled) {
-    const sendButton = document.querySelector('.send-button');
-    if (sendButton) {
-        sendButton.disabled = disabled;
-    }
-}
-
-/**
- * Update character count
- */
-function updateCharacterCount() {
-    const messageInput = document.getElementById('messageInput');
-    const charCount = document.querySelector('.character-count');
+    console.log(`📤 API Request:`, requestBody);
     
-    if (messageInput && charCount) {
-        const length = messageInput.value.length;
-        const maxLength = 1000;
-        
-        charCount.textContent = `${length}/${maxLength}`;
-        
-        if (length > maxLength * 0.9) {
-            charCount.classList.add('warning');
-        } else {
-            charCount.classList.remove('warning');
-        }
-        
-        if (length > maxLength) {
-            charCount.classList.add('error');
-        } else {
-            charCount.classList.remove('error');
-        }
-    }
-}
-
-/**
- * Handle logo upload
- */
-async function handleLogoUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    try {
-        showLoading('logo-upload-area');
-        
-        const formData = new FormData();
-        formData.append('logo', file);
-        
-        const response = await fetch('/api/storage/logo', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Logo uploaded successfully!', 'success');
-            // Update logo in UI
-            const logoElements = document.querySelectorAll('.sidebar-logo, .company-logo img, .logo-preview');
-            logoElements.forEach(logo => {
-                logo.src = data.logo_url;
-                logo.style.display = 'block';
-            });
-            
-            // Hide no-logo message
-            const noLogoMessage = document.getElementById('no-logo-message');
-            if (noLogoMessage) {
-                noLogoMessage.style.display = 'none';
-            }
-        } else {
-            throw new Error(data.message || 'Upload failed');
-        }
-        
-    } catch (error) {
-        console.error('❌ Logo upload error:', error);
-        showNotification('Failed to upload logo', 'error');
-    } finally {
-        hideLoading('logo-upload-area');
-    }
-}
-
-/**
- * Handle color changes
- */
-async function handleColorChange(e) {
-    const colorType = e.target.dataset.color;
-    const colorValue = e.target.value;
-    
-    try {
-        const response = await fetch('/api/branding/colors', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                [`${colorType}_color`]: colorValue
-            })
-        });
-        
-        if (response.ok) {
-            // Apply color immediately
-            document.documentElement.style.setProperty(`--${colorType}-color`, colorValue);
-            // Update text input
-            e.target.nextElementSibling.value = colorValue;
-            showNotification('Color updated successfully!', 'success');
-        } else {
-            throw new Error('Failed to update color');
-        }
-        
-    } catch (error) {
-        console.error('❌ Color update error:', error);
-        showNotification('Failed to update color', 'error');
-    }
-}
-
-/**
- * Handle avatar upload
- */
-async function handleAvatarUpload(e) {
-    const file = e.target.files[0];
-    const employeeId = e.target.dataset.employee;
-    
-    if (!file || !employeeId) return;
-    
-    try {
-        showLoading(`avatar-${employeeId}`);
-        
-        const formData = new FormData();
-        formData.append('avatar', file);
-        formData.append('employee_id', employeeId);
-        
-        const response = await fetch('/api/storage/employee-avatar', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Avatar uploaded successfully!', 'success');
-            // Update avatar in UI
-            const avatarElements = document.querySelectorAll(`[data-employee="${employeeId}"] img, .employee-avatar-img`);
-            avatarElements.forEach(avatar => {
-                if (avatar.closest(`[data-employee="${employeeId}"]`) || avatar.classList.contains('employee-avatar-img')) {
-                    avatar.src = data.avatar_url;
-                }
-            });
-        } else {
-            throw new Error(data.message || 'Upload failed');
-        }
-        
-    } catch (error) {
-        console.error('❌ Avatar upload error:', error);
-        showNotification('Failed to upload avatar', 'error');
-    } finally {
-        hideLoading(`avatar-${employeeId}`);
-    }
-}
-
-/**
- * Switch tabs in employee interface
- */
-function switchTab(tabName) {
-    // Update tab buttons
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    tabButtons.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active');
-        }
+    const response = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
     });
     
-    // Update tab content
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-        if (content.id === `${tabName}-content`) {
-            content.classList.add('active');
-        }
+    const data = await response.json();
+    
+    console.log(`📥 API Response:`, {
+      status: response.status,
+      ok: response.ok,
+      data: data
     });
-}
-
-/**
- * Show loading state
- */
-function showLoading(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.classList.add('loading');
+    
+    // Remove typing indicator
+    if (typingIndicator) {
+      typingIndicator.remove();
     }
-}
-
-/**
- * Hide loading state
- */
-function hideLoading(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.classList.remove('loading');
+    
+    if (!response.ok) {
+      throw new Error(data.details || data.error || 'Request failed');
     }
+    
+    // Update thread ID for this employee
+    if (data.thread_id) {
+      currentThreadId = data.thread_id;
+      console.log(`🧵 Thread updated for ${employees[currentEmployee]?.name}: ${currentThreadId}`);
+    }
+    
+    if (data.status === 'completed') {
+      // Show assistant response
+      addMessage(data.message, 'assistant');
+    } else if (data.status === 'requires_action') {
+      // Show tool calls status
+      addMessage(`I'm working on your request using external tools. This may take a moment...`, 'assistant');
+      
+      // Start polling for completion
+      pollForCompletion(data.thread_id, data.run_id);
+    } else {
+      addMessage(`Request status: ${data.status}`, 'assistant');
+    }
+    
+  } catch (error) {
+    console.error('Chat error:', error);
+    
+    // Remove typing indicator
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+    
+    addMessage(`Sorry, I encountered an error: ${error.message}`, 'assistant', true);
+  } finally {
+    setProcessingState(false);
+  }
 }
 
-/**
- * Show notification
- */
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    notification.innerHTML = `
-        <div class="notification-content">
-            <div class="notification-message">${message}</div>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
+async function pollForCompletion(threadId, runId, maxAttempts = 60) {
+  let attempts = 0;
+  
+  console.log(`🔄 Starting polling for ${employees[currentEmployee]?.name}:`, {
+    threadId,
+    runId,
+    employee: currentEmployee
+  });
+  
+  const poll = async () => {
+    try {
+      attempts++;
+      
+      const response = await fetch(`/api/run-status?thread_id=${threadId}&run_id=${runId}&employee_id=${currentEmployee}`);
+      const data = await response.json();
+      
+      console.log(`📊 Poll attempt ${attempts}/${maxAttempts} for ${employees[currentEmployee]?.name}:`, {
+        status: data.status,
+        employee: data.employee_id,
+        threadId: data.thread_id
+      });
+      
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Status check failed');
+      }
+      
+      if (data.status === 'completed') {
+        addMessage(data.message, 'assistant');
+        
+        // Check if leads were processed and refresh leads page if needed
+        if (data.lead_processing && data.lead_processing.detected && data.lead_processing.processed) {
+          console.log(`🎯 Leads detected and processed: ${data.lead_processing.count} leads`);
+          
+          // Show notification about lead processing
+          showNotification(
+            `${employees[currentEmployee]?.name} found and processed ${data.lead_processing.count} new leads!`,
+            'success'
+          );
+          
+          // Auto-refresh leads page if user is currently viewing it
+          const leadsSection = document.getElementById('leads-section');
+          if (leadsSection && leadsSection.classList.contains('active')) {
+            console.log('📊 Auto-refreshing leads page...');
+            await loadLeadsData();
+          }
+          
+          // Update dashboard metrics
+          await loadDashboardMetrics();
+        }
+        
+        console.log(`✅ Task completed for ${employees[currentEmployee]?.name}`);
+        return;
+      } else if (data.status === 'failed') {
+        addMessage(`Task failed: ${data.error || 'Unknown error'}`, 'assistant', true);
+        console.error(`❌ Task failed for ${employees[currentEmployee]?.name}:`, data.error);
+        return;
+      } else if (attempts >= maxAttempts) {
+        addMessage('Task is taking longer than expected. Please try again.', 'assistant', true);
+        console.warn(`⏰ Polling timeout for ${employees[currentEmployee]?.name}`);
+        return;
+      }
+      
+      // Continue polling
+      setTimeout(poll, 2000);
+      
+    } catch (error) {
+      console.error('Polling error:', error);
+      addMessage(`Error checking task status: ${error.message}`, 'assistant', true);
+    }
+  };
+  
+  // Start polling after a short delay
+  setTimeout(poll, 2000);
+}
+
+function addMessage(content, role, isError = false) {
+  if (!chatMessages) return;
+  
+  const messageEl = document.createElement('div');
+  messageEl.className = `message ${role}`;
+  
+  if (isError) {
+    messageEl.classList.add('error');
+  }
+  
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  
+  // Check if content contains HTML (like landing page code)
+  if (content.includes('<html') || content.includes('<!DOCTYPE')) {
+    const htmlPreview = createHtmlPreview(content);
+    messageContent.appendChild(htmlPreview);
+  } else {
+    messageContent.textContent = content;
+  }
+  
+  const messageTime = document.createElement('div');
+  messageTime.className = 'message-time';
+  messageTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  messageEl.appendChild(messageContent);
+  messageEl.appendChild(messageTime);
+  
+  chatMessages.appendChild(messageEl);
+  scrollToBottom();
+}
+
+function createHtmlPreview(htmlContent) {
+  const container = document.createElement('div');
+  container.className = 'html-preview';
+  
+  const header = document.createElement('div');
+  header.className = 'code-header';
+  header.innerHTML = `
+    <span class="code-type">Landing Page HTML</span>
+    <button class="view-full-btn" onclick="toggleHtmlView(this)">View Full Code</button>
+  `;
+  
+  const preview = document.createElement('div');
+  preview.className = 'code-preview';
+  preview.innerHTML = `<code>${escapeHtml(htmlContent.substring(0, 500))}${htmlContent.length > 500 ? '...' : ''}</code>`;
+  
+  const fullCode = document.createElement('div');
+  fullCode.className = 'code-full';
+  fullCode.style.display = 'none';
+  fullCode.innerHTML = `<pre><code>${escapeHtml(htmlContent)}</code></pre>`;
+  
+  const actions = document.createElement('div');
+  actions.className = 'code-actions';
+  
+  // Store content in data attributes for event handlers
+  const escapedContent = escapeHtml(htmlContent).replace(/'/g, "\\'");
+  actions.innerHTML = `
+    <button class="copy-btn" data-content="${escapedContent}" onclick="copyToClipboard(this, this.getAttribute('data-content'))">Copy Code</button>
+    <button class="download-btn" data-content="${escapedContent}" onclick="downloadHtml(this.getAttribute('data-content'))">Download HTML</button>
+  `;
+  
+  container.appendChild(header);
+  container.appendChild(preview);
+  container.appendChild(fullCode);
+  container.appendChild(actions);
+  
+  return container;
+}
+
+function toggleHtmlView(button) {
+  const container = button.closest('.html-preview');
+  const isExpanded = container.classList.contains('expanded');
+  
+  if (isExpanded) {
+    container.classList.remove('expanded');
+    button.textContent = 'View Full Code';
+  } else {
+    container.classList.add('expanded');
+    button.textContent = 'Hide Full Code';
+  }
+}
+
+function copyToClipboard(button, content) {
+  // Unescape the content
+  const unescapedContent = content.replace(/\\'/g, "'");
+  
+  navigator.clipboard.writeText(unescapedContent).then(() => {
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
     setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
+      button.textContent = originalText;
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy:', err);
+    button.textContent = 'Copy Failed';
+    setTimeout(() => {
+      button.textContent = 'Copy Code';
+    }, 2000);
+  });
 }
 
-/**
- * Handle export functionality
- */
-async function handleExport(e) {
-    const format = e.target.dataset.format;
-    const type = e.target.dataset.type;
+function downloadHtml(content) {
+  // Unescape the content
+  const unescapedContent = content.replace(/\\'/g, "'");
+  
+  const blob = new Blob([unescapedContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'landing-page.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showTypingIndicator() {
+  if (!chatMessages) return null;
+  
+  const typingEl = document.createElement('div');
+  typingEl.className = 'message assistant';
+  typingEl.innerHTML = `
+    <div class="message-content">
+      <div class="typing-indicator">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  `;
+  
+  chatMessages.appendChild(typingEl);
+  scrollToBottom();
+  
+  return typingEl;
+}
+
+function setProcessingState(processing) {
+  isProcessing = processing;
+  
+  if (sendButton) {
+    sendButton.disabled = processing;
+  }
+  
+  if (messageInput) {
+    messageInput.disabled = processing;
+  }
+}
+
+function updateCharacterCount() {
+  if (!messageInput || !charCount) return;
+  
+  const length = messageInput.value.length;
+  const maxLength = 4000;
+  
+  charCount.textContent = length;
+  
+  if (length > maxLength * 0.9) {
+    charCount.classList.add('warning');
+  } else {
+    charCount.classList.remove('warning');
+  }
+  
+  if (length >= maxLength) {
+    charCount.classList.add('error');
+  } else {
+    charCount.classList.remove('error');
+  }
+}
+
+function autoResizeTextarea() {
+  if (!messageInput) return;
+  
+  messageInput.style.height = 'auto';
+  messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+}
+
+function scrollToBottom() {
+  if (chatMessages) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
+function saveColorScheme() {
+  const primaryColor = document.getElementById('primaryInput')?.value || '#EC4899';
+  const secondaryColor = document.getElementById('secondaryInput')?.value || '#64748B';
+  const accentColor = document.getElementById('accentInput')?.value || '#F97316';
+  
+  // Update CSS custom properties
+  document.documentElement.style.setProperty('--primary-color', primaryColor);
+  document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+  document.documentElement.style.setProperty('--accent-color', accentColor);
+  
+  // Save to localStorage
+  localStorage.setItem('orchid-colors', JSON.stringify({
+    primary: primaryColor,
+    secondary: secondaryColor,
+    accent: accentColor
+  }));
+  
+  // Show notification
+  showNotification('Color scheme saved successfully!', 'success');
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  
+  // Add appropriate icon based on type
+  let icon = '';
+  switch (type) {
+    case 'success':
+      icon = '✅';
+      break;
+    case 'error':
+      icon = '❌';
+      break;
+    case 'warning':
+      icon = '⚠️';
+      break;
+    default:
+      icon = 'ℹ️';
+  }
+  
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span>${icon} ${message}</span>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+  
+  console.log(`📢 Notification shown: ${type} - ${message}`);
+}
+
+async function loadDashboardMetrics() {
+  try {
+    console.log('📈 Loading dashboard metrics...');
+    const response = await fetch('/api/leads/statistics');
+    const stats = await response.json();
     
+    if (response.ok) {
+      // Update dashboard metrics
+      const leadsGenerated = document.getElementById('leads-generated');
+      const leadsValidated = document.getElementById('leads-validated');
+      const leadsContacted = document.getElementById('leads-contacted');
+      const leadsConverted = document.getElementById('leads-converted');
+      
+      if (leadsGenerated) leadsGenerated.textContent = stats.total || 0;
+      if (leadsValidated) leadsValidated.textContent = stats.validated || 0;
+      if (leadsContacted) leadsContacted.textContent = stats.outreach_sent || 0;
+      if (leadsConverted) leadsConverted.textContent = stats.converted || 0;
+      
+      console.log(`✅ Updated dashboard metrics: ${stats.total || 0} total leads`);
+    } else {
+      console.error('Failed to load dashboard metrics:', stats);
+    }
+  } catch (error) {
+    console.error('Failed to load dashboard metrics:', error);
+  }
+}
+
+async function loadLeadsData() {
+  try {
+    console.log('📊 Loading leads data...');
+    const response = await fetch('/api/leads?limit=100');
+    const data = await response.json();
+    
+    if (response.ok) {
+      displayLeadsTable(data.leads || []);
+      updateLeadsPagination(data);
+      console.log(`✅ Loaded ${data.leads?.length || 0} leads`);
+    } else {
+      console.error('Failed to load leads:', data);
+      showNotification('Failed to load leads data', 'error');
+    }
+  } catch (error) {
+    console.error('Failed to load leads data:', error);
+    showNotification('Error loading leads data', 'error');
+  }
+}
+
+function displayLeadsTable(leads) {
+  const tableBody = document.querySelector('.leads-table tbody');
+  if (!tableBody) return;
+  
+  tableBody.innerHTML = '';
+  
+  if (leads.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+          No leads found yet. Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  console.log(`📋 Displaying ${leads.length} leads in table`);
+  
+  leads.forEach(lead => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <div class="business-info">
+          <strong>${lead.business_name}</strong>
+          <small>${lead.industry || 'Unknown Industry'}</small>
+        </div>
+      </td>
+      <td>
+        <div class="contact-info">
+          <strong>${lead.contact_name || 'No contact'}</strong>
+          <small>${lead.email || ''}<br>${lead.phone || ''}</small>
+        </div>
+      </td>
+      <td>
+        <div class="location-info">
+          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
+          <small>${lead.address || ''}</small>
+        </div>
+      </td>
+      <td>
+        <span class="score ${getScoreClass(lead.average_score)}">${(lead.average_score || 0).toFixed(1)}</span>
+      </td>
+      <td>
+        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
+      </td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn secondary" onclick="viewLead('${lead.id}')">View</button>
+          <button class="btn secondary" onclick="editLead('${lead.id}')">Edit</button>
+        </div>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function getScoreClass(score) {
+  if (score >= 4) return 'high';
+  if (score >= 2.5) return 'medium';
+  return 'low';
+}
+
+function getLeadStatus(lead) {
+  if (lead.converted) return 'converted';
+  if (lead.response_received) return 'responded';
+  if (lead.outreach_sent) return 'contacted';
+  if (lead.validated) return 'qualified';
+  return 'new';
+}
+
+function getLeadStatusText(lead) {
+  if (lead.converted) return 'Converted';
+  if (lead.response_received) return 'Responded';
+  if (lead.outreach_sent) return 'Contacted';
+  if (lead.validated) return 'Qualified';
+  return 'New';
+}
+
+function updateLeadsPagination(data) {
+  const paginationInfo = document.querySelector('.pagination-info');
+  const pageNumbers = document.querySelector('.page-numbers');
+  
+  if (paginationInfo) {
+    const start = ((data.page || 1) - 1) * (data.limit || 50) + 1;
+    const end = Math.min(start + (data.leads?.length || 0) - 1, data.total || 0);
+    paginationInfo.textContent = `Showing ${start}-${end} of ${data.total || 0} leads`;
+  }
+  
+  if (pageNumbers) {
+    pageNumbers.innerHTML = '';
+    const totalPages = data.totalPages || 1;
+    const currentPage = data.page || 1;
+    
+    for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      pageBtn.onclick = () => loadLeadsPage(i);
+      pageNumbers.appendChild(pageBtn);
+    }
+  }
+}
+
+async function loadLeadsPage(page) {
+  try {
+    const response = await fetch(`/api/leads?page=${page}&limit=50`);
+    const data = await response.json();
+    
+    if (response.ok) {
+      displayLeadsTable(data.leads || []);
+      updateLeadsPagination(data);
+    }
+  } catch (error) {
+    console.error('Failed to load leads page:', error);
+  }
+}
+
+function viewLead(leadId) {
+  // TODO: Implement lead detail view
+  console.log('View lead:', leadId);
+}
+
+function editLead(leadId) {
+  // TODO: Implement lead editing
+  console.log('Edit lead:', leadId);
+}
+
+// Load saved color scheme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedColors = localStorage.getItem('orchid-colors');
+  if (savedColors) {
     try {
-        showLoading('export-area');
-        
-        let url = '';
-        if (type === 'leads') {
-            url = `/api/leads/export?format=${format}`;
-        }
-        
-        const response = await fetch(url);
-        
-        if (response.ok) {
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = `${type}_export_${new Date().toISOString().split('T')[0]}.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(downloadUrl);
-            
-            showNotification('Export completed successfully!', 'success');
-        } else {
-            throw new Error('Export failed');
-        }
-        
+      const colors = JSON.parse(savedColors);
+      document.documentElement.style.setProperty('--primary-color', colors.primary);
+      document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+      document.documentElement.style.setProperty('--accent-color', colors.accent);
+      
+      // Update form inputs
+      const primaryInput = document.getElementById('primaryInput');
+      const primaryPicker = document.getElementById('primaryPicker');
+      const secondaryInput = document.getElementById('secondaryInput');
+      const secondaryPicker = document.getElementById('secondaryPicker');
+      const accentInput = document.getElementById('accentInput');
+      const accentPicker = document.getElementById('accentPicker');
+      
+      if (primaryInput) primaryInput.value = colors.primary;
+      if (primaryPicker) primaryPicker.value = colors.primary;
+      if (secondaryInput) secondaryInput.value = colors.secondary;
+      if (secondaryPicker) secondaryPicker.value = colors.secondary;
+      if (accentInput) accentInput.value = colors.accent;
+      if (accentPicker) accentPicker.value = colors.accent;
     } catch (error) {
-        console.error('❌ Export error:', error);
-        showNotification('Failed to export data', 'error');
-    } finally {
-        hideLoading('export-area');
+      console.error('Failed to load saved colors:', error);
     }
-}
-
-/**
- * Load status data
- */
-async function loadStatusData() {
-    try {
-        showLoading('status-content');
-        
-        const response = await fetch('/api/status');
-        const data = await response.json();
-        
-        // Update status UI
-        updateStatusDisplay(data);
-        
-        hideLoading('status-content');
-        console.log('✅ Status data loaded');
-    } catch (error) {
-        console.error('❌ Failed to load status data:', error);
-        hideLoading('status-content');
-        showNotification('Failed to load status data', 'error');
-    }
-}
-
-/**
- * Update status display
- */
-function updateStatusDisplay(statusData) {
-    // Update employee status cards
-    const statusGrid = document.querySelector('.status-grid');
-    if (statusGrid && statusData.employees) {
-        statusGrid.innerHTML = '';
-        
-        Object.entries(statusData.employees).forEach(([id, employee]) => {
-            const isOnline = employee.assistant_configured && employee.webhook_configured;
-            const statusCard = document.createElement('div');
-            statusCard.className = 'status-card';
-            
-            statusCard.innerHTML = `
-                <div class="status-header">
-                    <h3>${employee.name}</h3>
-                    <div class="status-indicator ${isOnline ? 'online' : 'offline'}"></div>
-                </div>
-                <div class="status-content">
-                    <div class="status-item">
-                        <span>Assistant</span>
-                        <span class="status-badge ${employee.assistant_configured ? 'online' : 'offline'}">
-                            ${employee.assistant_configured ? 'Connected' : 'Not Connected'}
-                        </span>
-                    </div>
-                    <div class="status-item">
-                        <span>Webhook</span>
-                        <span class="status-badge ${employee.webhook_configured ? 'online' : 'offline'}">
-                            ${employee.webhook_configured ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
-                    <div class="status-item">
-                        <span>Role</span>
-                        <span>${employee.role}</span>
-                    </div>
-                </div>
-            `;
-            
-            statusGrid.appendChild(statusCard);
-        });
-    }
-}
-
-/**
- * Load employee data (placeholder)
- */
-function loadEmployeeData() {
-    console.log('Loading employee data...');
-}
-
-/**
- * Send quick message
- */
-function sendQuickMessage(message) {
-    const messageInput = document.getElementById('messageInput');
-    if (messageInput) {
-        messageInput.value = message;
-        const event = new Event('submit');
-        document.getElementById('chat-form').dispatchEvent(event);
-    }
-}
-
-/**
- * Clear chat
- */
-function clearChat() {
-    clearChatMessages();
-    currentThread = null;
-    currentRun = null;
-    showNotification('Chat cleared', 'info');
-}
-
-/**
- * Toggle mobile menu
- */
-function toggleMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('mobile-open');
-    }
-}
-
-// Global functions for inline event handlers
-window.editLead = function(leadId) {
-    console.log('Edit lead:', leadId);
-    showNotification('Edit functionality coming soon', 'info');
-};
-
-window.deleteLead = function(leadId) {
-    if (confirm('Are you sure you want to delete this lead?')) {
-        console.log('Delete lead:', leadId);
-        showNotification('Delete functionality coming soon', 'info');
-    }
-};
-
-window.sendQuickMessage = sendQuickMessage;
-window.clearChat = clearChat;
-window.toggleMobileMenu = toggleMobileMenu;
-
-// Error handling
-window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
-    showNotification('An unexpected error occurred', 'error');
+  }
 });
-
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled promise rejection:', e.reason);
-    showNotification('An unexpected error occurred', 'error');
-    e.preventDefault();
-});
-
-console.log('📱 Main application script loaded successfully');
