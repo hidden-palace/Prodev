@@ -338,7 +338,10 @@ function switchEmployee(employeeId) {
   const descriptionEl = document.getElementById('employee-description');
   const newChatBtn = document.getElementById('newChatBtn');
   
-  if (avatarImg) avatarImg.src = employee.avatar;
+  // Use profile picture URL if available, otherwise fall back to default avatar
+  const avatarUrl = employee.profile_picture_url || employee.avatar;
+  if (avatarImg) avatarImg.src = avatarUrl;
+  
   if (nameEl) nameEl.textContent = employee.name;
   if (roleEl) roleEl.textContent = employee.role;
   if (specialtyEl) specialtyEl.textContent = employee.specialty;

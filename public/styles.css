@@ -2387,6 +2387,20 @@ body {
         grid-template-columns: 1fr;
     }
     
+    .employee-avatars-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .logo-upload-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .logo-upload-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
     .nav-item.active {
         border-right: none;
         border-bottom-color: white;
