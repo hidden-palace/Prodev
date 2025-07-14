@@ -71,18 +71,18 @@ router.get('/assistant-info', async (req, res, next) => {
       employee: employeeConfig
     });
     
-  } catch (err) {
-    console.error('Error getting assistant info:', err);
+  } catch (error) {
+    console.error('Error getting assistant info:', error);
     
     // Handle specific OpenAI errors
-    if (err.status === 404) {
+    if (error.status === 404) {
       return res.status(404).json({
-        message: 'Assistant not found',
+        error: 'Assistant not found',
         details: 'The specified assistant ID does not exist or is not accessible.'
       });
     }
     
-    next(err);
+    next(error);
   }
 });
 
@@ -205,9 +205,9 @@ router.get('/run-status', async (req, res, next) => {
 
     res.json(response);
     
-  } catch (err) {
-    console.error('Error checking run status:', err);
-    next(err);
+  } catch (error) {
+    console.error('Error checking run status:', error);
+    next(error);
   }
 });
 
@@ -434,19 +434,19 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       throw new Error(`Unexpected assistant status: ${result.status}`);
     }
     
-  } catch (err) {
+  } catch (error) {
     console.error('=== BULLETPROOF ASK REQUEST ERROR ===');
     console.error('Error timestamp:', new Date().toISOString());
     console.error('Employee ID:', employeeId);
     console.error('Assistant ID:', assistantId);
     console.error('Thread ID:', threadId);
     console.error('Run ID:', runId);
-    console.error('Failure:', err);
+    console.error('Error:', error);
     
     // Enhanced error response with context
-    let failureResponse = {
-      message: 'Request processing failed',
-      details: err.message,
+    const errorResponse = {
+      error: 'Request processing failed',
+      details: error.message,
       context: {
         employee_id: employeeId,
         employee_name: employeeId ? config.employees[employeeId]?.name : null,
@@ -458,7 +458,7 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       }
     };
     
-    next(err);
+    next(errorResponse);
   }
 });
 
@@ -635,15 +635,15 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
       res.json(response);
     }
     
-  } catch (err) {
+  } catch (error) {
     console.error('=== BULLETPROOF WEBHOOK RESPONSE ERROR ===');
     console.error('Error timestamp:', new Date().toISOString());
     console.error('Processed response:', processedResponse);
-    console.error('Failure:', err);
+    console.error('Error:', error);
     
-    const webhookErrorResponse = {
-      message: 'Webhook response processing failed',
-      details: err.message,
+    const errorResponse = {
+      error: 'Webhook response processing failed',
+      details: error.message,
       context: {
         tool_call_id: processedResponse?.tool_call_id,
         thread_id: processedResponse?.thread_id,
@@ -655,7 +655,7 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
       }
     };
     
-    next(err);
+    next(errorResponse);
   }
 });
 
@@ -738,11 +738,11 @@ router.get('/status', async (req, res) => {
       total_leads: leadStats?.total || 0
     });
     res.json(response);
-  } catch (err) {
-    console.error('Failure in status endpoint:', err);
+  } catch (error) {
+    console.error('Error in status endpoint:', error);
     res.status(500).json({
-      message: 'Failed to get status',
-      details: err.message,
+      error: 'Failed to get status',
+      details: error.message,
       timestamp: new Date().toISOString()
     });
   }
@@ -755,7 +755,7 @@ router.get('/debug/isolation', (req, res) => {
   try {
     if (!webhookHandler) {
       return res.status(503).json({ 
-        message: 'Webhook handler not initialized',
+        error: 'Webhook handler not initialized',
         details: 'Service is not properly configured',
         timestamp: new Date().toISOString()
       });
@@ -782,11 +782,11 @@ router.get('/debug/isolation', (req, res) => {
       isolation_healthy: integrity.healthy
     });
     res.json(response);
-  } catch (err) {
-    console.error('Failure in debug isolation endpoint:', err);
+  } catch (error) {
+    console.error('Error in debug isolation endpoint:', error);
     res.status(500).json({
-      message: 'Failed to get isolation debug info',
-      details: err.message,
+      error: 'Failed to get isolation debug info',
+      details: error.message,
       timestamp: new Date().toISOString()
     });
   }
@@ -801,14 +801,14 @@ router.post('/debug/reset-employee', (req, res) => {
     
     if (!employee_id) {
       return res.status(400).json({
-        message: 'Missing employee_id',
+        error: 'Missing employee_id',
         details: 'employee_id is required for reset operation'
       });
     }
     
     if (!webhookHandler) {
       return res.status(503).json({ 
-        message: 'Webhook handler not initialized',
+        error: 'Webhook handler not initialized',
         details: 'Service is not properly configured'
       });
     }
@@ -825,11 +825,11 @@ router.post('/debug/reset-employee', (req, res) => {
       new_isolation_key: resetResult.isolationKey
     });
     
-  } catch (err) {
-    console.error('Failure in emergency reset:', err);
+  } catch (error) {
+    console.error('Error in emergency reset:', error);
     res.status(500).json({
-      message: 'Failed to reset employee',
-      details: err.message,
+      error: 'Failed to reset employee',
+      details: error.message,
       timestamp: new Date().toISOString()
     });
   }
