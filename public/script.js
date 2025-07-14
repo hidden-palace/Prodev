@@ -63,9 +63,15 @@ function initializeNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
   const contentSections = document.querySelectorAll('.content-section');
   
+  console.log('🔧 Initializing navigation...', {
+    navItems: navItems.length,
+    contentSections: contentSections.length
+  });
+  
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const sectionId = item.dataset.section;
+      console.log('📍 Navigation clicked:', sectionId);
       
       // Update active nav item
       navItems.forEach(nav => nav.classList.remove('active'));
@@ -76,6 +82,8 @@ function initializeNavigation() {
       const targetSection = document.getElementById(`${sectionId}-section`);
       if (targetSection) {
         targetSection.classList.add('active');
+        console.log('✅ Section activated:', sectionId);
+        console.error('❌ Section not found:', `${sectionId}-section`);
       }
       
       // Load section-specific data
@@ -166,6 +174,8 @@ function initializeChatInterface() {
 }
 
 function initializeBranding() {
+  console.log('🎨 Initializing branding...');
+  
   const primaryPicker = document.getElementById('primaryPicker');
   const primaryInput = document.getElementById('primaryInput');
   const secondaryPicker = document.getElementById('secondaryPicker');
@@ -210,6 +220,7 @@ function initializeBranding() {
 
 function initializeMobileMenu() {
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  console.log('✅ Branding initialization complete');
   const sidebar = document.getElementById('sidebar');
   
   if (mobileMenuToggle && sidebar) {
@@ -1028,8 +1039,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeEmployeeSelection();
     initializeChatInterface();
-    initializeBranding();
     initializeMobileMenu();
+    
+    // Initialize branding last to avoid conflicts
+    initializeBranding();
     
     // Load saved colors
   const savedColors = localStorage.getItem('orchid-colors');
