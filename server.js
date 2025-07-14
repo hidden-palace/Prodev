@@ -5,224 +5,252 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 const config = require('./config');
-const { validateAskRequest, validateWebhookResponse } = require('./middleware/validation');
-const { enhancedFailureHandler, requestLogger } = require('./middleware/error-middleware');
-const errorLoggingRoutes = require('./routes/error-logging');
+const { errorHandler } = require('./middleware/validation');
 const assistantRoutes = require('./routes/assistant');
 const leadsRoutes = require('./routes/leads');
-const brandingRoutes = require('./routes/branding');
-const storageRoutes = require('./routes/storage');
 
 const app = express();
-
-// Request logging middleware (before other middleware)
-app.use(requestLogger);
 
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: process.env.NODE_ENV === 'production'
+      scriptSrc: process.env.NODE_ENV === 'production' 
         ? ["'self'"]
         : ["'self'", "'unsafe-eval'"], // Allow unsafe-eval in non-production for WebContainer
-      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for dynamic styling
-      imgSrc: ["'self'", "data:", "https:", "blob:"], // Allow images from various sources
-      connectSrc: ["'self'", "https:", "wss:"], // Allow connections to APIs and WebSockets
-      fontSrc: ["'self'", "https:", "data:"], // Allow fonts
-      objectSrc: ["'none'"], // Disable object/embed/applet
-      mediaSrc: ["'self'", "https:", "blob:"], // Allow media
-      frameSrc: ["'none'"] // Disable frames
-    }
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
   },
-  crossOriginEmbedderPolicy: false // Disable COEP for compatibility
 }));
 
 // CORS configuration
-const corsOptions = {
+app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [
-        'https://your-domain.com', // Replace with your actual domain
-        'https://www.your-domain.com'
-      ]
-    : [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173'
-      ],
+    ? ['https://yourdomain.com'] // Replace with your production domains
+    : true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'Accept',
-    'Origin',
-    'X-Request-ID',
-    'X-Thread-ID',
-    'X-Run-ID',
-    'X-Employee-ID',
-    'X-Correlation-Key',
-    'X-Webhook-Secret'
-  ]
-};
-
-app.use(cors(corsOptions));
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Webhook-Secret']
+}));
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.maxRequests,
   message: {
-    error: 'Too many requests from this IP',
-    details: 'Please try again later'
+    error: 'Too many requests',
+    details: 'Rate limit exceeded. Please try again later.'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for health checks and static files
-    return req.path === '/health' || req.path.startsWith('/static/');
-  }
 });
 
-app.use('/api/', limiter);
+app.use(limiter);
 
-// Body parsing middleware with enhanced error handling
-app.use(express.json({
+// Body parsing middleware with error handling
+app.use(express.json({ 
   limit: '10mb',
   verify: (req, res, buf, encoding) => {
     try {
-      // Store raw body for webhook verification if needed
-      req.rawBody = buf;
-    } catch (jsonParseError) {
-      console.error('JSON parsing error:', jsonParseError);
-      throw new Error('Invalid JSON payload');
+      JSON.parse(buf);
+    } catch (e) {
+      console.error('Invalid JSON in request body:', e.message);
+      const error = new Error('Invalid JSON in request body');
+      error.status = 400;
+      throw error;
     }
   }
 }));
 
-app.use(express.urlencoded({ 
-  extended: true, 
-  limit: '10mb' 
-}));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : '0',
-  etag: true,
-  lastModified: true
-}));
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.path} - ${req.ip}`);
+  
+  // Log request body for API endpoints (but not for static files)
+  if (req.path.startsWith('/api') && req.method !== 'GET') {
+    console.log('Request body:', req.body);
+  }
+  
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({
+  const response = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    version: require('./package.json').version
-  });
+    version: '1.0.0',
+    environment: config.server.nodeEnv
+  };
+  
+  console.log('Health check response:', response);
+  res.json(response);
 });
 
-// API Routes
-app.use('/api/errors', errorLoggingRoutes);
+// API routes
 app.use('/api', assistantRoutes);
 app.use('/api/leads', leadsRoutes);
-app.use('/api/branding', brandingRoutes);
-app.use('/api/storage', storageRoutes);
 
-// Serve the main application for all non-API routes (SPA support)
-app.get('*', (req, res) => {
-  // Skip API routes and static files
-  if (req.path.startsWith('/api/') || req.path.startsWith('/static/')) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  
+// Serve chat interface at root
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// API documentation endpoint
+app.get('/api-docs', (req, res) => {
+  const response = {
+    name: 'OpenAI Assistant Webhook Bridge',
+    version: '1.0.0',
+    description: 'Express.js server bridging OpenAI Assistants with external webhooks',
+    endpoints: {
+      health: 'GET /health - Server health check',
+      ask: 'POST /api/ask - Send message to OpenAI Assistant',
+      webhookResponse: 'POST /api/webhook-response - Receive webhook responses',
+      status: 'GET /api/status - Get server status and pending tool calls',
+      leads: 'GET /api/leads - Get leads with filtering',
+      leadStatistics: 'GET /api/leads/statistics - Get lead statistics'
+    },
+    documentation: {
+      askEndpoint: {
+        method: 'POST',
+        path: '/api/ask',
+        body: {
+          message: 'string (required) - User message to send to assistant',
+          employee: 'string (optional) - Employee ID (default: brenden)',
+          thread_id: 'string (optional) - Existing thread ID'
+        },
+        responses: {
+          completed: 'Assistant completed without tool calls',
+          requires_action: 'Tool calls sent to webhook, waiting for responses'
+        }
+      },
+      webhookEndpoint: {
+        method: 'POST',
+        path: '/api/webhook-response',
+        body: {
+          tool_call_id: 'string (required) - ID of the tool call',
+          output: 'string (required) - Result from webhook execution',
+          thread_id: 'string (required) - OpenAI thread ID',
+          run_id: 'string (required) - OpenAI run ID'
+        }
+      },
+      leadsEndpoint: {
+        method: 'GET',
+        path: '/api/leads',
+        query: {
+          industry: 'string (optional) - Filter by industry',
+          city: 'string (optional) - Filter by city',
+          validated: 'boolean (optional) - Filter by validation status',
+          employee_id: 'string (optional) - Filter by employee',
+          page: 'number (optional) - Page number (default: 1)',
+          limit: 'number (optional) - Items per page (default: 50)'
+        }
+      }
+    }
+  };
+  
+  console.log('API docs response:', response);
+  res.json(response);
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  const response = {
+    error: 'Endpoint not found',
+    details: `Cannot ${req.method} ${req.originalUrl}`,
+    availableEndpoints: [
+      'GET / - Chat interface',
+      'GET /health - Health check',
+      'GET /api-docs - API documentation',
+      'POST /api/ask - Send message to assistant',
+      'POST /api/webhook-response - Receive webhook responses',
+      'GET /api/status - Server status',
+      'GET /api/leads - Get leads',
+      'GET /api/leads/statistics - Lead statistics'
+    ]
+  };
+  
+  console.log('404 response:', response);
+  res.status(404).json(response);
+});
+
 // Global error handler (must be last)
-app.use(enhancedFailureHandler);
-
-// Global process error handlers
-process.on('uncaughtException', (err) => {
-  console.error('=== UNCAUGHT EXCEPTION ===');
-  console.error('Exception:', err);
-  console.error('Stack:', err.stack);
-  console.error('Process will exit...');
-  
-  // Graceful shutdown
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (err, promise) => {
-  console.error('=== UNHANDLED PROMISE REJECTION ===');
-  console.error('Promise:', promise);
-  console.error('Reason:', err);
-  
-  // In production, you might want to exit the process
-  if (process.env.NODE_ENV === 'production') {
-    console.error('Process will exit...');
-    process.exit(1);
-  }
-});
+app.use(errorHandler);
 
 // Graceful shutdown handling
+const server = app.listen(config.server.port, () => {
+  console.log('\n🚀 OpenAI Assistant Webhook Bridge Server Started');
+  console.log('='.repeat(50));
+  console.log(`📍 Server running on port: ${config.server.port}`);
+  console.log(`🌍 Environment: ${config.server.nodeEnv}`);
+  console.log(`🤖 Assistant ID: ${config.openai.assistantId}`);
+  console.log(`🔗 Webhook URL: ${config.webhook.url}`);
+  console.log(`⚡ Rate limit: ${config.rateLimit.maxRequests} requests per ${config.rateLimit.windowMs / 1000}s`);
+  console.log('='.repeat(50));
+  console.log('\n📚 Available endpoints:');
+  console.log(`   GET  / - Chat interface`);
+  console.log(`   GET  /health - Health check`);
+  console.log(`   GET  /api-docs - API documentation`);
+  console.log(`   GET  /api/status - Server status`);
+  console.log(`   POST /api/ask - Send message to assistant`);
+  console.log(`   POST /api/webhook-response - Receive webhook responses`);
+  console.log(`   GET  /api/leads - Get leads with filtering`);
+  console.log(`   GET  /api/leads/statistics - Lead statistics`);
+  console.log('\n✅ Server ready to accept connections');
+  console.log(`🎯 Open your browser to: http://localhost:${config.server.port}\n`);
+});
+
+// Cleanup pending tool calls every 15 minutes
+const WebhookHandler = require('./services/webhook-handler');
+let webhookHandler;
+
+try {
+  webhookHandler = new WebhookHandler();
+  setInterval(() => {
+    webhookHandler.cleanupPendingCalls();
+  }, 15 * 60 * 1000);
+} catch (error) {
+  console.warn('Could not initialize webhook handler for cleanup:', error.message);
+}
+
+// Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  console.log('\n🛑 SIGTERM received, shutting down gracefully');
   server.close(() => {
-    console.log('Process terminated');
+    console.log('✅ Server closed successfully');
     process.exit(0);
   });
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  console.log('\n🛑 SIGINT received, shutting down gracefully');
   server.close(() => {
-    console.log('Process terminated');
+    console.log('✅ Server closed successfully');
     process.exit(0);
   });
 });
 
-// Start server
-const PORT = config.server.port;
-const server = app.listen(PORT, () => {
-  console.log('🚀 OpenAI Assistant Webhook Bridge Server Started');
-  console.log('='.repeat(50));
-  console.log(`📡 Server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${config.server.nodeEnv}`);
-  console.log(`🔑 OpenAI API configured: ${!!config.openai.apiKey && !config.openai.apiKey.includes('your_')}`);
-  console.log('👥 AI Employees:');
-  
-  Object.entries(config.employees).forEach(([id, employee]) => {
-    const assistantConfigured = !employee.assistantId.includes('placeholder');
-    const webhookConfigured = !employee.webhookUrl.includes('placeholder');
-    const status = assistantConfigured && webhookConfigured ? '✅' : '⚠️';
-    console.log(`   ${status} ${employee.name} (${employee.role})`);
-  });
-  
-  console.log('='.repeat(50));
-  console.log(`🔗 Access the application at: http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🛠️ API status: http://localhost:${PORT}/api/status`);
-  
-  if (config.server.nodeEnv === 'development') {
-    console.log('🔧 Development mode - additional logging enabled');
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process in production, but log the error
+  if (config.server.nodeEnv !== 'production') {
+    process.exit(1);
   }
 });
 
-// Handle server startup errors
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use`);
-    console.error('Please either:');
-    console.error('1. Stop the process using that port');
-    console.error('2. Change the PORT in your .env file');
-    console.error('3. Use a different port: PORT=3001 npm start');
-  } else {
-    console.error('❌ Server startup failure:', err);
-  }
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  // Exit the process as this is a serious error
   process.exit(1);
 });
 
