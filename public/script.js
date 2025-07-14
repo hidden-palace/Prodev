@@ -430,6 +430,215 @@ function startNewChat() {
   console.log(`✅ New chat started with ${employees[currentEmployee]?.name}`);
 }
 
+/**
+ * Initialize leads export functionality
+ */
+function initializeLeadsExport(downloadBtn, dropdown) {
+  let isDropdownOpen = false;
+  
+  // Toggle dropdown on button click
+  downloadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isDropdownOpen = !isDropdownOpen;
+    dropdown.style.display = isDropdownOpen ? 'block' : 'none';
+  });
+  
+  // Handle format selection
+  const formatButtons = dropdown.querySelectorAll('.dropdown-item');
+  formatButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const format = btn.dataset.format;
+      
+      // Close dropdown
+      dropdown.style.display = 'none';
+      isDropdownOpen = false;
+      
+      // Start export
+      await exportLeadsData(format, downloadBtn);
+    });
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    if (isDropdownOpen) {
+      dropdown.style.display = 'none';
+      isDropdownOpen = false;
+    }
+  });
+}
+
+/**
+ * Export leads data in specified format
+ */
+async function exportLeadsData(format, downloadBtn) {
+  try {
+    // Show loading state
+    setExportLoadingState(downloadBtn, true);
+    
+    // Get current filters from the leads page
+    const filters = getCurrentLeadsFilters();
+    
+    console.log(`📊 Exporting leads as ${format.toUpperCase()}...`);
+    
+    // Build query parameters
+    const queryParams = new URLSearchParams({
+      format: format,
+      ...filters
+    });
+    
+    // Make API request to export endpoint
+    const response = await fetch(`/api/leads/export?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || errorData.error || 'Export failed');
+    }
+    
+    // Get the exported data
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Set filename with timestamp
+    const timestamp = new Date().toISOString().split('T')[0];
+    const extension = format === 'xlsx' ? 'xlsx' : 'csv';
+    link.download = `leads_export_${timestamp}.${extension}`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up
+    window.URL.revokeObjectURL(url);
+    
+    // Show success notification
+    showExportNotification(`Successfully exported ${format.toUpperCase()} file!`, 'success');
+    
+    console.log(`✅ Export completed: leads_export_${timestamp}.${extension}`);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    showExportNotification(`Export failed: ${error.message}`, 'error');
+  } finally {
+    // Hide loading state
+    setExportLoadingState(downloadBtn, false);
+  }
+}
+
+/**
+ * Get current filters applied to leads page
+ */
+function getCurrentLeadsFilters() {
+  const filters = {};
+  
+  // Get filter values from the leads page form elements
+  const sourceFilter = document.querySelector('[name="source_platform"]');
+  const industryFilter = document.querySelector('[name="industry"]');
+  const cityFilter = document.querySelector('[name="city"]');
+  const validatedFilter = document.querySelector('[name="validated"]');
+  const employeeFilter = document.querySelector('[name="employee_id"]');
+  const minScoreFilter = document.querySelector('[name="min_score"]');
+  const dateFromFilter = document.querySelector('[name="date_from"]');
+  const dateToFilter = document.querySelector('[name="date_to"]');
+  
+  if (sourceFilter && sourceFilter.value && sourceFilter.value !== 'All Sources') {
+    filters.source_platform = sourceFilter.value;
+  }
+  
+  if (industryFilter && industryFilter.value && industryFilter.value !== 'All Industries') {
+    filters.industry = industryFilter.value;
+  }
+  
+  if (cityFilter && cityFilter.value) {
+    filters.city = cityFilter.value;
+  }
+  
+  if (validatedFilter && validatedFilter.value !== '') {
+    filters.validated = validatedFilter.value === 'true';
+  }
+  
+  if (employeeFilter && employeeFilter.value) {
+    filters.employee_id = employeeFilter.value;
+  }
+  
+  if (minScoreFilter && minScoreFilter.value) {
+    filters.min_score = parseFloat(minScoreFilter.value);
+  }
+  
+  if (dateFromFilter && dateFromFilter.value) {
+    filters.date_from = dateFromFilter.value;
+  }
+  
+  if (dateToFilter && dateToFilter.value) {
+    filters.date_to = dateToFilter.value;
+  }
+  
+  console.log('📋 Current filters:', filters);
+  return filters;
+}
+
+/**
+ * Set loading state for export button
+ */
+function setExportLoadingState(button, isLoading) {
+  const btnText = button.querySelector('.btn-text');
+  const btnLoading = button.querySelector('.btn-loading');
+  
+  if (isLoading) {
+    button.disabled = true;
+    button.classList.add('loading');
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoading) btnLoading.style.display = 'flex';
+  } else {
+    button.disabled = false;
+    button.classList.remove('loading');
+    if (btnText) btnText.style.display = 'flex';
+    if (btnLoading) btnLoading.style.display = 'none';
+  }
+}
+
+/**
+ * Show export notification
+ */
+function showExportNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `export-notification ${type}`;
+  
+  const icon = type === 'success' ? '✅' : '❌';
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 18px;">${icon}</span>
+      <div>
+        <div style="font-weight: 600; margin-bottom: 4px;">
+          ${type === 'success' ? 'Export Successful' : 'Export Failed'}
+        </div>
+        <div style="font-size: 14px; color: #64748b;">
+          ${message}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
 async function handleChatSubmit(e) {
   e.preventDefault();
   
