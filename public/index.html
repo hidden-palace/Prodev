@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
-  initializeLeadsExport();
   
   // Load initial employee
   switchEmployee('brenden');
@@ -127,6 +126,8 @@ function initializeChatInterface() {
   const newChatBtn = document.getElementById('newChatBtn');
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
+  const downloadLeadsBtn = document.getElementById('downloadLeadsBtn');
+  const exportFormatDropdown = document.getElementById('exportFormatDropdown');
   
   // Chat form submission
   if (chatForm) {
@@ -136,6 +137,11 @@ function initializeChatInterface() {
   // New chat button
   if (newChatBtn) {
     newChatBtn.addEventListener('click', startNewChat);
+  }
+  
+  // Download leads functionality
+  if (downloadLeadsBtn && exportFormatDropdown) {
+    initializeLeadsExport(downloadLeadsBtn, exportFormatDropdown);
   }
   
   // Tab switching
@@ -228,57 +234,64 @@ function initializeMobileMenu() {
   }
 }
 
-function initializeLeadsExport() {
-  const downloadBtn = document.getElementById('downloadLeadsBtn');
-  const exportDropdown = document.getElementById('exportFormatDropdown');
-  const dropdownItems = document.querySelectorAll('.dropdown-item');
+function initializeLeadsExport(downloadLeadsBtn, exportFormatDropdown) {
+  // Toggle dropdown visibility
+  downloadLeadsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = exportFormatDropdown.style.display === 'block';
+    exportFormatDropdown.style.display = isVisible ? 'none' : 'block';
+  });
   
-  if (downloadBtn && exportDropdown) {
-    // Toggle dropdown on button click
-    downloadBtn.addEventListener('click', (e) => {
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    exportFormatDropdown.style.display = 'none';
+  });
+  
+  // Handle format selection
+  const formatButtons = exportFormatDropdown.querySelectorAll('.dropdown-item');
+  formatButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      exportDropdown.style.display = exportDropdown.style.display === 'none' ? 'block' : 'none';
+      const format = btn.dataset.format;
+      
+      // Hide dropdown
+      exportFormatDropdown.style.display = 'none';
+      
+      // Show loading state
+      const btnText = downloadLeadsBtn.querySelector('.btn-text');
+      const btnLoading = downloadLeadsBtn.querySelector('.btn-loading');
+      
+      btnText.style.display = 'none';
+      btnLoading.style.display = 'flex';
+      downloadLeadsBtn.disabled = true;
+      
+      try {
+        await exportLeads(format);
+      } finally {
+        // Reset button state
+        btnText.style.display = 'flex';
+        btnLoading.style.display = 'none';
+        downloadLeadsBtn.disabled = false;
+      }
     });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', () => {
-      exportDropdown.style.display = 'none';
-    });
-    
-    // Handle format selection
-    dropdownItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const format = item.dataset.format;
-        exportLeads(format);
-        exportDropdown.style.display = 'none';
-      });
-    });
-  }
+  });
 }
 
 async function exportLeads(format) {
-  const downloadBtn = document.getElementById('downloadLeadsBtn');
-  const btnText = downloadBtn.querySelector('.btn-text');
-  const btnLoading = downloadBtn.querySelector('.btn-loading');
-  
   try {
-    // Show loading state
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'flex';
-    downloadBtn.disabled = true;
-    
-    console.log(`📥 Exporting leads as ${format.toUpperCase()}...`);
+    console.log(`📤 Exporting leads as ${format.toUpperCase()}...`);
     
     const response = await fetch(`/api/leads/export?format=${format}`);
     
     if (!response.ok) {
-      throw new Error(`Export failed: ${response.statusText}`);
+      const error = await response.json();
+      throw new Error(error.error || 'Export failed');
     }
     
     // Get filename from response headers or create default
     const contentDisposition = response.headers.get('Content-Disposition');
-    let filename = `leads_export.${format}`;
+    let filename = `leads.${format}`;
+    
     if (contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="(.+)"/);
       if (filenameMatch) {
@@ -288,26 +301,21 @@ async function exportLeads(format) {
     
     // Download the file
     const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
     
     showNotification(`Leads exported successfully as ${format.toUpperCase()}!`, 'success');
-    console.log(`✅ Leads exported successfully as ${format.toUpperCase()}`);
+    console.log(`✅ Leads exported as ${format.toUpperCase()}: ${filename}`);
     
   } catch (error) {
     console.error('Export error:', error);
     showNotification(`Failed to export leads: ${error.message}`, 'error');
-  } finally {
-    // Reset button state
-    btnText.style.display = 'flex';
-    btnLoading.style.display = 'none';
-    downloadBtn.disabled = false;
   }
 }
 

@@ -479,7 +479,13 @@ async function exportLeadsData(format, downloadBtn) {
     // Get current filters from the leads page
     const filters = getCurrentLeadsFilters();
     
-    console.log(`📊 Exporting leads as ${format.toUpperCase()}...`);
+    
+    // Show loading state
+    setExportLoadingState(downloadBtn, true);
+    
+    // Get current filters from the leads page
+    const filters = getCurrentLeadsFilters();
+    console.log('🔍 Current filters:', filters);
     
     // Build query parameters
     const queryParams = new URLSearchParams({
@@ -487,20 +493,15 @@ async function exportLeadsData(format, downloadBtn) {
       ...filters
     });
     
-    // Make API request to export endpoint
-    const response = await fetch(`/api/leads/export?${queryParams}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Make API request
+    const response = await fetch(`/api/leads/export?${queryParams}`);
     
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.details || errorData.error || 'Export failed');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.error || `Export failed with status ${response.status}`);
     }
     
-    // Get the exported data
+    // Get the blob data
     const blob = await response.blob();
     
     // Create download link
@@ -508,10 +509,10 @@ async function exportLeadsData(format, downloadBtn) {
     const link = document.createElement('a');
     link.href = url;
     
-    // Set filename with timestamp
-    const timestamp = new Date().toISOString().split('T')[0];
+    // Set filename with current date
+    const today = new Date().toISOString().split('T')[0];
     const extension = format === 'xlsx' ? 'xlsx' : 'csv';
-    link.download = `leads_export_${timestamp}.${extension}`;
+    link.download = `leads_export_${today}.${extension}`;
     
     // Trigger download
     document.body.appendChild(link);
@@ -523,72 +524,48 @@ async function exportLeadsData(format, downloadBtn) {
     
     // Show success notification
     showExportNotification(`Successfully exported ${format.toUpperCase()} file!`, 'success');
-    
-    console.log(`✅ Export completed: leads_export_${timestamp}.${extension}`);
+    console.log(`✅ Export completed successfully: leads_export_${today}.${extension}`);
     
   } catch (error) {
-    console.error('Export error:', error);
+    console.error('❌ Export failed:', error);
     showExportNotification(`Export failed: ${error.message}`, 'error');
   } finally {
-    // Hide loading state
+    // Reset button state
     setExportLoadingState(downloadBtn, false);
   }
 }
 
 /**
- * Get current filters applied to leads page
+ * Get current leads page filters
  */
 function getCurrentLeadsFilters() {
   const filters = {};
   
   // Get filter values from the leads page form elements
-  const sourceFilter = document.querySelector('[name="source_platform"]');
-  const industryFilter = document.querySelector('[name="industry"]');
-  const cityFilter = document.querySelector('[name="city"]');
-  const validatedFilter = document.querySelector('[name="validated"]');
-  const employeeFilter = document.querySelector('[name="employee_id"]');
-  const minScoreFilter = document.querySelector('[name="min_score"]');
-  const dateFromFilter = document.querySelector('[name="date_from"]');
-  const dateToFilter = document.querySelector('[name="date_to"]');
+  const sourcePlatform = document.querySelector('[name="source_platform"]')?.value;
+  const industry = document.querySelector('[name="industry"]')?.value;
+  const city = document.querySelector('[name="city"]')?.value;
+  const validated = document.querySelector('[name="validated"]')?.value;
+  const employeeId = document.querySelector('[name="employee_id"]')?.value;
+  const minScore = document.querySelector('[name="min_score"]')?.value;
+  const dateFrom = document.querySelector('[name="date_from"]')?.value;
+  const dateTo = document.querySelector('[name="date_to"]')?.value;
   
-  if (sourceFilter && sourceFilter.value && sourceFilter.value !== 'All Sources') {
-    filters.source_platform = sourceFilter.value;
-  }
+  // Only include non-empty filters
+  if (sourcePlatform && sourcePlatform !== 'all') filters.source_platform = sourcePlatform;
+  if (industry && industry !== 'all') filters.industry = industry;
+  if (city && city.trim()) filters.city = city.trim();
+  if (validated && validated !== 'all') filters.validated = validated;
+  if (employeeId && employeeId !== 'all') filters.employee_id = employeeId;
+  if (minScore && minScore.trim()) filters.min_score = minScore.trim();
+  if (dateFrom && dateFrom.trim()) filters.date_from = dateFrom.trim();
+  if (dateTo && dateTo.trim()) filters.date_to = dateTo.trim();
   
-  if (industryFilter && industryFilter.value && industryFilter.value !== 'All Industries') {
-    filters.industry = industryFilter.value;
-  }
-  
-  if (cityFilter && cityFilter.value) {
-    filters.city = cityFilter.value;
-  }
-  
-  if (validatedFilter && validatedFilter.value !== '') {
-    filters.validated = validatedFilter.value === 'true';
-  }
-  
-  if (employeeFilter && employeeFilter.value) {
-    filters.employee_id = employeeFilter.value;
-  }
-  
-  if (minScoreFilter && minScoreFilter.value) {
-    filters.min_score = parseFloat(minScoreFilter.value);
-  }
-  
-  if (dateFromFilter && dateFromFilter.value) {
-    filters.date_from = dateFromFilter.value;
-  }
-  
-  if (dateToFilter && dateToFilter.value) {
-    filters.date_to = dateToFilter.value;
-  }
-  
-  console.log('📋 Current filters:', filters);
   return filters;
 }
 
 /**
- * Set loading state for export button
+ * Set export button loading state
  */
 function setExportLoadingState(button, isLoading) {
   const btnText = button.querySelector('.btn-text');
@@ -611,6 +588,11 @@ function setExportLoadingState(button, isLoading) {
  * Show export notification
  */
 function showExportNotification(message, type) {
+  // Remove any existing export notifications
+  const existingNotifications = document.querySelectorAll('.export-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Create new notification
   const notification = document.createElement('div');
   notification.className = `export-notification ${type}`;
   
@@ -618,14 +600,8 @@ function showExportNotification(message, type) {
   notification.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px;">
       <span style="font-size: 18px;">${icon}</span>
-      <div>
-        <div style="font-weight: 600; margin-bottom: 4px;">
-          ${type === 'success' ? 'Export Successful' : 'Export Failed'}
-        </div>
-        <div style="font-size: 14px; color: #64748b;">
-          ${message}
-        </div>
-      </div>
+      <span>${message}</span>
+      <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; margin-left: auto;">&times;</button>
     </div>
   `;
   
@@ -637,6 +613,59 @@ function showExportNotification(message, type) {
       notification.remove();
     }
   }, 5000);
+}
+
+
+/**
+ * Initialize leads export functionality
+ */
+function initializeLeadsExport(downloadBtn, dropdown) {
+  let isDropdownOpen = false;
+  
+  // Toggle dropdown on button click
+  downloadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isDropdownOpen = !isDropdownOpen;
+    dropdown.style.display = isDropdownOpen ? 'block' : 'none';
+  });
+  
+  // Handle format selection
+  const formatButtons = dropdown.querySelectorAll('.dropdown-item');
+  formatButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const format = btn.dataset.format;
+      
+      // Close dropdown
+      dropdown.style.display = 'none';
+      isDropdownOpen = false;
+      
+      // Start export
+      await exportLeadsData(format, downloadBtn);
+    });
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    if (isDropdownOpen) {
+      dropdown.style.display = 'none';
+      isDropdownOpen = false;
+    }
+  });
+}
+
+/**
+ * Export leads data in specified format
+ */
+async function exportLeadsData(format, downloadBtn) {
+  try {
+    // Show loading state
+    setExportLoadingState(downloadBtn, true);
+    
+    // Get current filters from the leads page
+    const filters = getCurrentLeadsFilters();
+    
+  }
 }
 
 async function handleChatSubmit(e) {
