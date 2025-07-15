@@ -1,5 +1,6 @@
 const express = require('express');
 const SupabaseService = require('../services/supabase-client');
+const multer = require('multer');
 
 const router = express.Router();
 
@@ -269,5 +270,7 @@ router.put('/colors', async (req, res, next) => {
     next(err);
   }
 });
+
+// Add the new routes for uploading logo and employee avatar
 
 module.exports = router;
