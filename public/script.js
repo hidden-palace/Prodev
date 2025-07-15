@@ -51,6 +51,22 @@ const employees = {
 let chatMessages, messageInput, sendButton, charCount;
 
 // Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+  initializeElements();
+  initializeNavigation();
+  initializeEmployeeSelection();
+  initializeChatInterface();
+  initializeBranding();
+  initializeMobileMenu();
+  
+  // Load initial employee
+  switchEmployee('brenden');
+  
+  // Load dashboard metrics
+  loadDashboardMetrics();
+  
+  console.log('🚀 Orchid Republic Command Center initialized');
+});
 
 function initializeElements() {
   chatMessages = document.getElementById('chatMessages');
