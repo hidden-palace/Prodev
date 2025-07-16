@@ -23,6 +23,13 @@
     flex-shrink: 0;
 }
 
+/* App Container - Main Layout */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
 /* Sidebar Styles */
 .sidebar {
     width: 240px;
@@ -2255,14 +2262,8 @@
         display: flex;
     }
     
-    body {
+    .app-container {
         display: block;
-        height: auto;
-        overflow: auto;
-    }
-    
-    .app {
-        display: block !important;
         height: auto;
         overflow: auto;
     }
