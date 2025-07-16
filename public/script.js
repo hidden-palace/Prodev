@@ -932,7 +932,19 @@ function displayLeadsTable(leads) {
         </td>
       </tr>
     `;
+    
+    // Hide export button when no leads
+    const exportActions = document.querySelector('.export-actions-container');
+    if (exportActions) {
+      exportActions.style.display = 'none';
+    }
     return;
+  }
+  
+  // Show export button when leads exist
+  const exportActions = document.querySelector('.export-actions-container');
+  if (exportActions) {
+    exportActions.style.display = 'block';
   }
   
   console.log(`📋 Displaying ${leads.length} leads in table`);
@@ -944,14 +956,14 @@ function displayLeadsTable(leads) {
     const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
     if (isRecent) {
       row.style.animation = 'fadeInHighlight 2s ease-out';
-      row.style.backgroundColor = '#f0fdf4';
+      row.classList.add('new-lead-row');
     }
     
     row.innerHTML = `
       <td>
         <div class="business-info">
           <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span style="color: #10b981; font-weight: 600;">• NEW</span>' : ''}</small>
+          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
         </div>
       </td>
       <td>

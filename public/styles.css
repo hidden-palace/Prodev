@@ -2363,6 +2363,27 @@ body {
         overflow-x: auto;
     }
     
+    .export-actions-container {
+        padding: 0 20px 16px 20px;
+    }
+    
+    .export-actions {
+        justify-content: center;
+    }
+    
+    .download-leads-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .export-dropdown {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 280px;
+        min-width: auto;
+    }
+    
     .leads-table {
         min-width: 800px;
     }

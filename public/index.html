@@ -499,6 +499,58 @@
                     </div>
                 </div>
 
+            <!-- Export Actions -->
+            <div class="export-actions-container">
+                <div class="export-actions">
+                    <button class="btn primary download-leads-btn" id="downloadLeadsBtn">
+                        <span class="btn-text">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7,10 12,15 17,10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download Leads
+                        </span>
+                        <span class="btn-loading" style="display: none;">
+                            <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                            </svg>
+                            Exporting...
+                        </span>
+                    </button>
+                    
+                    <div class="export-dropdown" id="exportDropdown" style="display: none;">
+                        <div class="dropdown-content">
+                            <button class="dropdown-item" onclick="exportLeads('csv')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10,9 9,9 8,9"></polyline>
+                                </svg>
+                                <div>
+                                    <div>Export as CSV</div>
+                                    <div class="format-desc">Excel compatible</div>
+                                </div>
+                            </button>
+                            <button class="dropdown-item" onclick="exportLeads('xml')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="9.5" y1="12.5" x2="14.5" y2="17.5"></line>
+                                    <line x1="14.5" y1="12.5" x2="9.5" y2="17.5"></line>
+                                </svg>
+                                <div>
+                                    <div>Export as XML</div>
+                                    <div class="format-desc">Structured data</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
                 <div class="leads-table-container">
                     <table class="leads-table">
                         <thead>
