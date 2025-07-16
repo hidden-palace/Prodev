@@ -2255,6 +2255,18 @@
         display: flex;
     }
     
+    body {
+        display: block;
+        height: auto;
+        overflow: auto;
+    }
+    
+    .app {
+        display: block !important;
+        height: auto;
+        overflow: auto;
+    }
+    
     .sidebar {
         position: fixed;
         left: 0;
@@ -2271,6 +2283,8 @@
     
     .main-content {
         margin-left: 0;
+        height: auto;
+        min-height: 100vh;
     }
     
     .page-header {
