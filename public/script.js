@@ -908,16 +908,16 @@ async function loadLeadsData() {
 
 function displayLeadsTable(leads) {
   const tableBody = document.querySelector('.leads-table tbody');
-  const exportContainer = document.getElementById('exportActionsContainer');
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
   
   if (!tableBody) return;
   
   tableBody.innerHTML = '';
   
   if (leads.length === 0) {
-    // Hide export button when no leads
-    if (exportContainer) {
-      exportContainer.style.display = 'none';
+    // Hide download button when no leads
+    if (downloadBtn) {
+      downloadBtn.style.display = 'none';
     }
     
     tableBody.innerHTML = `
@@ -943,9 +943,9 @@ function displayLeadsTable(leads) {
     return;
   }
   
-  // Show export button when leads exist
-  if (exportContainer) {
-    exportContainer.style.display = 'block';
+  // Show download button when leads exist
+  if (downloadBtn) {
+    downloadBtn.style.display = 'flex';
   }
   
   console.log(`📋 Displaying ${leads.length} leads in table`);
