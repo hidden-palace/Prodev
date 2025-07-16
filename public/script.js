@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
-  initializeLeadsExport();
   
   // Load initial employee
   switchEmployee('brenden');
@@ -909,11 +908,18 @@ async function loadLeadsData() {
 
 function displayLeadsTable(leads) {
   const tableBody = document.querySelector('.leads-table tbody');
+  const exportContainer = document.getElementById('exportActionsContainer');
+  
   if (!tableBody) return;
   
   tableBody.innerHTML = '';
   
   if (leads.length === 0) {
+    // Hide export button when no leads
+    if (exportContainer) {
+      exportContainer.style.display = 'none';
+    }
+    
     tableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
@@ -934,18 +940,12 @@ function displayLeadsTable(leads) {
       </tr>
     `;
     
-    // Hide export button when no leads
-    const exportActions = document.querySelector('.export-actions-container');
-    if (exportActions) {
-      exportActions.style.display = 'none';
-    }
     return;
   }
   
   // Show export button when leads exist
-  const exportActions = document.querySelector('.export-actions-container');
-  if (exportActions) {
-    exportActions.style.display = 'block';
+  if (exportContainer) {
+    exportContainer.style.display = 'block';
   }
   
   console.log(`📋 Displaying ${leads.length} leads in table`);
