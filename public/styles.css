@@ -17,14 +17,10 @@
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
   .header-actions {
-    width: 100%;
-    justify-content: flex-end;
-    overflow: hidden;
-    color: var(--text-primary);
-}
-    min-width: 140px;
     display: flex;
-    height: 100vh;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 /* Sidebar Styles */
@@ -556,17 +552,22 @@
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  min-height: 60px;
 }
 
 .export-actions {
   position: relative;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .download-leads-btn {
   position: relative;
   min-width: 160px;
   justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .download-leads-btn .btn-loading {
@@ -614,6 +615,7 @@
   margin-top: 8px;
   z-index: 1000;
   min-width: 220px;
+  max-width: 300px;
 }
 
 .dropdown-content {
@@ -2281,6 +2283,21 @@
     .header-actions {
         width: 100%;
         justify-content: flex-start;
+    }
+    
+    .export-actions-container {
+        padding: 0 20px 16px 20px;
+    }
+    
+    .download-leads-btn {
+        min-width: 140px;
+        font-size: 14px;
+    }
+    
+    .export-dropdown {
+        right: 20px;
+        left: auto;
+        min-width: 200px;
     }
     
     .employees-layout {
