@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
+  initializeLeadsExport();
   
   // Load initial employee
   switchEmployee('brenden');
