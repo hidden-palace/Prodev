@@ -137,9 +137,7 @@ class SupabaseService {
     try {
       let query = this.client
         .from('leads')
-        .select('*')
-        .order('average_score', { ascending: false })
-        .order('created_at', { ascending: false });
+        .select('*');
 
       // Apply filters
       if (filters.source_platform && filters.source_platform !== 'All Sources') {
@@ -182,6 +180,16 @@ class SupabaseService {
         query = query.lt('created_at', endDate.toISOString().split('T')[0]);
       }
 
+      // Apply sorting
+      const sortField = filters.sort || 'created_at';
+      const sortOrder = filters.order === 'asc' ? true : false;
+      
+      if (sortField === 'average_score') {
+        query = query.order('average_score', { ascending: sortOrder });
+        query = query.order('created_at', { ascending: false }); // Secondary sort
+      } else {
+        query = query.order(sortField, { ascending: sortOrder });
+      }
       // Apply pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;

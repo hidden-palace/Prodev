@@ -592,6 +592,17 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes fadeInHighlight {
+  0% { 
+    background-color: #dcfce7; 
+    transform: translateY(-2px);
+  }
+  100% { 
+    background-color: transparent; 
+    transform: translateY(0);
+  }
+}
+
 .export-dropdown {
   position: absolute;
   top: 100%;

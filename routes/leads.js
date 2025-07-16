@@ -33,6 +33,8 @@ router.get('/', async (req, res, next) => {
       min_score,
       date_from,
       date_to,
+      sort = 'created_at',
+      order = 'desc',
       page = 1,
       limit = 50
     } = req.query;
@@ -48,6 +50,9 @@ router.get('/', async (req, res, next) => {
     if (date_from) filters.date_from = date_from;
     if (date_to) filters.date_to = date_to;
 
+    // Add sorting parameters
+    filters.sort = sort;
+    filters.order = order;
     const result = await leadProcessor.getLeads(
       filters,
       parseInt(page),

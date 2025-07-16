@@ -916,7 +916,19 @@ function displayLeadsTable(leads) {
     tableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-          No leads found yet. Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
+              <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
+              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
+            </div>
+          </div>
         </td>
       </tr>
     `;
@@ -927,11 +939,19 @@ function displayLeadsTable(leads) {
   
   leads.forEach(lead => {
     const row = document.createElement('tr');
+    
+    // Add a subtle animation for new leads
+    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
+    if (isRecent) {
+      row.style.animation = 'fadeInHighlight 2s ease-out';
+      row.style.backgroundColor = '#f0fdf4';
+    }
+    
     row.innerHTML = `
       <td>
         <div class="business-info">
           <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}</small>
+          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span style="color: #10b981; font-weight: 600;">• NEW</span>' : ''}</small>
         </div>
       </td>
       <td>
