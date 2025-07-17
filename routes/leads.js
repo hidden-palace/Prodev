@@ -161,6 +161,9 @@ router.get('/export', async (req, res, next) => {
       console.log('🔍 EXPORT DEBUG: Setting CSV response headers...');
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.csv"`);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       console.log('🔍 EXPORT DEBUG: Sending CSV response...');
       res.send(csv);
       console.log('✅ EXPORT DEBUG: CSV response sent successfully');
@@ -173,6 +176,9 @@ router.get('/export', async (req, res, next) => {
       console.log('🔍 EXPORT DEBUG: Setting XML response headers...');
       res.setHeader('Content-Type', 'application/xml');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.xml"`);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       console.log('🔍 EXPORT DEBUG: Sending XML response...');
       res.send(xml);
       console.log('✅ EXPORT DEBUG: XML response sent successfully');

@@ -349,6 +349,9 @@ async function exportFilteredLeads(format) {
       }
     });
     
+    // Add cache-busting parameter
+    queryParams.append('_t', Date.now().toString());
+    
     // Construct export URL
     const exportUrl = `/api/leads/export?${queryParams.toString()}`;
     
