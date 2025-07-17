@@ -99,6 +99,24 @@ app.get('/health', (req, res) => {
 app.use('/api', assistantRoutes);
 app.use('/api/leads', leadsRoutes);
 
+// Test route for debugging
+app.get('/api/test-route', (req, res) => {
+  console.log('🧪 TEST ROUTE HIT: /api/test-route accessed successfully');
+  console.log('🧪 TEST ROUTE: Request method:', req.method);
+  console.log('🧪 TEST ROUTE: Request URL:', req.url);
+  console.log('🧪 TEST ROUTE: Query params:', req.query);
+  console.log('🧪 TEST ROUTE: Headers:', req.headers);
+  
+  res.json({
+    success: true,
+    message: 'Test route is working correctly',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    query: req.query
+  });
+});
+
 // Serve chat interface at root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
