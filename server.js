@@ -69,6 +69,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// TEMPORARY: Direct route to intercept /api/leads/export for debugging
+app.get('/api/leads/export', (req, res) => {
+  console.log('🚨 TEMPORARY EXPORT ROUTE HIT: /api/leads/export accessed directly in server.js');
+  console.log('🚨 TEMPORARY EXPORT: Request method:', req.method);
+  console.log('🚨 TEMPORARY EXPORT: Request URL:', req.url);
+  console.log('🚨 TEMPORARY EXPORT: Query params:', req.query);
+  console.log('🚨 TEMPORARY EXPORT: Headers:', req.headers);
+  
+  res.json({
+    success: true,
+    message: 'TEMPORARY: Export route intercepted in server.js',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    note: 'This is a temporary debugging route - the real export logic should be in routes/leads.js'
+  });
+});
+
 // Request logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
