@@ -73,7 +73,13 @@ router.get('/export', async (req, res, next) => {
   console.log('🔍 EXPORT DEBUG: Export route hit with query params:', req.query);
   
   try {
+    console.log('🔍 EXPORT DEBUG: Starting export process...');
+    console.log('🔍 EXPORT DEBUG: Request method:', req.method);
+    console.log('🔍 EXPORT DEBUG: Request URL:', req.url);
+    console.log('🔍 EXPORT DEBUG: Request headers:', req.headers);
+    
     if (!leadProcessor) {
+      console.log('❌ EXPORT DEBUG: Lead processor not initialized');
       return res.status(503).json({
         error: 'Service unavailable',
         details: 'Lead processor is not properly configured.'
@@ -93,8 +99,21 @@ router.get('/export', async (req, res, next) => {
       date_to
     } = req.query;
 
+    console.log('🔍 EXPORT DEBUG: Parsed parameters:', {
+      format,
+      source_platform,
+      industry,
+      city,
+      validated,
+      outreach_sent,
+      employee_id,
+      min_score,
+      date_from,
+      date_to
+    });
     // Validate format
     if (!['csv', 'xml'].includes(format.toLowerCase())) {
+      console.log('❌ EXPORT DEBUG: Invalid format:', format);
       return res.status(400).json({
         error: 'Invalid format',
         details: 'Format must be either csv or xml'
@@ -112,7 +131,9 @@ router.get('/export', async (req, res, next) => {
     if (date_from) filters.date_from = date_from;
     if (date_to) filters.date_to = date_to;
 
+    console.log('🔍 EXPORT DEBUG: Applied filters:', filters);
     // Get all leads (no pagination for export)
+    console.log('🔍 EXPORT DEBUG: Calling leadProcessor.getLeads...');
     const result = await leadProcessor.getLeads(filters, 1, 10000);
     const leads = result.leads || [];
     
@@ -126,21 +147,29 @@ router.get('/export', async (req, res, next) => {
     } : 'No leads found');
 
     if (format.toLowerCase() === 'csv') {
+      console.log('🔍 EXPORT DEBUG: Generating CSV...');
       const csv = await leadProcessor.exportToCSV(leads);
       console.log('📄 EXPORT DEBUG: Generated CSV preview (first 200 chars):', csv.substring(0, 200));
       console.log('📄 EXPORT DEBUG: CSV total length:', csv.length);
       
+      console.log('🔍 EXPORT DEBUG: Setting CSV response headers...');
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.csv"`);
+      console.log('🔍 EXPORT DEBUG: Sending CSV response...');
       res.send(csv);
+      console.log('✅ EXPORT DEBUG: CSV response sent successfully');
     } else if (format.toLowerCase() === 'xml') {
+      console.log('🔍 EXPORT DEBUG: Generating XML...');
       const xml = await leadProcessor.exportToXML(leads);
       console.log('📄 EXPORT DEBUG: Generated XML preview (first 200 chars):', xml.substring(0, 200));
       console.log('📄 EXPORT DEBUG: XML total length:', xml.length);
       
+      console.log('🔍 EXPORT DEBUG: Setting XML response headers...');
       res.setHeader('Content-Type', 'application/xml');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.xml"`);
+      console.log('🔍 EXPORT DEBUG: Sending XML response...');
       res.send(xml);
+      console.log('✅ EXPORT DEBUG: XML response sent successfully');
     }
   } catch (err) {
     console.error('❌ EXPORT DEBUG: Failure exporting leads:', err);
