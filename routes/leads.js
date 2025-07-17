@@ -70,6 +70,8 @@ router.get('/', async (req, res, next) => {
  * GET /leads/export - Export leads in CSV or XML format
  */
 router.get('/export', async (req, res, next) => {
+  console.log('🔍 EXPORT DEBUG: Export route hit with query params:', req.query);
+  
   try {
     if (!leadProcessor) {
       return res.status(503).json({
@@ -113,20 +115,36 @@ router.get('/export', async (req, res, next) => {
     // Get all leads (no pagination for export)
     const result = await leadProcessor.getLeads(filters, 1, 10000);
     const leads = result.leads || [];
+    
+    console.log(`📊 EXPORT DEBUG: Retrieved ${leads.length} leads from database for export`);
+    console.log('📋 EXPORT DEBUG: First lead sample:', leads.length > 0 ? {
+      business_name: leads[0].business_name,
+      contact_name: leads[0].contact_name,
+      email: leads[0].email,
+      phone: leads[0].phone,
+      city: leads[0].city
+    } : 'No leads found');
 
     if (format.toLowerCase() === 'csv') {
       const csv = await leadProcessor.exportToCSV(leads);
+      console.log('📄 EXPORT DEBUG: Generated CSV preview (first 200 chars):', csv.substring(0, 200));
+      console.log('📄 EXPORT DEBUG: CSV total length:', csv.length);
+      
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.csv"`);
       res.send(csv);
     } else if (format.toLowerCase() === 'xml') {
       const xml = await leadProcessor.exportToXML(leads);
+      console.log('📄 EXPORT DEBUG: Generated XML preview (first 200 chars):', xml.substring(0, 200));
+      console.log('📄 EXPORT DEBUG: XML total length:', xml.length);
+      
       res.setHeader('Content-Type', 'application/xml');
       res.setHeader('Content-Disposition', `attachment; filename="leads_export_${new Date().toISOString().split('T')[0]}.xml"`);
       res.send(xml);
     }
   } catch (err) {
-    console.error('Failure exporting leads:', err);
+    console.error('❌ EXPORT DEBUG: Failure exporting leads:', err);
+    console.error('❌ EXPORT DEBUG: Error stack:', err.stack);
     next(err);
   }
 });
