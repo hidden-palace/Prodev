@@ -244,6 +244,144 @@ function initializeMobileMenu() {
   }
 }
 
+function initializeExportDropdown() {
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  
+  if (!downloadBtn || !exportDropdown) return;
+  
+  // Toggle dropdown on button click
+  downloadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isExportDropdownOpen = !isExportDropdownOpen;
+    exportDropdown.style.display = isExportDropdownOpen ? 'block' : 'none';
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (isExportDropdownOpen && 
+        !downloadBtn.contains(e.target) && 
+        !exportDropdown.contains(e.target)) {
+      isExportDropdownOpen = false;
+      exportDropdown.style.display = 'none';
+    }
+  });
+  
+  // Handle dropdown item clicks
+  const dropdownItems = exportDropdown.querySelectorAll('.dropdown-item');
+  dropdownItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const format = item.getAttribute('data-format');
+      if (format) {
+        exportFilteredLeads(format);
+      }
+    });
+  });
+}
+
+/**
+ * Get current filter values from the leads page
+ */
+function getLeadsFilters() {
+  const filters = {};
+  
+  // Get status filter and map to backend parameters
+  const statusFilter = document.querySelector('.filter-select[data-filter="status"]');
+  if (statusFilter && statusFilter.value && statusFilter.value !== 'All Leads') {
+    switch (statusFilter.value) {
+      case 'New':
+        filters.validated = false;
+        filters.outreach_sent = false;
+        break;
+      case 'Contacted':
+        filters.outreach_sent = true;
+        break;
+      case 'Qualified':
+        filters.validated = true;
+        break;
+    }
+  }
+  
+  // Get industry filter
+  const industryFilter = document.querySelector('.filter-select[data-filter="industry"]');
+  if (industryFilter && industryFilter.value && industryFilter.value !== 'All Industries') {
+    filters.industry = industryFilter.value;
+  }
+  
+  // Get location filter
+  const locationFilter = document.querySelector('.filter-input[data-filter="location"]');
+  if (locationFilter && locationFilter.value.trim()) {
+    filters.city = locationFilter.value.trim();
+  }
+  
+  return filters;
+}
+
+/**
+ * Export leads with current filters applied
+ */
+async function exportFilteredLeads(format) {
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
+  const exportDropdown = document.getElementById('exportDropdown');
+  
+  if (!downloadBtn) return;
+  
+  try {
+    // Show loading state
+    downloadBtn.classList.add('loading');
+    const btnText = downloadBtn.querySelector('.btn-text');
+    const btnLoading = downloadBtn.querySelector('.btn-loading');
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoading) btnLoading.style.display = 'flex';
+    
+    // Get current filters
+    const filters = getLeadsFilters();
+    
+    // Build query string
+    const queryParams = new URLSearchParams();
+    queryParams.append('format', format);
+    
+    // Add filters to query params
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParams.append(key, value);
+      }
+    });
+    
+    // Construct export URL
+    const exportUrl = `/api/leads/export?${queryParams.toString()}`;
+    
+    console.log(`📥 Exporting leads as ${format.toUpperCase()} with filters:`, filters);
+    
+    // Trigger download
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success notification
+    showNotification(`Leads exported successfully as ${format.toUpperCase()}!`, 'success');
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    showNotification(`Failed to export leads: ${error.message}`, 'error');
+  } finally {
+    // Hide loading state
+    downloadBtn.classList.remove('loading');
+    const btnText = downloadBtn.querySelector('.btn-text');
+    const btnLoading = downloadBtn.querySelector('.btn-loading');
+    if (btnText) btnText.style.display = 'flex';
+    if (btnLoading) btnLoading.style.display = 'none';
+    
+    // Close dropdown
+    isExportDropdownOpen = false;
+    if (exportDropdown) exportDropdown.style.display = 'none';
+  }
+}
+
 function saveCurrentConversation() {
   if (!chatMessages || !currentEmployee) return;
   
