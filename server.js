@@ -99,6 +99,12 @@ app.get('/health', (req, res) => {
 app.use('/api', assistantRoutes);
 app.use('/api/leads', leadsRoutes);
 
+// Add branding and storage routes
+const brandingRoutes = require('./routes/branding');
+const storageRoutes = require('./routes/storage');
+app.use('/api/branding', brandingRoutes);
+app.use('/api/storage', storageRoutes);
+
 // Test route for debugging
 app.get('/api/test-route', (req, res) => {
   console.log('🧪 TEST ROUTE HIT: /api/test-route accessed successfully');
@@ -113,6 +119,19 @@ app.get('/api/test-route', (req, res) => {
     timestamp: new Date().toISOString(),
     method: req.method,
     url: req.url,
+    query: req.query
+  });
+});
+
+// Add a specific test route for leads export
+app.get('/api/leads/export-test', (req, res) => {
+  console.log('🧪 LEADS EXPORT TEST: Route accessed successfully');
+  console.log('🧪 LEADS EXPORT TEST: Query params:', req.query);
+  
+  res.json({
+    success: true,
+    message: 'Leads export test route is working',
+    timestamp: new Date().toISOString(),
     query: req.query
   });
 });
