@@ -3,6 +3,7 @@ let currentEmployee = 'brenden';
 let currentThreadId = null;
 let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
+let isExportDropdownOpen = false; // Track export dropdown state
 
 // Employee configurations
 const employees = {
@@ -58,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
+  initializeExportDropdown();
   
   // Load initial employee
   switchEmployee('brenden');
