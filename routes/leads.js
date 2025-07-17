@@ -138,19 +138,25 @@ router.get('/export', async (req, res, next) => {
     const leads = result.leads || [];
     
     console.log(`📊 EXPORT DEBUG: Retrieved ${leads.length} leads from database for export`);
-    console.log('📋 EXPORT DEBUG: First lead sample:', leads.length > 0 ? {
-      business_name: leads[0].business_name,
-      contact_name: leads[0].contact_name,
-      email: leads[0].email,
-      phone: leads[0].phone,
-      city: leads[0].city
-    } : 'No leads found');
+    if (leads.length > 0) {
+      console.log('📋 EXPORT DEBUG: First lead sample:', {
+        business_name: leads[0].business_name,
+        contact_name: leads[0].contact_name,
+        email: leads[0].email,
+        phone: leads[0].phone,
+        city: leads[0].city,
+        created_at: leads[0].created_at
+      });
+    } else {
+      console.log('📋 EXPORT DEBUG: No leads found in database');
+    }
 
     if (format.toLowerCase() === 'csv') {
       console.log('🔍 EXPORT DEBUG: Generating CSV...');
       const csv = await leadProcessor.exportToCSV(leads);
-      console.log('📄 EXPORT DEBUG: Generated CSV preview (first 200 chars):', csv.substring(0, 200));
+      console.log('📄 EXPORT DEBUG: Generated CSV preview (first 300 chars):', csv.substring(0, 300));
       console.log('📄 EXPORT DEBUG: CSV total length:', csv.length);
+      console.log('📄 EXPORT DEBUG: CSV line count:', csv.split('\n').length);
       
       console.log('🔍 EXPORT DEBUG: Setting CSV response headers...');
       res.setHeader('Content-Type', 'text/csv');

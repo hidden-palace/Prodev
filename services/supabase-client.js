@@ -255,40 +255,68 @@ class SupabaseService {
 
     leads.forEach(lead => {
       const row = [
-        this.escapeCsvField(lead.source_platform || ''),
-        this.escapeCsvField(lead.business_name || ''),
-        this.escapeCsvField(lead.contact_name || ''),
-        this.escapeCsvField(lead.role || lead.role_title || ''),
-        this.escapeCsvField(lead.email || ''),
-        this.escapeCsvField(lead.phone_number || lead.phone || ''),
-        this.escapeCsvField(lead.address || ''),
-        this.escapeCsvField(lead.city || ''),
-        this.escapeCsvField(lead.state || ''),
-        this.escapeCsvField(lead.postal_code || ''),
-        this.escapeCsvField(lead.country || ''),
-        this.escapeCsvField(lead.website || ''),
-        this.escapeCsvField(lead.category || lead.industry || ''),
-        this.escapeCsvField(Array.isArray(lead.specialties) ? lead.specialties.join('; ') : ''),
-        lead.rating || '',
-        this.escapeCsvField(lead.profile_link || ''),
-        this.escapeCsvField(lead.notes || ''),
-        lead.relevance_score || '',
-        lead.contact_role_score || '',
-        lead.location_score || '',
-        lead.completeness_score || '',
-        lead.online_presence_score || '',
-        lead.average_score || '',
+        this.escapeCsvField(lead.source_platform || 'Unknown'),
+        this.escapeCsvField(lead.business_name || 'Unknown Business'),
+        this.escapeCsvField(lead.contact_name || 'No Contact'),
+        this.escapeCsvField(lead.role_title || lead.role || 'Unknown Role'),
+        this.escapeCsvField(lead.email || 'No Email'),
+        this.escapeCsvField(lead.phone || lead.phone_number || 'No Phone'),
+        this.escapeCsvField(lead.address || 'No Address'),
+        this.escapeCsvField(lead.city || 'Unknown City'),
+        this.escapeCsvField(lead.state || 'Unknown State'),
+        this.escapeCsvField(lead.postal_code || 'No Postal Code'),
+        this.escapeCsvField(lead.country || 'Unknown Country'),
+        this.escapeCsvField(lead.website || 'No Website'),
+        this.escapeCsvField(lead.industry || lead.category || 'Unknown Industry'),
+        this.escapeCsvField(Array.isArray(lead.categories) ? lead.categories.join('; ') : (lead.specialties || 'No Specialties')),
+        lead.rating || '0',
+        this.escapeCsvField(lead.profile_link || 'No Profile Link'),
+        this.escapeCsvField(lead.notes || 'No Notes'),
+        lead.relevance_score || '0',
+        lead.contact_role_score || '0',
+        lead.location_score || '0',
+        lead.completeness_score || '0',
+        lead.online_presence_score || '0',
+        this.calculateAverageScore(lead),
         lead.validated ? 'Yes' : 'No',
         lead.outreach_sent ? 'Yes' : 'No',
         lead.response_received ? 'Yes' : 'No',
         lead.converted ? 'Yes' : 'No',
-        this.escapeCsvField(lead.employee_id || ''),
-        lead.created_at || ''
+        this.escapeCsvField(lead.employee_id || 'Unknown Employee'),
+        this.formatDate(lead.created_at)
       ];
       csvRows.push(row.join(','));
     });
 
     return csvRows.join('\n');
+  }
+
+  /**
+   * Calculate average score from individual scores
+   */
+  calculateAverageScore(lead) {
+    const scores = [
+      lead.relevance_score || 0,
+      lead.contact_role_score || 0,
+      lead.location_score || 0,
+      lead.completeness_score || 0,
+      lead.online_presence_score || 0
+    ];
+    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    return average.toFixed(1);
+  }
+
+  /**
+   * Format date for CSV export
+   */
+  formatDate(dateString) {
+    if (!dateString) return 'No Date';
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    } catch (error) {
+      return 'Invalid Date';
+    }
   }
 
   /**
@@ -340,15 +368,17 @@ class SupabaseService {
    * Escape CSV field
    */
   escapeCsvField(field) {
-    if (typeof field !== 'string') {
-      field = String(field);
-    }
+    // Convert to string and handle null/undefined
+    let stringField = field == null ? '' : String(field);
+    
+    // Remove any newlines and carriage returns that could break CSV format
+    stringField = stringField.replace(/[\r\n]+/g, ' ').trim();
     
     // If field contains comma, quote, or newline, wrap in quotes and escape quotes
-    if (field.includes(',') || field.includes('"') || field.includes('\n')) {
-      return '"' + field.replace(/"/g, '""') + '"';
+    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+      return '"' + stringField.replace(/"/g, '""') + '"';
     }
-    return field;
+    return stringField;
   }
 
   /**
