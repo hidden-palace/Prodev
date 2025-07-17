@@ -76,6 +76,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // CRITICAL: Bypass service worker for leads export to allow server handling
+  if (url.pathname === '/api/leads/export') {
+    console.log('🚫 SW: Bypassing service worker for leads export - letting request go to server');
+    return; // Don't call event.respondWith(), let the request go to the network/server
+  }
+
   // Handle different types of requests
   if (STATIC_FILES.includes(url.pathname)) {
     // Static files - cache first
