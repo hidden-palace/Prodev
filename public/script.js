@@ -353,11 +353,46 @@ async function exportFilteredLeads(format) {
     const exportUrl = `/api/leads/export?${queryParams.toString()}`;
     
     console.log(`📥 Exporting leads as ${format.toUpperCase()} with filters:`, filters);
+    console.log(`🔗 EXPORT DEBUG: Full export URL:`, exportUrl);
+    console.log(`🌐 EXPORT DEBUG: Current window location:`, window.location.href);
+    console.log(`🔗 EXPORT DEBUG: Absolute URL would be:`, new URL(exportUrl, window.location.origin).href);
+    
+    // Test if we can reach the server at all
+    console.log(`🧪 EXPORT DEBUG: Testing server connectivity...`);
+    try {
+      const testResponse = await fetch('/api/test-route');
+      const testData = await testResponse.json();
+      console.log(`✅ EXPORT DEBUG: Server test successful:`, testData);
+    } catch (testError) {
+      console.error(`❌ EXPORT DEBUG: Server test failed:`, testError);
+    }
+    
+    // Try to fetch the export URL directly to see what happens
+    console.log(`🔍 EXPORT DEBUG: Attempting direct fetch to export URL...`);
+    try {
+      const directResponse = await fetch(exportUrl);
+      console.log(`📡 EXPORT DEBUG: Direct fetch response status:`, directResponse.status);
+      console.log(`📡 EXPORT DEBUG: Direct fetch response headers:`, [...directResponse.headers.entries()]);
+      console.log(`📡 EXPORT DEBUG: Direct fetch response type:`, directResponse.type);
+      console.log(`📡 EXPORT DEBUG: Direct fetch response URL:`, directResponse.url);
+      
+      const responseText = await directResponse.text();
+      console.log(`📄 EXPORT DEBUG: Direct fetch response body (first 500 chars):`, responseText.substring(0, 500));
+      
+      // Check if it's HTML instead of CSV
+      if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
+        console.error(`❌ EXPORT DEBUG: Response is HTML, not CSV! This confirms the routing issue.`);
+      }
+    } catch (directError) {
+      console.error(`❌ EXPORT DEBUG: Direct fetch failed:`, directError);
+    }
     
     // Trigger download
     const link = document.createElement('a');
     link.href = exportUrl;
     link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
+    console.log(`💾 EXPORT DEBUG: Creating download link with href:`, link.href);
+    console.log(`💾 EXPORT DEBUG: Download filename:`, link.download);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
