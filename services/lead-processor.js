@@ -12,12 +12,13 @@ class LeadProcessor {
     try {
       console.log('🔍 Processing lead data from webhook output...');
       console.log('🔍 DEBUG: processLeadData - Employee ID:', employeeId);
-      console.log('🔍 DEBUG: processLeadData - Raw output length:', webhookOutput.length);
+      console.log('🔍 DEBUG: processLeadData - Raw output preview:', webhookOutput.substring(0, 500) + '...');
       
       // Parse the JSON output from the webhook
       let leadsData;
       try {
         const parsed = JSON.parse(webhookOutput);
+        console.log('🔍 DEBUG: processLeadData - Successfully parsed JSON, checking structure...');
         
         // Handle OpenAI tool output format: [{"index":0,"message":{"role":"assistant","content":{"leads":[...]}}}]
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -26,26 +27,29 @@ class LeadProcessor {
           // Check for nested OpenAI format
           if (firstItem.message && firstItem.message.content && firstItem.message.content.leads) {
             leadsData = firstItem.message.content.leads;
-            console.log('🔍 DEBUG: processLeadData - Extracted leads from OpenAI format');
+            console.log('🔍 DEBUG: processLeadData - Extracted leads from OpenAI nested format, count:', leadsData.length);
           }
           // Check for direct array format (fallback)
           else if (firstItem.title || firstItem.business_name || firstItem.name) {
             leadsData = parsed;
-            console.log('🔍 DEBUG: processLeadData - Using direct array format');
+            console.log('🔍 DEBUG: processLeadData - Using direct array format, count:', leadsData.length);
           } else {
-            throw new Error('Unrecognized data structure in webhook output');
+            console.log('🔍 DEBUG: processLeadData - First item keys:', Object.keys(firstItem));
+            throw new Error('Unrecognized data structure in webhook output - no leads found in expected locations');
           }
         } else {
-          throw new Error('Expected array in webhook output');
+          console.log('🔍 DEBUG: processLeadData - Parsed data type:', typeof parsed);
+          throw new Error('Expected array in webhook output, got: ' + typeof parsed);
         }
       } catch (parseError) {
         console.error('❌ Failed to parse webhook output as JSON:', parseError);
+        console.error('❌ Raw webhook output causing parse error:', webhookOutput.substring(0, 1000));
         throw new Error('Invalid JSON format in webhook response');
       }
 
       // Ensure we have an array of leads
       if (!Array.isArray(leadsData)) {
-        console.error('❌ Webhook output is not an array:', typeof leadsData);
+        console.error('❌ Extracted leads data is not an array:', typeof leadsData);
         throw new Error('Expected array of leads in webhook response');
       }
 
@@ -54,23 +58,26 @@ class LeadProcessor {
         return { success: true, leads: [], count: 0 };
       }
 
-      console.log(`📊 Found ${leadsData.length} leads to process from ${employeeId}`);
-      console.log('🔍 DEBUG: processLeadData - First lead sample:', JSON.stringify(leadsData[0], null, 2));
+      console.log(`📊 Found ${leadsData.length} leads to process from employee: ${employeeId}`);
+      console.log('🔍 DEBUG: processLeadData - First lead sample keys:', Object.keys(leadsData[0]));
+      console.log('🔍 DEBUG: processLeadData - First lead sample data:', JSON.stringify(leadsData[0], null, 2));
 
       // Process and save leads to Supabase
+      console.log('🔍 DEBUG: processLeadData - About to call supabaseService.processAndSaveLeads...');
       const savedLeads = await this.supabaseService.processAndSaveLeads(leadsData, employeeId);
 
-      console.log(`✅ Successfully processed ${savedLeads.length} leads for ${employeeId}`);
+      console.log(`✅ Successfully processed and saved ${savedLeads.length} leads for employee: ${employeeId}`);
 
       return {
         success: true,
         leads: savedLeads,
         count: savedLeads.length,
-        message: `Successfully processed and saved ${savedLeads.length} leads from ${employeeId}`
+        message: `Successfully processed and saved ${savedLeads.length} leads from employee: ${employeeId}`
       };
 
     } catch (err) {
-      console.error(`❌ Failure processing lead data for ${employeeId}:`, err);
+      console.error(`❌ CRITICAL: Failure processing lead data for employee ${employeeId}:`, err.message);
+      console.error(`❌ CRITICAL: Full error details:`, err);
       throw err;
     }
   }
@@ -82,36 +89,44 @@ class LeadProcessor {
     try {
       const parsed = JSON.parse(webhookOutput);
       
-      console.log('🔍 DEBUG: isLeadData - Raw webhook output:', webhookOutput.substring(0, 200) + '...');
-      console.log('🔍 DEBUG: isLeadData - Parsed structure:', JSON.stringify(parsed, null, 2).substring(0, 500) + '...');
+      console.log('🔍 DEBUG: isLeadData - Raw webhook output:', webhookOutput.substring(0, 300) + '...');
+      console.log('🔍 DEBUG: isLeadData - Parsed structure type:', Array.isArray(parsed) ? 'Array' : typeof parsed);
       
       // Handle OpenAI tool output format: [{"index":0,"message":{"role":"assistant","content":{"leads":[...]}}}]
       let leadsArray = null;
       
       if (Array.isArray(parsed) && parsed.length > 0) {
         const firstItem = parsed[0];
+        console.log('🔍 DEBUG: isLeadData - First item structure:', Object.keys(firstItem));
         
         // Check for nested OpenAI format
         if (firstItem.message && firstItem.message.content && firstItem.message.content.leads) {
           leadsArray = firstItem.message.content.leads;
-          console.log('🔍 DEBUG: isLeadData - Found leads in OpenAI format, count:', leadsArray.length);
+          console.log('🔍 DEBUG: isLeadData - Found leads in OpenAI nested format, count:', leadsArray.length);
         }
         // Check for direct array format (fallback)
         else if (firstItem.title || firstItem.business_name || firstItem.name) {
           leadsArray = parsed;
           console.log('🔍 DEBUG: isLeadData - Found leads in direct array format, count:', leadsArray.length);
         }
+        else {
+          console.log('🔍 DEBUG: isLeadData - No recognized lead structure found in first item');
+        }
+      }
+      else {
+        console.log('🔍 DEBUG: isLeadData - Parsed data is not an array or is empty');
       }
       
       if (leadsArray && Array.isArray(leadsArray) && leadsArray.length > 0) {
         const firstLead = leadsArray[0];
         
         // Check for common lead data fields
-        const leadFields = ['title', 'business_name', 'name', 'address', 'phone', 'website', 'categories'];
+        const leadFields = ['title', 'business_name', 'name', 'address', 'phone', 'website', 'categories', 'company'];
         const hasLeadFields = leadFields.some(field => firstLead.hasOwnProperty(field));
         
         console.log('🔍 DEBUG: isLeadData - First lead fields:', Object.keys(firstLead));
         console.log('🔍 DEBUG: isLeadData - Has lead fields:', hasLeadFields);
+        console.log('🔍 DEBUG: isLeadData - Returning:', hasLeadFields);
         
         return hasLeadFields;
       }
@@ -119,7 +134,7 @@ class LeadProcessor {
       console.log('🔍 DEBUG: isLeadData - No valid leads structure found');
       return false;
     } catch (err) {
-      console.error('🔍 DEBUG: isLeadData - Parsing error:', err.message);
+      console.error('🔍 DEBUG: isLeadData - JSON parsing error:', err.message);
       return false;
     }
   }
