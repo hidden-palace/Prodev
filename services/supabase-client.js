@@ -135,48 +135,73 @@ class SupabaseService {
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
     try {
-      console.log('🔍 Supabase getLeads called with:', { filters, page, limit });
+      console.log('🔍 SUPABASE DEBUG: getLeads method called');
+      console.log('🔍 SUPABASE DEBUG: Input parameters:', { filters, page, limit });
+      console.log('🔍 SUPABASE DEBUG: Supabase client status:', !!this.client);
+      
+      // Test basic Supabase connection first
+      console.log('🧪 SUPABASE DEBUG: Testing basic connection...');
+      const { data: testData, error: testError } = await this.client
+        .from('leads')
+        .select('count(*)', { count: 'exact', head: true });
+      
+      if (testError) {
+        console.error('❌ SUPABASE DEBUG: Basic connection test failed:', testError);
+        throw testError;
+      }
+      
+      console.log('✅ SUPABASE DEBUG: Basic connection successful, total leads in DB:', testData);
       
       let query = this.client
         .from('leads')
         .select('*');
 
+      console.log('🔍 SUPABASE DEBUG: Base query created');
+
       // Apply filters
       if (filters.source_platform && filters.source_platform !== 'All Sources') {
+        console.log('🔍 SUPABASE DEBUG: Applying source_platform filter:', filters.source_platform);
         query = query.eq('source_platform', filters.source_platform);
       }
 
       if (filters.industry && filters.industry !== 'All Industries') {
+        console.log('🔍 SUPABASE DEBUG: Applying industry filter:', filters.industry);
         query = query.eq('industry', filters.industry);
       }
 
       if (filters.city) {
+        console.log('🔍 SUPABASE DEBUG: Applying city filter:', filters.city);
         query = query.ilike('city', `%${filters.city}%`);
       }
 
       if (filters.validated !== undefined) {
+        console.log('🔍 SUPABASE DEBUG: Applying validated filter:', filters.validated);
         query = query.eq('validated', filters.validated);
       }
 
       if (filters.outreach_sent !== undefined) {
+        console.log('🔍 SUPABASE DEBUG: Applying outreach_sent filter:', filters.outreach_sent);
         query = query.eq('outreach_sent', filters.outreach_sent);
       }
 
       if (filters.employee_id) {
+        console.log('🔍 SUPABASE DEBUG: Applying employee_id filter:', filters.employee_id);
         query = query.eq('employee_id', filters.employee_id);
       }
 
       if (filters.min_score) {
-        // Calculate average score on the fly since we might not have this column
+        console.log('🔍 SUPABASE DEBUG: Applying min_score filter:', filters.min_score);
         query = query.gte('relevance_score', filters.min_score);
       }
 
       // Date range filtering
       if (filters.date_from) {
+        console.log('🔍 SUPABASE DEBUG: Applying date_from filter:', filters.date_from);
         query = query.gte('created_at', filters.date_from);
       }
 
       if (filters.date_to) {
+        console.log('🔍 SUPABASE DEBUG: Applying date_to filter:', filters.date_to);
         // Add one day to include the entire end date
         const endDate = new Date(filters.date_to);
         endDate.setDate(endDate.getDate() + 1);
@@ -187,31 +212,52 @@ class SupabaseService {
       const sortField = filters.sort || 'created_at';
       const sortOrder = filters.order === 'asc' ? true : false;
       
-      // Always sort by created_at for now to avoid column issues
+      console.log('🔍 SUPABASE DEBUG: Applying sort:', { sortField, sortOrder });
       query = query.order('created_at', { ascending: sortOrder });
       
       // Apply pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;
+      console.log('🔍 SUPABASE DEBUG: Applying pagination:', { from, to, page, limit });
       query = query.range(from, to);
 
-      console.log('🔍 About to execute Supabase query...');
+      console.log('🚀 SUPABASE DEBUG: About to execute final query...');
       const { data, error: supabaseError, count } = await query;
 
       if (supabaseError) {
-        console.error('❌ Error fetching leads:', supabaseError);
+        console.error('❌ SUPABASE DEBUG: Query execution failed:', supabaseError);
+        console.error('❌ SUPABASE DEBUG: Error details:', {
+          message: supabaseError.message,
+          details: supabaseError.details,
+          hint: supabaseError.hint,
+          code: supabaseError.code
+        });
         throw supabaseError;
       }
 
-      console.log('✅ Supabase query successful:', {
+      console.log('✅ SUPABASE DEBUG: Query executed successfully!');
+      console.log('✅ SUPABASE DEBUG: Result summary:', {
         dataLength: data?.length || 0,
         count,
-        firstLead: data?.[0] ? {
+        hasData: !!data && data.length > 0
+      });
+      
+      if (data && data.length > 0) {
+        console.log('📋 SUPABASE DEBUG: First lead from DB:', {
           id: data[0].id,
           business_name: data[0].business_name,
+          contact_name: data[0].contact_name,
+          email: data[0].email,
+          phone: data[0].phone,
+          city: data[0].city,
+          industry: data[0].industry,
           created_at: data[0].created_at
-        } : null
-      });
+        });
+        console.log('📋 SUPABASE DEBUG: Available columns in first lead:', Object.keys(data[0]));
+      } else {
+        console.log('⚠️ SUPABASE DEBUG: No data returned from query');
+      }
+      
       return {
         leads: data || [],
         total: count,
@@ -220,7 +266,12 @@ class SupabaseService {
         totalPages: Math.ceil((count || 0) / limit)
       };
     } catch (err) {
-      console.error('❌ Failure getting leads:', err);
+      console.error('❌ SUPABASE DEBUG: Critical error in getLeads:', err);
+      console.error('❌ SUPABASE DEBUG: Error type:', err.constructor.name);
+      console.error('❌ SUPABASE DEBUG: Error message:', err.message);
+      if (err.stack) {
+        console.error('❌ SUPABASE DEBUG: Error stack:', err.stack);
+      }
       throw err;
     }
   }
