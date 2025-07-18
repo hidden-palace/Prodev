@@ -9,31 +9,11 @@ class SupabaseService {
         supabaseUrl.includes('your_') || supabaseKey.includes('your_') ||
         supabaseUrl === 'your_supabase_project_url_here' || 
         supabaseKey === 'your_supabase_anon_key_here') {
-      console.warn('⚠️ Supabase not configured properly. Using demo mode.');
-      console.warn('   Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file');
-      this.client = null;
-      this.isConfigured = false;
-      return;
-    }
-    
-    try {
-      this.client = createClient(supabaseUrl, supabaseKey);
-      this.isConfigured = true;
-      console.log('✅ Supabase client initialized');
-    } catch (error) {
-      console.error('❌ Failed to initialize Supabase client:', error.message);
-      this.client = null;
-      this.isConfigured = false;
-    }
-  }
-
-  /**
-   * Check if Supabase is properly configured
-   */
-  checkConfiguration() {
-    if (!this.isConfigured || !this.client) {
       throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
+    
+    this.client = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase client initialized');
   }
 
   /**
@@ -106,8 +86,6 @@ class SupabaseService {
    */
   async processAndSaveLeads(leadsData, employeeId) {
     try {
-      this.checkConfiguration();
-      
       console.log(`📊 Processing ${leadsData.length} leads from ${employeeId}`);
       
       const processedLeads = leadsData.map(lead => {
@@ -160,8 +138,6 @@ class SupabaseService {
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
     try {
-      this.checkConfiguration();
-      
       let query = this.client
         .from('leads')
         .select('*');
@@ -431,8 +407,6 @@ class SupabaseService {
    */
   async updateLead(leadId, updates) {
     try {
-      this.checkConfiguration();
-      
       const { data, error: updateLeadError } = await this.client
         .from('leads')
         .update(updates)
@@ -458,8 +432,6 @@ class SupabaseService {
    */
   async getLeadStatistics() {
     try {
-      this.checkConfiguration();
-      
       const { data, error: statsError } = await this.client
         .from('leads')
         .select('average_score, validated, outreach_sent, response_received, converted, employee_id, created_at');
@@ -504,8 +476,6 @@ class SupabaseService {
    */
   async deleteLead(leadId) {
     try {
-      this.checkConfiguration();
-      
       const { error: deleteLeadError } = await this.client
         .from('leads')
         .delete()

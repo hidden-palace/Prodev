@@ -2,19 +2,7 @@ const SupabaseService = require('./supabase-client');
 
 class LeadProcessor {
   constructor() {
-    try {
-      this.supabaseService = new SupabaseService();
-    } catch (error) {
-      console.warn('⚠️ LeadProcessor initialized without Supabase connection:', error.message);
-      this.supabaseService = null;
-    }
-  }
-
-  /**
-   * Check if service is available
-   */
-  isAvailable() {
-    return this.supabaseService && this.supabaseService.isConfigured;
+    this.supabaseService = new SupabaseService();
   }
 
   /**
@@ -22,10 +10,6 @@ class LeadProcessor {
    */
   async processLeadData(webhookOutput, employeeId) {
     try {
-      if (!this.isAvailable()) {
-        throw new Error('Lead processing service is not available. Please configure Supabase connection.');
-      }
-      
       console.log('🔍 Processing lead data from webhook output...');
       
       // Parse the JSON output from the webhook
@@ -96,16 +80,6 @@ class LeadProcessor {
    * Get lead statistics
    */
   async getStatistics() {
-    if (!this.isAvailable()) {
-      return {
-        total: 0,
-        validated: 0,
-        outreach_sent: 0,
-        responses: 0,
-        converted: 0,
-        error: 'Supabase not configured'
-      };
-    }
     return await this.supabaseService.getLeadStatistics();
   }
 
@@ -113,16 +87,6 @@ class LeadProcessor {
    * Get leads with filters
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
-    if (!this.isAvailable()) {
-      return {
-        leads: [],
-        total: 0,
-        page: 1,
-        limit: 50,
-        totalPages: 0,
-        error: 'Supabase not configured'
-      };
-    }
     return await this.supabaseService.getLeads(filters, page, limit);
   }
 
@@ -130,9 +94,6 @@ class LeadProcessor {
    * Update lead
    */
   async updateLead(leadId, updates) {
-    if (!this.isAvailable()) {
-      throw new Error('Lead update service is not available. Please configure Supabase connection.');
-    }
     return await this.supabaseService.updateLead(leadId, updates);
   }
 
@@ -140,9 +101,6 @@ class LeadProcessor {
    * Delete lead
    */
   async deleteLead(leadId) {
-    if (!this.isAvailable()) {
-      throw new Error('Lead delete service is not available. Please configure Supabase connection.');
-    }
     return await this.supabaseService.deleteLead(leadId);
   }
 
@@ -150,9 +108,6 @@ class LeadProcessor {
    * Export leads to CSV
    */
   async exportToCSV(leads) {
-    if (!this.supabaseService) {
-      throw new Error('Export service is not available. Please configure Supabase connection.');
-    }
     return await this.supabaseService.exportToCSV(leads);
   }
 
@@ -160,9 +115,6 @@ class LeadProcessor {
    * Export leads to XML
    */
   async exportToXML(leads) {
-    if (!this.supabaseService) {
-      throw new Error('Export service is not available. Please configure Supabase connection.');
-    }
     return await this.supabaseService.exportToXML(leads);
   }
 }
