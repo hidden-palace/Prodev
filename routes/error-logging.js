@@ -26,19 +26,11 @@ router.post('/errors', async (req, res, next) => {
     console.error('CLIENT_LOG:', JSON.stringify(logData, null, 2));
 
     // Store error for analysis
-    try {
-      await storeClientLog(logData);
-    } catch (storeError) {
-      console.warn('Failed to store log (continuing anyway):', storeError.message);
-    }
+    await storeClientLog(logData);
 
     // Send to monitoring service if configured
-    try {
-      if (process.env.ERROR_MONITORING_URL) {
-        await sendToMonitoringService(logData);
-      }
-    } catch (monitoringError) {
-      console.warn('Failed to send to monitoring service (continuing anyway):', monitoringError.message);
+    if (process.env.ERROR_MONITORING_URL) {
+      await sendToMonitoringService(logData);
     }
 
     res.json({
@@ -108,7 +100,7 @@ async function storeClientLog(logData) {
     await fs.appendFile(dailyLogFile, logEntry);
 
   } catch (err) {
-    console.warn('Failed to store client log (non-critical):', err.message);
+    console.error('Failed to store client log:', err);
   }
 }
 
@@ -116,12 +108,32 @@ async function storeClientLog(logData) {
  * Send exception to external monitoring service
  */
 async function sendToMonitoringService(logData) {
-  // Simple implementation - just log that we would send to monitoring
-  console.log('Would send to monitoring service:', {
-    type: logData.type,
-    message: logData.message,
-    timestamp: logData.serverTimestamp
-  });
+  try {
+    const monitoringUrl = process.env.ERROR_MONITORING_URL;
+    const apiKey = process.env.ERROR_MONITORING_API_KEY;
+
+    if (!monitoringUrl) return;
+
+    const response = await fetch(monitoringUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
+      },
+      body: JSON.stringify(errorData),
+      body: JSON.stringify(logData),
+      timeout: 5000
+    });
+
+    if (!response.ok) {
+      throw new Error(`Monitoring service responded with ${response.status}`);
+    }
+
+    console.log('Log sent to monitoring service successfully');
+
+  } catch (err) {
+    console.error('Failed to send log to monitoring service:', err);
+  }
 }
 
 /**

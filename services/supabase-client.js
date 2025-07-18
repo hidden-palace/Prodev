@@ -5,46 +5,12 @@ class SupabaseService {
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
     
-    // Enhanced validation with specific error messages
-    if (!supabaseUrl || supabaseUrl === 'your_supabase_project_url_here' || supabaseUrl.includes('your_')) {
-      console.error('❌ SUPABASE CONFIGURATION ERROR:');
-      console.error('   VITE_SUPABASE_URL is not properly configured in .env file');
-      console.error('   Current value:', supabaseUrl || 'undefined');
-      console.error('   Expected format: https://your-project-id.supabase.co');
-      throw new Error('SUPABASE_URL_NOT_CONFIGURED: Please set a valid VITE_SUPABASE_URL in your .env file');
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
     
-    if (!supabaseKey || supabaseKey === 'your_supabase_anon_key_here' || supabaseKey.includes('your_')) {
-      console.error('❌ SUPABASE CONFIGURATION ERROR:');
-      console.error('   VITE_SUPABASE_ANON_KEY is not properly configured in .env file');
-      console.error('   Current value:', supabaseKey ? 'SET_BUT_INVALID' : 'undefined');
-      console.error('   Expected: Your actual Supabase anon/public key');
-      throw new Error('SUPABASE_KEY_NOT_CONFIGURED: Please set a valid VITE_SUPABASE_ANON_KEY in your .env file');
-    }
-    
-    // Validate URL format
-    try {
-      const url = new URL(supabaseUrl);
-      if (!url.hostname.includes('supabase.co')) {
-        console.warn('⚠️  Supabase URL format warning: Expected hostname to contain "supabase.co"');
-      }
-    } catch (urlError) {
-      console.error('❌ INVALID SUPABASE URL FORMAT:');
-      console.error('   URL:', supabaseUrl);
-      console.error('   Error:', urlError.message);
-      throw new Error('INVALID_SUPABASE_URL: The VITE_SUPABASE_URL format is invalid');
-    }
-    
-    try {
-      this.client = createClient(supabaseUrl, supabaseKey);
-      console.log('✅ Supabase client initialized successfully');
-      console.log('   URL:', supabaseUrl);
-      console.log('   Key configured:', supabaseKey ? 'YES' : 'NO');
-    } catch (clientError) {
-      console.error('❌ FAILED TO CREATE SUPABASE CLIENT:');
-      console.error('   Error:', clientError.message);
-      throw new Error('SUPABASE_CLIENT_CREATION_FAILED: ' + clientError.message);
-    }
+    this.client = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase client initialized');
   }
 
   /**
@@ -253,7 +219,6 @@ class SupabaseService {
    * Export leads to CSV format
    */
   async exportToCSV(leads) {
-    // CSV export doesn't require database connection, just process the provided leads array
     const headers = [
       'Source Platform',
       'Business Name',
@@ -358,7 +323,6 @@ class SupabaseService {
    * Export leads to XML format
    */
   async exportToXML(leads) {
-    // XML export doesn't require database connection, just process the provided leads array
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<leads>\n';
 
