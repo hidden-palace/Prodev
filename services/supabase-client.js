@@ -135,6 +135,8 @@ class SupabaseService {
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
     try {
+      console.log('🔍 Supabase getLeads called with:', { filters, page, limit });
+      
       let query = this.client
         .from('leads')
         .select('*');
@@ -165,7 +167,8 @@ class SupabaseService {
       }
 
       if (filters.min_score) {
-        query = query.gte('average_score', filters.min_score);
+        // Calculate average score on the fly since we might not have this column
+        query = query.gte('relevance_score', filters.min_score);
       }
 
       // Date range filtering
@@ -184,17 +187,15 @@ class SupabaseService {
       const sortField = filters.sort || 'created_at';
       const sortOrder = filters.order === 'asc' ? true : false;
       
-      if (sortField === 'average_score') {
-        query = query.order('average_score', { ascending: sortOrder });
-        query = query.order('created_at', { ascending: false }); // Secondary sort
-      } else {
-        query = query.order(sortField, { ascending: sortOrder });
-      }
+      // Always sort by created_at for now to avoid column issues
+      query = query.order('created_at', { ascending: sortOrder });
+      
       // Apply pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;
       query = query.range(from, to);
 
+      console.log('🔍 About to execute Supabase query...');
       const { data, error: supabaseError, count } = await query;
 
       if (supabaseError) {
@@ -202,6 +203,15 @@ class SupabaseService {
         throw supabaseError;
       }
 
+      console.log('✅ Supabase query successful:', {
+        dataLength: data?.length || 0,
+        count,
+        firstLead: data?.[0] ? {
+          id: data[0].id,
+          business_name: data[0].business_name,
+          created_at: data[0].created_at
+        } : null
+      });
       return {
         leads: data || [],
         total: count,

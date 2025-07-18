@@ -53,12 +53,22 @@ router.get('/', async (req, res, next) => {
     // Add sorting parameters
     filters.sort = sort;
     filters.order = order;
+    
+    console.log('📊 Loading leads with filters:', filters);
+    console.log('📊 Pagination: page', page, 'limit', limit);
+    
     const result = await leadProcessor.getLeads(
       filters,
       parseInt(page),
       parseInt(limit)
     );
 
+    console.log('📊 Leads query result:', {
+      totalLeads: result.leads?.length || 0,
+      totalCount: result.total,
+      page: result.page,
+      totalPages: result.totalPages
+    });
     res.json(result);
   } catch (err) {
     console.error('Failure fetching leads:', err);
