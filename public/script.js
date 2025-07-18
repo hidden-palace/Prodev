@@ -769,7 +769,7 @@ async function pollForCompletion(threadId, runId, maxAttempts = 60) {
         console.error(`❌ Task failed for ${employees[currentEmployee]?.name}:`, data.error);
         return;
       } else if (attempts >= maxAttempts) {
-        addMessage('Analyzing the retrieved leads.', 'assistant', true);
+        addMessage('Task is taking longer than expected. Please try again.', 'assistant', true);
         console.warn(`⏰ Polling timeout for ${employees[currentEmployee]?.name}`);
         return;
       }

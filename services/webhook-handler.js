@@ -217,19 +217,12 @@ class WebhookHandler {
    * CRITICAL: Process webhook response with BULLETPROOF isolation validation
    */
   processWebhookResponse(responseData) {
-    console.log('=== WEBHOOK RESPONSE PROCESSING ===');
-    console.log('📥 Raw response data:', JSON.stringify(responseData, null, 2));
+    console.log('=== BULLETPROOF WEBHOOK RESPONSE PROCESSING ===');
     
     const { tool_call_id, output, thread_id, run_id } = responseData;
 
     // Basic validation
     if (!tool_call_id || !output || !thread_id || !run_id) {
-      console.error('❌ Missing required fields in webhook response:', {
-        tool_call_id: !!tool_call_id,
-        output: !!output,
-        thread_id: !!thread_id,
-        run_id: !!run_id
-      });
       throw new Error('Missing required fields: tool_call_id, output, thread_id, run_id');
     }
 
@@ -240,67 +233,20 @@ class WebhookHandler {
       outputSize: typeof output === 'string' ? output.length : JSON.stringify(output).length
     });
 
-    // Process through isolation manager
-    let processedResponse;
-    try {
-      processedResponse = this.isolationManager.processWebhookResponse(
-        tool_call_id,
-        output,
-        thread_id,
-        run_id
-      );
-      console.log(`✅ Isolation manager processing successful`);
-    } catch (isolationError) {
-      console.error('❌ Isolation manager processing failed:', isolationError.message);
-      console.log('🔧 Checking pending operations...');
-      
-      // Log current pending operations for debugging
-      const allPending = this.getPendingCalls();
-      console.log(`📊 Total pending operations: ${allPending.length}`);
-      allPending.forEach(op => {
-        console.log(`   - ${op.toolCallId} (${op.employeeName}) - ${op.functionName}`);
-      });
-      
-      // Try to find the operation manually
-      const matchingOp = allPending.find(op => op.toolCallId === tool_call_id);
-      if (matchingOp) {
-        console.log('🎯 Found matching operation:', matchingOp);
-        
-        // Create a manual response
-        processedResponse = {
-          toolCallId: tool_call_id,
-          output: output,
-          threadId: thread_id,
-          runId: run_id,
-          employeeId: matchingOp.employeeId,
-          employeeName: matchingOp.employeeName,
-          correlationKey: matchingOp.correlationKey,
-          isolationKey: matchingOp.isolationKey,
-          conversationKey: matchingOp.conversationKey,
-          processedAt: new Date().toISOString(),
-          validationPassed: false,
-          manualProcessing: true
-        };
-        
-        // Remove from pending operations manually
-        this.isolationManager.pendingOperations.delete(tool_call_id);
-        const context = this.isolationManager.employeeContexts.get(matchingOp.employeeId);
-        if (context) {
-          context.pendingCalls.delete(tool_call_id);
-        }
-        
-        console.log('✅ Manual processing completed');
-      } else {
-        console.error('❌ No matching operation found for tool_call_id:', tool_call_id);
-        throw isolationError;
-      }
-    }
+    // CRITICAL: Process through isolation manager with bulletproof validation
+    const processedResponse = this.isolationManager.processWebhookResponse(
+      tool_call_id,
+      output,
+      thread_id,
+      run_id
+    );
 
-    console.log(`✅ PROCESSING COMPLETED:`, {
+    console.log(`✅ BULLETPROOF VALIDATION PASSED:`, {
       toolCallId: processedResponse.toolCallId,
       employeeId: processedResponse.employeeId,
       employeeName: processedResponse.employeeName,
-      manualProcessing: processedResponse.manualProcessing || false
+      correlationKey: processedResponse.correlationKey,
+      isolationKey: processedResponse.isolationKey
     });
 
     return {
@@ -310,8 +256,8 @@ class WebhookHandler {
       run_id: processedResponse.runId,
       employee_id: processedResponse.employeeId,
       employee_name: processedResponse.employeeName,
-      correlation_verified: !processedResponse.manualProcessing,
-      isolation_verified: !processedResponse.manualProcessing,
+      correlation_verified: true,
+      isolation_verified: true,
       processed_at: processedResponse.processedAt
     };
   }
