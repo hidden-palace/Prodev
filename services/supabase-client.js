@@ -5,12 +5,35 @@ class SupabaseService {
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+    if (!supabaseUrl || !supabaseKey || 
+        supabaseUrl.includes('your_') || supabaseKey.includes('your_') ||
+        supabaseUrl === 'your_supabase_project_url_here' || 
+        supabaseKey === 'your_supabase_anon_key_here') {
+      console.warn('⚠️ Supabase not configured properly. Using demo mode.');
+      console.warn('   Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file');
+      this.client = null;
+      this.isConfigured = false;
+      return;
     }
     
-    this.client = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized');
+    try {
+      this.client = createClient(supabaseUrl, supabaseKey);
+      this.isConfigured = true;
+      console.log('✅ Supabase client initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize Supabase client:', error.message);
+      this.client = null;
+      this.isConfigured = false;
+    }
+  }
+
+  /**
+   * Check if Supabase is properly configured
+   */
+  checkConfiguration() {
+    if (!this.isConfigured || !this.client) {
+      throw new Error('Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+    }
   }
 
   /**
@@ -83,6 +106,8 @@ class SupabaseService {
    */
   async processAndSaveLeads(leadsData, employeeId) {
     try {
+      this.checkConfiguration();
+      
       console.log(`📊 Processing ${leadsData.length} leads from ${employeeId}`);
       
       const processedLeads = leadsData.map(lead => {
@@ -135,6 +160,8 @@ class SupabaseService {
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
     try {
+      this.checkConfiguration();
+      
       let query = this.client
         .from('leads')
         .select('*');
@@ -219,6 +246,7 @@ class SupabaseService {
    * Export leads to CSV format
    */
   async exportToCSV(leads) {
+    // CSV export doesn't require database connection, just process the provided leads array
     const headers = [
       'Source Platform',
       'Business Name',
@@ -323,6 +351,7 @@ class SupabaseService {
    * Export leads to XML format
    */
   async exportToXML(leads) {
+    // XML export doesn't require database connection, just process the provided leads array
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<leads>\n';
 
@@ -402,6 +431,8 @@ class SupabaseService {
    */
   async updateLead(leadId, updates) {
     try {
+      this.checkConfiguration();
+      
       const { data, error: updateLeadError } = await this.client
         .from('leads')
         .update(updates)
@@ -427,6 +458,8 @@ class SupabaseService {
    */
   async getLeadStatistics() {
     try {
+      this.checkConfiguration();
+      
       const { data, error: statsError } = await this.client
         .from('leads')
         .select('average_score, validated, outreach_sent, response_received, converted, employee_id, created_at');
@@ -471,6 +504,8 @@ class SupabaseService {
    */
   async deleteLead(leadId) {
     try {
+      this.checkConfiguration();
+      
       const { error: deleteLeadError } = await this.client
         .from('leads')
         .delete()
