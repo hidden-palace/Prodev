@@ -152,9 +152,41 @@ class SupabaseService {
       
       console.log('✅ SUPABASE DEBUG: Basic connection successful, total leads in DB:', testData);
       
+      // Use explicit column selection instead of select('*') to avoid potential issues
+      const columns = [
+        'id',
+        'business_name',
+        'contact_name',
+        'role_title',
+        'email',
+        'phone',
+        'website',
+        'address',
+        'city',
+        'state',
+        'postal_code',
+        'country',
+        'industry',
+        'categories',
+        'relevance_score',
+        'contact_role_score',
+        'location_score',
+        'completeness_score',
+        'online_presence_score',
+        'validated',
+        'outreach_sent',
+        'response_received',
+        'converted',
+        'employee_id',
+        'created_at',
+        'updated_at'
+      ].join(', ');
+      
+      console.log('🔍 SUPABASE DEBUG: Using explicit column selection:', columns);
+      
       let query = this.client
         .from('leads')
-        .select('*');
+        .select(columns);
 
       console.log('🔍 SUPABASE DEBUG: Base query created');
 
@@ -221,8 +253,10 @@ class SupabaseService {
       console.log('🔍 SUPABASE DEBUG: Applying pagination:', { from, to, page, limit });
       query = query.range(from, to);
 
+      console.log('🚀 SUPABASE DEBUG: About to execute query...');
       console.log('🚀 SUPABASE DEBUG: About to execute final query...');
       const { data, error: supabaseError, count } = await query;
+      console.log('✅ SUPABASE DEBUG: Query executed without throwing!');
 
       if (supabaseError) {
         console.error('❌ SUPABASE DEBUG: Query execution failed:', supabaseError);
