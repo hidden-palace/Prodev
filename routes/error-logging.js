@@ -116,43 +116,12 @@ async function storeClientLog(logData) {
  * Send exception to external monitoring service
  */
 async function sendToMonitoringService(logData) {
-  try {
-    const monitoringUrl = process.env.ERROR_MONITORING_URL;
-    const apiKey = process.env.ERROR_MONITORING_API_KEY;
-
-    if (!monitoringUrl) return;
-
-    // Create AbortController for timeout functionality
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(monitoringUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey && { 'Authorization': `Bearer ${apiKey}` })
-      },
-      body: JSON.stringify(logData),
-      signal: controller.signal
-    });
-
-    // Clear timeout if fetch completes successfully
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`Monitoring service responded with ${response.status}`);
-    }
-
-    console.log('Log sent to monitoring service successfully');
-
-  } catch (err) {
-    // Handle AbortError specifically for timeout
-    if (err.name === 'AbortError') {
-      console.error('Monitoring service request timed out after 5 seconds');
-    } else {
-      console.error('Failed to send log to monitoring service:', err);
-    }
-  }
+  // Simple implementation - just log that we would send to monitoring
+  console.log('Would send to monitoring service:', {
+    type: logData.type,
+    message: logData.message,
+    timestamp: logData.serverTimestamp
+  });
 }
 
 /**
