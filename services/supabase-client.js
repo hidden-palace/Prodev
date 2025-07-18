@@ -2,15 +2,28 @@ const { createClient } = require('@supabase/supabase-js');
 
 class SupabaseService {
   constructor() {
+    console.log('🔧 SUPABASE DEBUG: Initializing SupabaseService...');
+    
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
     
+    console.log('🔧 SUPABASE DEBUG: Environment variables check:');
+    console.log('   VITE_SUPABASE_URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING');
+    console.log('   VITE_SUPABASE_ANON_KEY:', supabaseKey ? `${supabaseKey.substring(0, 20)}...` : 'MISSING');
+    
     if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ SUPABASE DEBUG: Missing environment variables!');
       throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
     
-    this.client = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized');
+    try {
+      console.log('🔧 SUPABASE DEBUG: Creating Supabase client...');
+      this.client = createClient(supabaseUrl, supabaseKey);
+      console.log('✅ SUPABASE DEBUG: Supabase client created successfully');
+    } catch (initError) {
+      console.error('❌ SUPABASE DEBUG: Failed to create Supabase client:', initError);
+      throw new Error(`Failed to initialize Supabase client: ${initError.message}`);
+    }
   }
 
   /**
@@ -140,17 +153,33 @@ class SupabaseService {
       console.log('🔍 SUPABASE DEBUG: Supabase client status:', !!this.client);
       
       // Test basic Supabase connection first
-      console.log('🧪 SUPABASE DEBUG: Testing basic connection...');
-      const { data: testData, error: testError } = await this.client
-        .from('leads')
-        .select('count(*)', { count: 'exact', head: true });
-      
-      if (testError) {
-        console.error('❌ SUPABASE DEBUG: Basic connection test failed:', testError);
-        throw testError;
+      console.log('🧪 SUPABASE DEBUG: Testing basic connection to leads table...');
+      try {
+        const { data: testData, error: testError } = await this.client
+          .from('leads')
+          .select('count(*)', { count: 'exact', head: true });
+        
+        if (testError) {
+          console.error('❌ SUPABASE DEBUG: Basic connection test failed:', testError);
+          console.error('❌ SUPABASE DEBUG: Error details:', {
+            message: testError.message,
+            details: testError.details,
+            hint: testError.hint,
+            code: testError.code
+          });
+          throw testError;
+        }
+        
+        console.log('✅ SUPABASE DEBUG: Basic connection successful, total leads in DB:', testData);
+      } catch (connectionError) {
+        console.error('❌ SUPABASE DEBUG: Connection test threw exception:', connectionError);
+        console.error('❌ SUPABASE DEBUG: Exception type:', connectionError.constructor.name);
+        console.error('❌ SUPABASE DEBUG: Exception message:', connectionError.message);
+        if (connectionError.stack) {
+          console.error('❌ SUPABASE DEBUG: Exception stack:', connectionError.stack);
+        }
+        throw connectionError;
       }
-      
-      console.log('✅ SUPABASE DEBUG: Basic connection successful, total leads in DB:', testData);
       
       // Use explicit column selection instead of select('*') to avoid potential issues
       const columns = [
