@@ -26,11 +26,19 @@ router.post('/errors', async (req, res, next) => {
     console.error('CLIENT_LOG:', JSON.stringify(logData, null, 2));
 
     // Store error for analysis
-    await storeClientLog(logData);
+    try {
+      await storeClientLog(logData);
+    } catch (storeError) {
+      console.warn('Failed to store log (continuing anyway):', storeError.message);
+    }
 
     // Send to monitoring service if configured
-    if (process.env.ERROR_MONITORING_URL) {
-      await sendToMonitoringService(logData);
+    try {
+      if (process.env.ERROR_MONITORING_URL) {
+        await sendToMonitoringService(logData);
+      }
+    } catch (monitoringError) {
+      console.warn('Failed to send to monitoring service (continuing anyway):', monitoringError.message);
     }
 
     res.json({
@@ -100,7 +108,7 @@ async function storeClientLog(logData) {
     await fs.appendFile(dailyLogFile, logEntry);
 
   } catch (err) {
-    console.error('Failed to store client log:', err);
+    console.warn('Failed to store client log (non-critical):', err.message);
   }
 }
 
