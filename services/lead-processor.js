@@ -150,20 +150,7 @@ class LeadProcessor {
    * Get leads with filters
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
-    console.log('🔍 LEAD PROCESSOR DEBUG: getLeads called at:', new Date().toISOString());
-    console.log('🔍 LEAD PROCESSOR DEBUG: Input params:', { filters, page, limit });
-    console.log('🔍 LEAD PROCESSOR DEBUG: supabaseService exists:', !!this.supabaseService);
-    
-    try {
-      console.log('🔍 LEAD PROCESSOR DEBUG: About to call supabaseService.getLeads...');
-      return await this.supabaseService.getLeads(filters, page, limit);
-    } catch (serviceError) {
-      console.error('❌ LEAD PROCESSOR DEBUG: supabaseService.getLeads failed:', serviceError);
-      console.error('❌ LEAD PROCESSOR DEBUG: Service error type:', serviceError.constructor.name);
-      console.error('❌ LEAD PROCESSOR DEBUG: Service error message:', serviceError.message);
-      console.error('❌ LEAD PROCESSOR DEBUG: About to re-throw serviceError');
-      throw serviceError;
-    }
+    return await this.supabaseService.getLeads(filters, page, limit);
   }
 
   /**
