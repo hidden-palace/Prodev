@@ -56,13 +56,17 @@ const config = {
 
 // Validate required configuration
 const requiredConfig = [
-  { key: 'openai.apiKey', value: config.openai.apiKey, name: 'OPENAI_API_KEY' }
+  { key: 'openai.apiKey', value: config.openai.apiKey, name: 'OPENAI_API_KEY' },
+  { key: 'supabase.url', value: process.env.VITE_SUPABASE_URL, name: 'VITE_SUPABASE_URL' },
+  { key: 'supabase.anonKey', value: process.env.VITE_SUPABASE_ANON_KEY, name: 'VITE_SUPABASE_ANON_KEY' }
 ];
 
 const missingConfig = requiredConfig.filter(item => 
   !item.value || 
   item.value.includes('your_') || 
-  item.value === 'your_openai_api_key_here'
+  item.value === 'your_openai_api_key_here' ||
+  item.value === 'your_supabase_project_url_here' ||
+  item.value === 'your_supabase_anon_key_here'
 );
 
 if (missingConfig.length > 0) {
@@ -91,6 +95,21 @@ if (config.openai.apiKey && !config.openai.apiKey.startsWith('sk-')) {
   }
 }
 
+// Additional validation for Supabase URL format
+if (process.env.VITE_SUPABASE_URL && !process.env.VITE_SUPABASE_URL.startsWith('https://')) {
+  console.error('Invalid Supabase URL format. URLs should start with "https://"');
+  if (config.server.nodeEnv !== 'development') {
+    process.exit(1);
+  }
+}
+
+// Additional validation for Supabase Anon Key format
+if (process.env.VITE_SUPABASE_ANON_KEY && !process.env.VITE_SUPABASE_ANON_KEY.startsWith('eyJ')) {
+  console.error('Invalid Supabase Anon Key format. Keys should start with "eyJ"');
+  if (config.server.nodeEnv !== 'development') {
+    process.exit(1);
+  }
+}
 // Validate employee webhook URLs
 console.log('\n🔗 Employee Webhook Configuration:');
 Object.entries(config.employees).forEach(([key, employee]) => {
