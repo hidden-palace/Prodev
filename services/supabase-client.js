@@ -109,19 +109,32 @@ class SupabaseService {
       const processedLeads = leadsData.map(lead => {
         const scores = this.calculateLeadScores(lead);
         
+        // Parse location string (e.g., "Dana Point, CA" -> city: "Dana Point", state: "CA")
+        let city = null;
+        let state = null;
+        if (lead.location) {
+          const locationParts = lead.location.split(',').map(part => part.trim());
+          if (locationParts.length >= 2) {
+            city = locationParts[0];
+            state = locationParts[1];
+          } else {
+            city = lead.location;
+          }
+        }
+        
         return {
-          business_name: lead.title || lead.business_name || 'Unknown Business',
+          business_name: lead.name || lead.company || lead.title || lead.business_name || 'Unknown Business',
           contact_name: lead.contact_name || null,
           role_title: lead.role_title || null,
           email: lead.email || null,
-          phone: lead.phone || lead.phoneUnformatted || null,
+          phone: lead.phone || lead.phoneUnformatted || lead.phone_number || null,
           website: lead.website || null,
           address: lead.address || null,
-          city: lead.city || null,
-          state: lead.state || null,
+          city: city || lead.city || null,
+          state: state || lead.state || null,
           postal_code: lead.postalCode || lead.postal_code || null,
           country: lead.countryCode || lead.country || 'US',
-          industry: lead.categoryName || 'Unknown',
+          industry: lead.categoryName || lead.industry || lead.category || 'Unknown',
           categories: lead.categories || [],
           ...scores,
           source_data: lead,
