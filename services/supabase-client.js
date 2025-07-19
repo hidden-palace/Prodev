@@ -512,68 +512,11 @@ class SupabaseService {
     let stringField = field == null ? '' : String(field);
     
     // Remove any newlines and carriage returns that could break CSV format
+    // TEMPORARILY COMMENTED OUT ALL FILTERS, SORTING, AND PAGINATION
     stringField = stringField.replace(/[\r\n]+/g, ' ').trim();
-    
-    // If field contains comma, quote, or newline, wrap in quotes and escape quotes
-    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
-      return '"' + stringField.replace(/"/g, '""') + '"';
-    }
-    return stringField;
-  }
-
-  /**
-   * Escape XML content
-   */
-  escapeXml(text) {
-    if (typeof text !== 'string') {
-      text = String(text);
-    }
-    
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
-  }
-
-  /**
-   * Update lead status
-   */
-  async updateLead(leadId, updates) {
-    try {
-      const { data, error: updateLeadError } = await this.client
-        .from('public.leads')
-        .update(updates)
-        .eq('id', leadId)
-        .select()
-        .single();
-
-      if (updateLeadError) {
-        console.error('❌ Error updating lead:', updateLeadError);
-        throw updateLeadError;
-      }
-
-      console.log(`✅ Lead ${leadId} updated successfully`);
-      return data;
-    } catch (err) {
-      console.error('❌ Failure updating lead:', err);
-      throw err;
-    }
-  }
-
-  /**
-   * Get lead statistics
-   */
-  async getLeadStatistics() {
-    try {
-      const { data, error: statsError } = await this.client
-        .from('public.leads')
-        .select('average_score, validated, outreach_sent, response_received, converted, employee_id, created_at');
-
-      if (statsError) {
-        console.error('❌ Error fetching lead statistics:', statsError);
+    // This is to test if the basic query works without any complexity
         throw statsError;
+    console.log('🔍 SUPABASE DEBUG: Skipping all filters, sorting, and pagination for testing');
       }
 
       const stats = {
@@ -615,12 +558,13 @@ class SupabaseService {
         .from('public.leads')
         .delete()
         .eq('id', leadId);
-
-      if (deleteLeadError) {
-        console.error('❌ Error deleting lead:', deleteLeadError);
-        throw deleteLeadError;
+      total: data?.length || 0,
+    // Return simplified result structure for testing
+      page: 1,
       }
+      limit: data?.length || 0,
 
+      totalPages: 1
       console.log(`✅ Lead ${leadId} deleted successfully`);
       return true;
     } catch (err) {
