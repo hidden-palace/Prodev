@@ -397,24 +397,25 @@ async function exportFilteredLeads(format) {
       console.error(`❌ EXPORT DEBUG: Direct fetch failed:`, directError);
     }
     
-    // DISABLED FOR TESTING: Trigger download
-    console.log(`🚫 DIRECT FETCH TEST: Download mechanism disabled for testing`);
-    console.log(`🚫 DIRECT FETCH TEST: We are only testing what the client receives via fetch`);
-    // const link = document.createElement('a');
-    // link.href = exportUrl;
-    // link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
-    // console.log(`💾 EXPORT DEBUG: Creating download link with href:`, link.href);
-    // console.log(`💾 EXPORT DEBUG: Download filename:`, link.download);
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
+    // Trigger download using the CSV data we fetched
+    const blob = new Blob([responseText], { type: format === 'csv' ? 'text/csv' : 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
+    console.log(`💾 EXPORT DEBUG: Creating download link with blob data`);
+    console.log(`💾 EXPORT DEBUG: Download filename:`, link.download);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     
     // Show success notification
-    showNotification(`Direct fetch test completed - check console for results`, 'info');
+    showNotification(`${format.toUpperCase()} export completed successfully!`, 'success');
     
   } catch (error) {
     console.error('Export error:', error);
-    showNotification(`Direct fetch test failed: ${error.message}`, 'error');
+    showNotification(`Export failed: ${error.message}`, 'error');
   } finally {
     // Hide loading state
     downloadBtn.classList.remove('loading');
