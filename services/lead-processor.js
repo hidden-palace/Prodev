@@ -2,19 +2,7 @@ const SupabaseService = require('./supabase-client');
 
 class LeadProcessor {
   constructor() {
-    console.log('🔧 LEAD PROCESSOR DEBUG: Constructor called at:', new Date().toISOString());
-    try {
-      console.log('🔧 LEAD PROCESSOR DEBUG: About to initialize SupabaseService...');
-      this.supabaseService = new SupabaseService();
-      console.log('✅ LEAD PROCESSOR DEBUG: SupabaseService initialized successfully');
-      console.log('✅ LEAD PROCESSOR DEBUG: supabaseService type:', typeof this.supabaseService);
-    } catch (initError) {
-      console.error('❌ LEAD PROCESSOR DEBUG: Failed to initialize SupabaseService:', initError);
-      console.error('❌ LEAD PROCESSOR DEBUG: Init error type:', initError.constructor.name);
-      console.error('❌ LEAD PROCESSOR DEBUG: Init error message:', initError.message);
-      console.error('❌ LEAD PROCESSOR DEBUG: Init error stack:', initError.stack);
-      throw initError;
-    }
+    this.supabaseService = new SupabaseService();
   }
 
   /**
@@ -162,7 +150,20 @@ class LeadProcessor {
    * Get leads with filters
    */
   async getLeads(filters = {}, page = 1, limit = 50) {
-    return await this.supabaseService.getLeads(filters, page, limit);
+    console.log('🔍 LEAD PROCESSOR DEBUG: getLeads called at:', new Date().toISOString());
+    console.log('🔍 LEAD PROCESSOR DEBUG: Input params:', { filters, page, limit });
+    console.log('🔍 LEAD PROCESSOR DEBUG: supabaseService exists:', !!this.supabaseService);
+    
+    try {
+      console.log('🔍 LEAD PROCESSOR DEBUG: About to call supabaseService.getLeads...');
+      return await this.supabaseService.getLeads(filters, page, limit);
+    } catch (serviceError) {
+      console.error('❌ LEAD PROCESSOR DEBUG: supabaseService.getLeads failed:', serviceError);
+      console.error('❌ LEAD PROCESSOR DEBUG: Service error type:', serviceError.constructor.name);
+      console.error('❌ LEAD PROCESSOR DEBUG: Service error message:', serviceError.message);
+      console.error('❌ LEAD PROCESSOR DEBUG: About to re-throw serviceError');
+      throw serviceError;
+    }
   }
 
   /**
