@@ -134,7 +134,7 @@ class SupabaseService {
       });
 
       const { data, error: insertError } = await this.client
-        .from('public.leads')
+        .from('leads')
         .insert(processedLeads)
         .select();
 
@@ -164,7 +164,7 @@ class SupabaseService {
       console.log('🧪 SUPABASE DEBUG: Testing basic connection to leads table...');
       try {
         const { data: testData, error: testError } = await this.client
-          .from('public.leads')
+          .from('leads')
           .select('id')
           .limit(1);
         
@@ -227,7 +227,7 @@ class SupabaseService {
       console.log('🔍 SUPABASE DEBUG: Using explicit column selection:', columns);
       
       let query = this.client
-        .from('public.leads')
+        .from('leads')
         .select(columns);
 
       console.log('🔍 SUPABASE DEBUG: Base query created');
@@ -551,7 +551,7 @@ class SupabaseService {
       console.log('📊 Getting lead statistics...');
       
       const { data, error: statsError } = await this.client
-        .from('public.leads')
+        .from('leads')
         .select('*');
 
       if (statsError) {
@@ -595,7 +595,7 @@ class SupabaseService {
   async deleteLead(leadId) {
     try {
       const { error: deleteLeadError } = await this.client
-        .from('public.leads')
+        .from('leads')
         .delete()
         .eq('id', leadId);
 
