@@ -373,6 +373,8 @@ async function exportFilteredLeads(format) {
     // Try to fetch the export URL directly to see what happens
     console.log(`🔍 DIRECT FETCH TEST: Attempting direct fetch to export URL (NO DOWNLOAD)...`);
     console.log(`🔍 DIRECT FETCH TEST: This is a test to see what the client receives from the server`);
+    
+    let responseText; // Declare responseText in outer scope
     try {
       const directResponse = await fetch(exportUrl);
       console.log(`📡 EXPORT DEBUG: Direct fetch response status:`, directResponse.status);
@@ -380,7 +382,7 @@ async function exportFilteredLeads(format) {
       console.log(`📡 EXPORT DEBUG: Direct fetch response type:`, directResponse.type);
       console.log(`📡 EXPORT DEBUG: Direct fetch response URL:`, directResponse.url);
       
-      const responseText = await directResponse.text();
+      responseText = await directResponse.text(); // Assign to outer-scoped variable
       console.log(`📄 EXPORT DEBUG: Direct fetch response body (first 500 chars):`, responseText.substring(0, 500));
       
       // Check if it's HTML instead of CSV
@@ -389,12 +391,20 @@ async function exportFilteredLeads(format) {
         console.error(`❌ DIRECT FETCH TEST: CLIENT RECEIVED HTML INSTEAD OF CSV`);
         console.error(`❌ DIRECT FETCH TEST: This means something is intercepting the response`);
         console.error(`❌ DIRECT FETCH TEST: Possible causes: Service Worker, WebContainer proxy, or routing issue`);
+        return; // Exit early if HTML is received
       } else {
         console.log(`✅ DIRECT FETCH TEST: CLIENT RECEIVED VALID CSV DATA`);
         console.log(`✅ DIRECT FETCH TEST: CSV length: ${responseText.length} characters`);
       }
     } catch (directError) {
       console.error(`❌ EXPORT DEBUG: Direct fetch failed:`, directError);
+      return; // Exit early if fetch fails
+    }
+    
+    // Only proceed if we have valid responseText
+    if (!responseText) {
+      console.error(`❌ EXPORT DEBUG: No response text available for download`);
+      return;
     }
     
     // Trigger download using the CSV data we fetched
