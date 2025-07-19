@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 class SupabaseService {
   constructor() {
     console.log('🔧 SUPABASE DEBUG: Initializing SupabaseService...');
+    console.log('🔧 SUPABASE DEBUG: Constructor called at:', new Date().toISOString());
     
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -10,9 +11,12 @@ class SupabaseService {
     console.log('🔧 SUPABASE DEBUG: Environment variables check:');
     console.log('   VITE_SUPABASE_URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING');
     console.log('   VITE_SUPABASE_ANON_KEY:', supabaseKey ? `${supabaseKey.substring(0, 20)}...` : 'MISSING');
+    console.log('🔧 SUPABASE DEBUG: URL type:', typeof supabaseUrl, 'Key type:', typeof supabaseKey);
+    console.log('🔧 SUPABASE DEBUG: URL length:', supabaseUrl?.length || 0, 'Key length:', supabaseKey?.length || 0);
     
     if (!supabaseUrl || !supabaseKey) {
       console.error('❌ SUPABASE DEBUG: Missing environment variables!');
+      console.error('❌ SUPABASE DEBUG: About to throw configuration error');
       throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
     
@@ -20,8 +24,12 @@ class SupabaseService {
       console.log('🔧 SUPABASE DEBUG: Creating Supabase client...');
       this.client = createClient(supabaseUrl, supabaseKey);
       console.log('✅ SUPABASE DEBUG: Supabase client created successfully');
+      console.log('✅ SUPABASE DEBUG: Client object type:', typeof this.client);
+      console.log('✅ SUPABASE DEBUG: Client has from method:', typeof this.client.from === 'function');
     } catch (initError) {
       console.error('❌ SUPABASE DEBUG: Failed to create Supabase client:', initError);
+      console.error('❌ SUPABASE DEBUG: Init error type:', initError.constructor.name);
+      console.error('❌ SUPABASE DEBUG: Init error message:', initError.message);
       throw new Error(`Failed to initialize Supabase client: ${initError.message}`);
     }
   }
