@@ -338,11 +338,14 @@ class SupabaseService {
       };
     } catch (err) {
       console.error('❌ SUPABASE DEBUG: Critical error in getLeads:', err);
+      console.error('❌ SUPABASE DEBUG: Critical error timestamp:', new Date().toISOString());
       console.error('❌ SUPABASE DEBUG: Error type:', err.constructor.name);
       console.error('❌ SUPABASE DEBUG: Error message:', err.message);
+      console.error('❌ SUPABASE DEBUG: Error stack trace:', err.stack);
       if (err.stack) {
         console.error('❌ SUPABASE DEBUG: Error stack:', err.stack);
       }
+      console.error('❌ SUPABASE DEBUG: About to re-throw error from getLeads');
       throw err;
     }
   }

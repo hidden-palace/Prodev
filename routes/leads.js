@@ -97,8 +97,13 @@ router.get('/', async (req, res, next) => {
     res.json(result);
   } catch (err) {
     console.error('❌ LEADS DEBUG: Critical error in leads route:', err);
+    console.error('❌ LEADS DEBUG: Error timestamp:', new Date().toISOString());
     console.error('❌ LEADS DEBUG: Error stack:', err.stack);
     console.error('❌ LEADS DEBUG: Error message:', err.message);
+    console.error('❌ LEADS DEBUG: Error type:', err.constructor.name);
+    console.error('❌ LEADS DEBUG: Error name:', err.name);
+    console.error('❌ LEADS DEBUG: Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    console.error('❌ LEADS DEBUG: About to call next(err)');
     next(err);
   }
 });

@@ -2,7 +2,19 @@ const SupabaseService = require('./supabase-client');
 
 class LeadProcessor {
   constructor() {
-    this.supabaseService = new SupabaseService();
+    console.log('🔧 LEAD PROCESSOR DEBUG: Constructor called at:', new Date().toISOString());
+    try {
+      console.log('🔧 LEAD PROCESSOR DEBUG: About to initialize SupabaseService...');
+      this.supabaseService = new SupabaseService();
+      console.log('✅ LEAD PROCESSOR DEBUG: SupabaseService initialized successfully');
+      console.log('✅ LEAD PROCESSOR DEBUG: supabaseService type:', typeof this.supabaseService);
+    } catch (initError) {
+      console.error('❌ LEAD PROCESSOR DEBUG: Failed to initialize SupabaseService:', initError);
+      console.error('❌ LEAD PROCESSOR DEBUG: Init error type:', initError.constructor.name);
+      console.error('❌ LEAD PROCESSOR DEBUG: Init error message:', initError.message);
+      console.error('❌ LEAD PROCESSOR DEBUG: Init error stack:', initError.stack);
+      throw initError;
+    }
   }
 
   /**
