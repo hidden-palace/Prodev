@@ -375,33 +375,15 @@ class SupabaseService {
     const headers = [
       'Source Platform',
       'Business Name',
+      'Industry',
       'Contact Name',
-      'Role',
       'Email',
       'Phone Number',
-      'Address',
       'City',
       'State',
-      'Postal Code',
-      'Country',
-      'Website',
-      'Category',
-      'Specialties',
-      'Rating',
-      'Profile Link',
-      'Notes',
-      'Relevance Score',
-      'Contact Role Score',
-      'Location Score',
-      'Completeness Score',
-      'Online Presence Score',
+      'Address',
       'Average Score',
-      'Validated',
-      'Outreach Sent',
-      'Response Received',
-      'Converted',
-      'Employee ID',
-      'Created At'
+      'Status'
     ];
 
     const csvRows = [headers.join(',')];
@@ -410,38 +392,42 @@ class SupabaseService {
       const row = [
         this.escapeCsvField(lead.source_platform || 'Unknown'),
         this.escapeCsvField(lead.business_name || 'Unknown Business'),
-        this.escapeCsvField(lead.contact_name || 'No Contact'),
-        this.escapeCsvField(lead.role_title || lead.role || 'Unknown Role'),
+        this.escapeCsvField(lead.industry || 'Unknown Industry'),
+        this.escapeCsvField(lead.contact_name || 'No contact'),
         this.escapeCsvField(lead.email || 'No Email'),
-        this.escapeCsvField(lead.phone || lead.phone_number || 'No Phone'),
-        this.escapeCsvField(lead.address || 'No Address'),
+        this.escapeCsvField(lead.phone || 'No Phone'),
         this.escapeCsvField(lead.city || 'Unknown City'),
         this.escapeCsvField(lead.state || 'Unknown State'),
-        this.escapeCsvField(lead.postal_code || 'No Postal Code'),
-        this.escapeCsvField(lead.country || 'Unknown Country'),
-        this.escapeCsvField(lead.website || 'No Website'),
-        this.escapeCsvField(lead.industry || lead.category || 'Unknown Industry'),
-        this.escapeCsvField(Array.isArray(lead.categories) ? lead.categories.join('; ') : (lead.specialties || 'No Specialties')),
-        lead.rating || '0',
-        this.escapeCsvField(lead.profile_link || 'No Profile Link'),
-        this.escapeCsvField(lead.notes || 'No Notes'),
-        lead.relevance_score || '0',
-        lead.contact_role_score || '0',
-        lead.location_score || '0',
-        lead.completeness_score || '0',
-        lead.online_presence_score || '0',
+        this.escapeCsvField(lead.address || 'No Address'),
         this.calculateAverageScore(lead),
-        lead.validated ? 'Yes' : 'No',
-        lead.outreach_sent ? 'Yes' : 'No',
-        lead.response_received ? 'Yes' : 'No',
-        lead.converted ? 'Yes' : 'No',
-        this.escapeCsvField(lead.employee_id || 'Unknown Employee'),
-        this.formatDate(lead.created_at)
+        this.escapeCsvField(this.getLeadStatusText(lead))
       ];
       csvRows.push(row.join(','));
     });
 
     return csvRows.join('\n');
+  }
+
+  /**
+   * Get lead status (duplicated from frontend for consistency)
+   */
+  getLeadStatus(lead) {
+    if (lead.converted) return 'converted';
+    if (lead.response_received) return 'responded';
+    if (lead.outreach_sent) return 'contacted';
+    if (lead.validated) return 'qualified';
+    return 'new';
+  }
+
+  /**
+   * Get lead status text (duplicated from frontend for consistency)
+   */
+  getLeadStatusText(lead) {
+    if (lead.converted) return 'Converted';
+    if (lead.response_received) return 'Responded';
+    if (lead.outreach_sent) return 'Contacted';
+    if (lead.validated) return 'Qualified';
+    return 'New';
   }
 
   /**

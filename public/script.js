@@ -1105,12 +1105,31 @@ async function loadLeadsData() {
 }
 
 function displayLeadsTable(leads) {
-  const tableBody = document.querySelector('.leads-table tbody');
+  const leadsTable = document.querySelector('.leads-table');
   const downloadBtn = document.getElementById('downloadLeadsBtn');
   
-  if (!tableBody) return;
+  if (!leadsTable) return;
   
-  tableBody.innerHTML = '';
+  // Clear existing table content
+  leadsTable.innerHTML = '';
+  
+  // Create table header
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>Source Platform</th>
+      <th>Business</th>
+      <th>Contact</th>
+      <th>Location</th>
+      <th>Score</th>
+      <th>Status</th>
+    </tr>
+  `;
+  leadsTable.appendChild(thead);
+  
+  // Create table body
+  const tableBody = document.createElement('tbody');
+  leadsTable.appendChild(tableBody);
   
   if (leads.length === 0) {
     // Hide download button when no leads
@@ -1160,6 +1179,11 @@ function displayLeadsTable(leads) {
     
     row.innerHTML = `
       <td>
+        <div class="source-info">
+          <strong>${lead.source_platform || 'Unknown'}</strong>
+        </div>
+      </td>
+      <td>
         <div class="business-info">
           <strong>${lead.business_name}</strong>
           <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
@@ -1168,7 +1192,8 @@ function displayLeadsTable(leads) {
       <td>
         <div class="contact-info">
           <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.email || ''}<br>${lead.phone || ''}</small>
+          <small>${lead.email || 'No Email'}</small>
+          <small>${lead.phone || 'No Phone'}</small>
         </div>
       </td>
       <td>
@@ -1182,12 +1207,6 @@ function displayLeadsTable(leads) {
       </td>
       <td>
         <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
-      </td>
-      <td>
-        <div class="action-buttons">
-          <button class="btn secondary" onclick="viewLead('${lead.id}')">View</button>
-          <button class="btn secondary" onclick="editLead('${lead.id}')">Edit</button>
-        </div>
       </td>
     `;
     tableBody.appendChild(row);
