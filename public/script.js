@@ -371,7 +371,8 @@ async function exportFilteredLeads(format) {
     }
     
     // Try to fetch the export URL directly to see what happens
-    console.log(`🔍 EXPORT DEBUG: Attempting direct fetch to export URL...`);
+    console.log(`🔍 DIRECT FETCH TEST: Attempting direct fetch to export URL (NO DOWNLOAD)...`);
+    console.log(`🔍 DIRECT FETCH TEST: This is a test to see what the client receives from the server`);
     try {
       const directResponse = await fetch(exportUrl);
       console.log(`📡 EXPORT DEBUG: Direct fetch response status:`, directResponse.status);
@@ -385,27 +386,35 @@ async function exportFilteredLeads(format) {
       // Check if it's HTML instead of CSV
       if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
         console.error(`❌ EXPORT DEBUG: Response is HTML, not CSV! This confirms the routing issue.`);
+        console.error(`❌ DIRECT FETCH TEST: CLIENT RECEIVED HTML INSTEAD OF CSV`);
+        console.error(`❌ DIRECT FETCH TEST: This means something is intercepting the response`);
+        console.error(`❌ DIRECT FETCH TEST: Possible causes: Service Worker, WebContainer proxy, or routing issue`);
+      } else {
+        console.log(`✅ DIRECT FETCH TEST: CLIENT RECEIVED VALID CSV DATA`);
+        console.log(`✅ DIRECT FETCH TEST: CSV length: ${responseText.length} characters`);
       }
     } catch (directError) {
       console.error(`❌ EXPORT DEBUG: Direct fetch failed:`, directError);
     }
     
-    // Trigger download
-    const link = document.createElement('a');
-    link.href = exportUrl;
-    link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
-    console.log(`💾 EXPORT DEBUG: Creating download link with href:`, link.href);
-    console.log(`💾 EXPORT DEBUG: Download filename:`, link.download);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // DISABLED FOR TESTING: Trigger download
+    console.log(`🚫 DIRECT FETCH TEST: Download mechanism disabled for testing`);
+    console.log(`🚫 DIRECT FETCH TEST: We are only testing what the client receives via fetch`);
+    // const link = document.createElement('a');
+    // link.href = exportUrl;
+    // link.download = `leads_export_${new Date().toISOString().split('T')[0]}.${format}`;
+    // console.log(`💾 EXPORT DEBUG: Creating download link with href:`, link.href);
+    // console.log(`💾 EXPORT DEBUG: Download filename:`, link.download);
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
     
     // Show success notification
-    showNotification(`Leads exported successfully as ${format.toUpperCase()}!`, 'success');
+    showNotification(`Direct fetch test completed - check console for results`, 'info');
     
   } catch (error) {
     console.error('Export error:', error);
-    showNotification(`Failed to export leads: ${error.message}`, 'error');
+    showNotification(`Direct fetch test failed: ${error.message}`, 'error');
   } finally {
     // Hide loading state
     downloadBtn.classList.remove('loading');
