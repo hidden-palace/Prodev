@@ -512,11 +512,51 @@ class SupabaseService {
     let stringField = field == null ? '' : String(field);
     
     // Remove any newlines and carriage returns that could break CSV format
-    // TEMPORARILY COMMENTED OUT ALL FILTERS, SORTING, AND PAGINATION
     stringField = stringField.replace(/[\r\n]+/g, ' ').trim();
-    // This is to test if the basic query works without any complexity
+    
+    // If field contains comma, quote, or starts/ends with whitespace, wrap in quotes
+    if (stringField.includes(',') || stringField.includes('"') || stringField !== stringField.trim()) {
+      // Escape any existing quotes by doubling them
+      stringField = stringField.replace(/"/g, '""');
+      // Wrap in quotes
+      stringField = `"${stringField}"`;
+    }
+    
+    return stringField;
+  }
+
+  /**
+   * Escape XML content
+   */
+  escapeXml(unsafe) {
+    if (typeof unsafe !== 'string') {
+      unsafe = String(unsafe || '');
+    }
+    return unsafe.replace(/[<>&'"]/g, function (c) {
+      switch (c) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '&': return '&amp;';
+        case '\'': return '&apos;';
+        case '"': return '&quot;';
+      }
+    });
+  }
+
+  /**
+   * Get lead statistics
+   */
+  async getLeadStatistics() {
+    try {
+      console.log('📊 Getting lead statistics...');
+      
+      const { data, error: statsError } = await this.client
+        .from('public.leads')
+        .select('*');
+
+      if (statsError) {
+        console.error('❌ Error getting lead statistics:', statsError);
         throw statsError;
-    console.log('🔍 SUPABASE DEBUG: Skipping all filters, sorting, and pagination for testing');
       }
 
       const stats = {
@@ -558,13 +598,12 @@ class SupabaseService {
         .from('public.leads')
         .delete()
         .eq('id', leadId);
-      total: data?.length || 0,
-    // Return simplified result structure for testing
-      page: 1,
-      }
-      limit: data?.length || 0,
 
-      totalPages: 1
+      if (deleteLeadError) {
+        console.error('❌ Error deleting lead:', deleteLeadError);
+        throw deleteLeadError;
+      }
+
       console.log(`✅ Lead ${leadId} deleted successfully`);
       return true;
     } catch (err) {
