@@ -165,10 +165,14 @@ class SupabaseService {
       try {
         const { data: testData, error: testError } = await this.client
           .from('public.leads')
-          .select('count(*)', { count: 'exact', head: true });
+          .select('id')
+          .limit(1);
         
         if (testError) {
           console.error('❌ SUPABASE DEBUG: Basic connection test failed:', testError);
+          console.error('❌ SUPABASE DEBUG: Full testError object:', JSON.stringify(testError, null, 2));
+          console.error('❌ SUPABASE DEBUG: testError type:', typeof testError);
+          console.error('❌ SUPABASE DEBUG: testError constructor:', testError.constructor.name);
           console.error('❌ SUPABASE DEBUG: Error details:', {
             message: testError.message,
             details: testError.details,
@@ -178,9 +182,10 @@ class SupabaseService {
           throw testError;
         }
         
-        console.log('✅ SUPABASE DEBUG: Basic connection successful, total leads in DB:', testData);
+        console.log('✅ SUPABASE DEBUG: Basic connection successful, sample data:', testData);
       } catch (connectionError) {
         console.error('❌ SUPABASE DEBUG: Connection test threw exception:', connectionError);
+        console.error('❌ SUPABASE DEBUG: Full connectionError object:', JSON.stringify(connectionError, null, 2));
         console.error('❌ SUPABASE DEBUG: Exception type:', connectionError.constructor.name);
         console.error('❌ SUPABASE DEBUG: Exception message:', connectionError.message);
         if (connectionError.stack) {
