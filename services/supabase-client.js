@@ -223,6 +223,11 @@ class SupabaseService {
         'country',
         'industry',
         'categories',
+        'source_platform',
+        'rating',
+        'specialties',
+        'profile_link',
+        'notes',
         'relevance_score',
         'contact_role_score',
         'location_score',
@@ -233,6 +238,7 @@ class SupabaseService {
         'response_received',
         'converted',
         'employee_id',
+        'source_data',
         'created_at',
         'updated_at'
       ].join(', ');
