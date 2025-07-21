@@ -67,6 +67,15 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+#company-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  display: none; /* Hidden by default, shown when logo is loaded */
+}
+
 .company-info h3 {
     font-size: 18px;
     font-weight: 600;

@@ -26,8 +26,23 @@ router.get('/', async (req, res, next) => {
       });
     }
 
-    // Return default branding data without database call for now
-    const defaultBranding = {
+    // Fetch actual branding data from database
+    let brandingData = null;
+    try {
+      const { data, error } = await supabaseService.client
+        .from('company_branding')
+        .select('*')
+        .single();
+      
+      if (!error && data) {
+        brandingData = data;
+      }
+    } catch (dbError) {
+      console.log('Database query failed, using defaults:', dbError.message);
+    }
+
+    // Use database data or fall back to defaults
+    const resultBranding = brandingData || {
       id: '1',
       logo_url: null,
       primary_color: '#ec4899',
@@ -37,8 +52,8 @@ router.get('/', async (req, res, next) => {
       updated_at: new Date().toISOString()
     };
 
-    console.log('✅ Returning default branding data');
-    res.json(defaultBranding);
+    console.log('✅ Returning branding data:', { logo_url: resultBranding.logo_url });
+    res.json(resultBranding);
 
   } catch (err) {
     console.error('❌ Error in branding GET:', err);
