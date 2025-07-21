@@ -17,37 +17,65 @@ try {
  */
 router.get('/', async (req, res, next) => {
   try {
+    console.log('🎨 BRANDING DEBUG: GET /branding route called');
+    
     if (!supabaseService) {
+      console.error('❌ BRANDING DEBUG: Supabase service not initialized');
       return res.status(503).json({
         error: 'Service unavailable',
         details: 'Supabase service is not properly configured.'
       });
     }
 
-    // Use upsert to ensure a row exists, then fetch it
-    const { data: upsertData, error: upsertError } = await supabaseService.client
+    console.log('🔍 BRANDING DEBUG: Attempting to fetch existing branding record...');
+    
+    // First, try to get existing branding record
+    const { data: existingData, error: selectError } = await supabaseService.client
       .from('company_branding')
-      .upsert({ 
-        id: '00000000-0000-0000-0000-000000000001',
-        logo_url: null,
-        primary_color: '#ec4899',
-        secondary_color: '#64748b',
-        accent_color: '#f97316'
-      }, { 
-        onConflict: 'id',
-        ignoreDuplicates: true 
-      })
       .select()
+      .limit(1)
       .single();
 
-    if (upsertError) {
-      console.error('Error upserting branding:', upsertError);
-      throw upsertError;
+    if (selectError && selectError.code !== 'PGRST116') {
+      // PGRST116 is "no rows returned" - that's expected if no branding exists yet
+      console.error('❌ BRANDING DEBUG: Error fetching branding:', selectError);
+      throw selectError;
     }
 
-    res.json(upsertData);
+    if (existingData) {
+      console.log('✅ BRANDING DEBUG: Found existing branding record:', existingData);
+      res.json(existingData);
+    } else {
+      console.log('📝 BRANDING DEBUG: No branding record found, creating default record...');
+      
+      // No record exists, create one with default values
+      const { data: newData, error: insertError } = await supabaseService.client
+        .from('company_branding')
+        .insert({
+          logo_url: null,
+          primary_color: '#ec4899',
+          secondary_color: '#64748b',
+          accent_color: '#f97316'
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ BRANDING DEBUG: Error creating default branding record:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ BRANDING DEBUG: Created default branding record:', newData);
+      res.json(newData);
+    }
   } catch (err) {
-    console.error('Failure in branding GET:', err);
+    console.error('❌ BRANDING DEBUG: Critical error in branding GET:', err);
+    console.error('❌ BRANDING DEBUG: Error details:', {
+      message: err.message,
+      code: err.code,
+      details: err.details,
+      hint: err.hint
+    });
     next(err);
   }
 });
