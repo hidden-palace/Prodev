@@ -17,7 +17,8 @@ try {
  */
 router.get('/', async (req, res, next) => {
   try {
-    console.log('🎨 BRANDING DEBUG: GET /branding route called');
+    console.log('🎨 BRANDING DEBUG: GET /api/branding route called');
+    console.log('🎨 BRANDING DEBUG: Request timestamp:', new Date().toISOString());
     
     if (!supabaseService) {
       console.error('❌ BRANDING DEBUG: Supabase service not initialized');
@@ -27,18 +28,27 @@ router.get('/', async (req, res, next) => {
       });
     }
 
-    console.log('🔍 BRANDING DEBUG: Attempting to fetch existing branding record...');
+    console.log('🔍 BRANDING DEBUG: Supabase client available, attempting to fetch branding...');
+    console.log('🔍 BRANDING DEBUG: Supabase client type:', typeof supabaseService.client);
     
     // First, try to get existing branding record
+    console.log('🔍 BRANDING DEBUG: Executing SELECT query...');
     const { data: existingData, error: selectError } = await supabaseService.client
       .from('company_branding')
       .select()
       .limit(1)
       .single();
 
+    console.log('🔍 BRANDING DEBUG: SELECT query completed');
+    console.log('🔍 BRANDING DEBUG: existingData:', existingData);
+    console.log('🔍 BRANDING DEBUG: selectError:', selectError);
+
     if (selectError && selectError.code !== 'PGRST116') {
       // PGRST116 is "no rows returned" - that's expected if no branding exists yet
       console.error('❌ BRANDING DEBUG: Error fetching branding:', selectError);
+      console.error('❌ BRANDING DEBUG: Error code:', selectError.code);
+      console.error('❌ BRANDING DEBUG: Error message:', selectError.message);
+      console.error('❌ BRANDING DEBUG: Error details:', selectError.details);
       throw selectError;
     }
 
@@ -49,6 +59,7 @@ router.get('/', async (req, res, next) => {
       console.log('📝 BRANDING DEBUG: No branding record found, creating default record...');
       
       // No record exists, create one with default values
+      console.log('🔍 BRANDING DEBUG: Executing INSERT query...');
       const { data: newData, error: insertError } = await supabaseService.client
         .from('company_branding')
         .insert({
@@ -60,8 +71,15 @@ router.get('/', async (req, res, next) => {
         .select()
         .single();
 
+      console.log('🔍 BRANDING DEBUG: INSERT query completed');
+      console.log('🔍 BRANDING DEBUG: newData:', newData);
+      console.log('🔍 BRANDING DEBUG: insertError:', insertError);
+
       if (insertError) {
         console.error('❌ BRANDING DEBUG: Error creating default branding record:', insertError);
+        console.error('❌ BRANDING DEBUG: Insert error code:', insertError.code);
+        console.error('❌ BRANDING DEBUG: Insert error message:', insertError.message);
+        console.error('❌ BRANDING DEBUG: Insert error details:', insertError.details);
         throw insertError;
       }
 
@@ -70,12 +88,15 @@ router.get('/', async (req, res, next) => {
     }
   } catch (err) {
     console.error('❌ BRANDING DEBUG: Critical error in branding GET:', err);
+    console.error('❌ BRANDING DEBUG: Error type:', err.constructor.name);
     console.error('❌ BRANDING DEBUG: Error details:', {
       message: err.message,
       code: err.code,
       details: err.details,
       hint: err.hint
     });
+    console.error('❌ BRANDING DEBUG: Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    console.error('❌ BRANDING DEBUG: Error stack:', err.stack);
     next(err);
   }
 });

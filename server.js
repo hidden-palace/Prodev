@@ -17,9 +17,11 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: process.env.NODE_ENV === 'production' 
-        ? ["'self'"]
-        : ["'self'", "'unsafe-eval'"], // Allow unsafe-eval in non-production for WebContainer
+        ? ["'self'", "'unsafe-inline'"]
+        : ["'self'", "'unsafe-eval'", "'unsafe-inline'"], // Allow unsafe-eval and unsafe-inline in non-production
+      scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
     },
