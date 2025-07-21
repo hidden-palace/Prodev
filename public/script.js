@@ -184,6 +184,8 @@ function initializeChatInterface() {
 }
 
 function initializeBranding() {
+  console.log('🎨 Initializing branding functionality...');
+  
   const primaryPicker = document.getElementById('primaryPicker');
   const primaryInput = document.getElementById('primaryInput');
   const secondaryPicker = document.getElementById('secondaryPicker');
@@ -192,6 +194,12 @@ function initializeBranding() {
   const accentInput = document.getElementById('accentInput');
   const saveColorsBtn = document.getElementById('saveColorsBtn');
   const logoUpload = document.getElementById('logoUpload');
+  
+  console.log('🔍 Branding elements found:', {
+    primaryPicker: !!primaryPicker,
+    logoUpload: !!logoUpload,
+    saveColorsBtn: !!saveColorsBtn
+  });
   
   // Sync color picker with text input
   if (primaryPicker && primaryInput) {
@@ -228,7 +236,10 @@ function initializeBranding() {
   
   // Handle logo upload
   if (logoUpload) {
+    console.log('✅ Logo upload input found, attaching event listener');
     logoUpload.addEventListener('change', handleLogoUpload);
+  } else {
+    console.error('❌ Logo upload input not found!');
   }
   
   // Load current branding on page load
@@ -236,6 +247,8 @@ function initializeBranding() {
 }
 
 async function handleLogoUpload(event) {
+  console.log('🔍 FRONTEND DEBUG: handleLogoUpload called');
+  
   const file = event.target.files[0];
   if (!file) return;
   
@@ -304,6 +317,7 @@ async function handleLogoUpload(event) {
 async function loadCurrentBranding() {
   try {
     console.log('🔍 FRONTEND DEBUG: Loading current branding...');
+    console.log('🔍 FRONTEND DEBUG: Loading current branding...');
     
     const response = await fetch('/api/branding');
     const branding = await response.json();
@@ -343,6 +357,8 @@ async function loadCurrentBranding() {
 }
 
 function updateLogoPreview(logoUrl) {
+  console.log('🖼️ FRONTEND DEBUG: Updating logo preview with URL:', logoUrl);
+  
   const currentLogo = document.getElementById('currentLogo');
   const logoPreview = document.getElementById('logoPreview');
   
@@ -354,6 +370,7 @@ function updateLogoPreview(logoUrl) {
 }
 
 function removeLogo() {
+  console.log('🗑️ FRONTEND DEBUG: Remove logo function called');
   // TODO: Implement logo removal
   console.log('🗑️ FRONTEND DEBUG: Remove logo requested');
   showNotification('Logo removal not implemented yet', 'warning');
