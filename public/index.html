@@ -1066,9 +1066,32 @@
       console.error('❌ Failed to load company logo:', error);
     }
   }
+    <script>
+    // Load and display company logo
+    async function loadCompanyLogo() {
+        try {
+            console.log('🔍 Loading company logo...');
+            const branding = await window.clientAPI.get('/api/branding');
+            const logoImg = document.getElementById('company-logo-img');
+            const logoIcon = document.querySelector('.logo-icon');
+            
+            if (branding && branding.logo_url) {
+                console.log('✅ Logo URL found:', branding.logo_url);
+                logoImg.src = branding.logo_url;
+                logoImg.style.display = 'block';
+                logoIcon.style.display = 'none'; // Hide text initials
+            } else {
+                console.log('⚠️ No logo URL found, keeping text initials');
+                logoImg.style.display = 'none';
+                logoIcon.style.display = 'flex'; // Show text initials
+            }
+        } catch (error) {
+            console.error('❌ Failed to load company logo:', error);
+        }
+    }
 
-  // Load logo when page loads
-  loadCompanyLogo();
-</script>
+    // Load logo when page loads
+    loadCompanyLogo();
+    </script>
 </body>
 </html>
