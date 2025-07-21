@@ -36,8 +36,13 @@ try {
  * POST /storage/logo - Upload company logo
  */
 router.post('/logo', upload.single('logo'), async (req, res, next) => {
+  console.log('🔍 LOGO UPLOAD DEBUG: Route handler started');
+  console.log('🔍 LOGO UPLOAD DEBUG: Request method:', req.method);
+  console.log('🔍 LOGO UPLOAD DEBUG: Request headers:', req.headers);
+  
   try {
     if (!storageService || !supabaseService) {
+      console.error('❌ LOGO UPLOAD DEBUG: Services not initialized');
       return res.status(503).json({
         error: 'Service unavailable',
         details: 'Storage services are not properly configured.'
@@ -45,21 +50,29 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     }
 
     if (!req.file) {
+      console.error('❌ LOGO UPLOAD DEBUG: No file received from multer');
+      console.error('❌ LOGO UPLOAD DEBUG: req.body:', req.body);
+      console.error('❌ LOGO UPLOAD DEBUG: req.files:', req.files);
       return res.status(400).json({
         error: 'No file uploaded',
         details: 'Please select a logo file to upload.'
       });
     }
 
-    console.log('📤 Processing logo upload:', {
+    console.log('📤 LOGO UPLOAD DEBUG: File received by multer:', {
+      fieldname: req.file.fieldname,
       originalName: req.file.originalname,
+      encoding: req.file.encoding,
       mimetype: req.file.mimetype,
-      size: req.file.size
+      size: req.file.size,
+      bufferLength: req.file.buffer ? req.file.buffer.length : 'N/A',
+      hasBuffer: !!req.file.buffer
     });
     
     // Additional validation
     const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
     if (!allowedTypes.includes(req.file.mimetype)) {
+      console.error('❌ LOGO UPLOAD DEBUG: Invalid file type detected:', req.file.mimetype);
       return res.status(400).json({
         error: 'Invalid file type',
         details: 'Only PNG, JPEG, and SVG files are allowed for logos.'
@@ -67,6 +80,7 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     }
     
     if (req.file.size > 2 * 1024 * 1024) {
+      console.error('❌ LOGO UPLOAD DEBUG: File too large:', req.file.size);
       return res.status(400).json({
         error: 'File too large',
         details: 'Logo file size must be less than 2MB.'
@@ -74,9 +88,13 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     }
 
     // Upload to storage
+    console.log('🚀 LOGO UPLOAD DEBUG: Calling storageService.uploadLogo...');
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
+    console.log('✅ LOGO UPLOAD DEBUG: Storage upload result:', uploadResult);
 
     // Update database with new logo URL using upsert
+    console.log('💾 LOGO UPLOAD DEBUG: Updating company_branding table...');
+    console.log('💾 LOGO UPLOAD DEBUG: Logo URL to save:', uploadResult.url);
     const { data: result, error: dbUpdateError } = await supabaseService.client
       .from('company_branding')
       .upsert({ 
@@ -91,10 +109,12 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
 
     if (dbUpdateError) {
       console.error('❌ Database update error:', dbUpdateError);
+      console.error('❌ LOGO UPLOAD DEBUG: Full database error details:', JSON.stringify(dbUpdateError, null, 2));
       throw dbUpdateError;
     }
 
-    console.log('✅ Logo upload completed successfully');
+    console.log('✅ LOGO UPLOAD DEBUG: Database update successful:', result);
+    console.log('✅ LOGO UPLOAD DEBUG: Complete logo upload process finished successfully');
     res.json({
       success: true,
       message: 'Logo uploaded successfully',
@@ -103,7 +123,10 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     });
 
   } catch (err) {
-    console.error('❌ Failure uploading logo:', err);
+    console.error('❌ LOGO UPLOAD DEBUG: Catch block activated - Critical error:', err);
+    console.error('❌ LOGO UPLOAD DEBUG: Error type:', err.constructor.name);
+    console.error('❌ LOGO UPLOAD DEBUG: Error message:', err.message);
+    console.error('❌ LOGO UPLOAD DEBUG: Error stack:', err.stack);
     
     // Enhanced error response for debugging
     const failureResponse = {

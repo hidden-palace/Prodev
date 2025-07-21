@@ -191,6 +191,7 @@ function initializeBranding() {
   const accentPicker = document.getElementById('accentPicker');
   const accentInput = document.getElementById('accentInput');
   const saveColorsBtn = document.getElementById('saveColorsBtn');
+  const logoUpload = document.getElementById('logoUpload');
   
   // Sync color picker with text input
   if (primaryPicker && primaryInput) {
@@ -224,6 +225,138 @@ function initializeBranding() {
   if (saveColorsBtn) {
     saveColorsBtn.addEventListener('click', saveColorScheme);
   }
+  
+  // Handle logo upload
+  if (logoUpload) {
+    logoUpload.addEventListener('change', handleLogoUpload);
+  }
+  
+  // Load current branding on page load
+  loadCurrentBranding();
+}
+
+async function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  console.log('🔍 FRONTEND DEBUG: Logo file selected:', {
+    name: file.name,
+    type: file.type,
+    size: file.size
+  });
+  
+  // Validate file type
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    showNotification('Invalid file type. Please select a PNG, JPG, or SVG file.', 'error');
+    return;
+  }
+  
+  // Validate file size (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showNotification('File too large. Please select a file smaller than 2MB.', 'error');
+    return;
+  }
+  
+  try {
+    console.log('🚀 FRONTEND DEBUG: Starting logo upload...');
+    
+    // Create FormData
+    const formData = new FormData();
+    formData.append('logo', file);
+    
+    console.log('📤 FRONTEND DEBUG: FormData created, making API call...');
+    
+    // Show loading notification
+    showNotification('Uploading logo...', 'info');
+    
+    // Upload to server
+    const response = await fetch('/api/storage/logo', {
+      method: 'POST',
+      body: formData
+    });
+    
+    console.log('📡 FRONTEND DEBUG: API response status:', response.status);
+    console.log('📡 FRONTEND DEBUG: API response ok:', response.ok);
+    
+    const result = await response.json();
+    console.log('📡 FRONTEND DEBUG: API response data:', result);
+    
+    if (response.ok && result.success) {
+      showNotification('Logo uploaded successfully!', 'success');
+      
+      // Update logo preview
+      updateLogoPreview(result.logo_url);
+      
+      // Clear file input
+      event.target.value = '';
+    } else {
+      console.error('❌ FRONTEND DEBUG: Upload failed:', result);
+      showNotification(`Upload failed: ${result.details || result.message || 'Unknown error'}`, 'error');
+    }
+    
+  } catch (error) {
+    console.error('❌ FRONTEND DEBUG: Upload error:', error);
+    showNotification(`Upload error: ${error.message}`, 'error');
+  }
+}
+
+async function loadCurrentBranding() {
+  try {
+    console.log('🔍 FRONTEND DEBUG: Loading current branding...');
+    
+    const response = await fetch('/api/branding');
+    const branding = await response.json();
+    
+    console.log('📡 FRONTEND DEBUG: Current branding data:', branding);
+    
+    if (branding.logo_url) {
+      updateLogoPreview(branding.logo_url);
+    }
+    
+    // Update color inputs if they exist
+    const primaryInput = document.getElementById('primaryInput');
+    const primaryPicker = document.getElementById('primaryPicker');
+    const secondaryInput = document.getElementById('secondaryInput');
+    const secondaryPicker = document.getElementById('secondaryPicker');
+    const accentInput = document.getElementById('accentInput');
+    const accentPicker = document.getElementById('accentPicker');
+    
+    if (primaryInput && branding.primary_color) {
+      primaryInput.value = branding.primary_color;
+      if (primaryPicker) primaryPicker.value = branding.primary_color;
+    }
+    
+    if (secondaryInput && branding.secondary_color) {
+      secondaryInput.value = branding.secondary_color;
+      if (secondaryPicker) secondaryPicker.value = branding.secondary_color;
+    }
+    
+    if (accentInput && branding.accent_color) {
+      accentInput.value = branding.accent_color;
+      if (accentPicker) accentPicker.value = branding.accent_color;
+    }
+    
+  } catch (error) {
+    console.error('❌ FRONTEND DEBUG: Error loading branding:', error);
+  }
+}
+
+function updateLogoPreview(logoUrl) {
+  const currentLogo = document.getElementById('currentLogo');
+  const logoPreview = document.getElementById('logoPreview');
+  
+  if (currentLogo && logoPreview && logoUrl) {
+    logoPreview.src = logoUrl;
+    currentLogo.style.display = 'block';
+    console.log('✅ FRONTEND DEBUG: Logo preview updated:', logoUrl);
+  }
+}
+
+function removeLogo() {
+  // TODO: Implement logo removal
+  console.log('🗑️ FRONTEND DEBUG: Remove logo requested');
+  showNotification('Logo removal not implemented yet', 'warning');
 }
 
 function initializeMobileMenu() {

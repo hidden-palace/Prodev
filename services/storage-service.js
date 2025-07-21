@@ -11,17 +11,24 @@ class StorageService {
    */
   async uploadLogo(file, fileName) {
     try {
-      console.log('📤 Uploading logo:', fileName);
+      console.log('📤 STORAGE SERVICE DEBUG: uploadLogo method called');
+      console.log('📤 STORAGE SERVICE DEBUG: fileName:', fileName);
+      console.log('📤 STORAGE SERVICE DEBUG: file object keys:', Object.keys(file));
+      console.log('📤 STORAGE SERVICE DEBUG: file.mimetype:', file.mimetype);
+      console.log('📤 STORAGE SERVICE DEBUG: file.size:', file.size);
+      console.log('📤 STORAGE SERVICE DEBUG: file.buffer length:', file.buffer ? file.buffer.length : 'NO BUFFER');
       
       // Validate file type
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
       const fileType = file.mimetype || file.type;
       if (!allowedTypes.includes(fileType)) {
+        console.error('❌ STORAGE SERVICE DEBUG: File type validation failed:', fileType);
         throw new Error('Invalid file type. Only PNG, JPG, and SVG files are allowed.');
       }
 
       // Validate file size (2MB)
       if (file.size > 2 * 1024 * 1024) {
+        console.error('❌ STORAGE SERVICE DEBUG: File size validation failed:', file.size);
         throw new Error('File size must be less than 2MB.');
       }
 
@@ -29,11 +36,14 @@ class StorageService {
       const timestamp = Date.now();
       const extension = fileName.split('.').pop() || 'png';
       const uniqueFileName = `logo_${timestamp}.${extension}`;
+      console.log('📤 STORAGE SERVICE DEBUG: Generated unique filename:', uniqueFileName);
 
       // Prepare file buffer for upload
       const fileBuffer = file.buffer || file;
+      console.log('📤 STORAGE SERVICE DEBUG: File buffer prepared, length:', fileBuffer.length);
       
       // Upload to Supabase Storage
+      console.log('🚀 STORAGE SERVICE DEBUG: Calling Supabase Storage upload...');
       const { data, error: uploadError } = await this.supabaseService.client.storage
         .from('logos')
         .upload(uniqueFileName, fileBuffer, {
@@ -43,16 +53,26 @@ class StorageService {
         });
 
       if (uploadError) {
-        console.error('❌ Storage upload error:', uploadError);
+        console.error('❌ STORAGE SERVICE DEBUG: Supabase Storage upload error:', uploadError);
+        console.error('❌ STORAGE SERVICE DEBUG: Full upload error details:', JSON.stringify(uploadError, null, 2));
         throw uploadError;
       }
 
+      console.log('✅ STORAGE SERVICE DEBUG: Supabase Storage upload successful:', data);
+
       // Get public URL
+      console.log('🔗 STORAGE SERVICE DEBUG: Getting public URL for:', uniqueFileName);
       const { data: urlData } = this.supabaseService.client.storage
         .from('logos')
         .getPublicUrl(uniqueFileName);
 
-      console.log('✅ Logo uploaded successfully:', urlData.publicUrl);
+      console.log('✅ STORAGE SERVICE DEBUG: Public URL generated:', urlData.publicUrl);
+      console.log('✅ STORAGE SERVICE DEBUG: Complete upload result:', {
+        success: true,
+        url: urlData.publicUrl,
+        fileName: uniqueFileName
+      });
+      
       return {
         success: true,
         url: urlData.publicUrl,
@@ -60,7 +80,12 @@ class StorageService {
       };
 
     } catch (err) {
-      console.error('❌ Failure uploading logo:', err);
+      console.error('❌ STORAGE SERVICE DEBUG: Critical error in uploadLogo:', err);
+      console.error('❌ STORAGE SERVICE DEBUG: Error type:', err.constructor.name);
+      console.error('❌ STORAGE SERVICE DEBUG: Error message:', err.message);
+      if (err.stack) {
+        console.error('❌ STORAGE SERVICE DEBUG: Error stack:', err.stack);
+      }
       throw err;
     }
   }
