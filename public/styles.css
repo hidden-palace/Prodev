@@ -32,7 +32,7 @@
 
 /* Sidebar Styles */
 .sidebar {
-    width: 240px;
+    width: 420px;
     background: var(--primary-color);
     display: flex;
     flex-direction: column;
@@ -2245,11 +2245,11 @@
 /* Mobile responsiveness */
 @media (max-width: 1024px) {
     .sidebar {
-        width: 240px;
+        width: 420px;
     }
     
     .team-panel {
-        width: 320px;
+        width: 420px;
     }
     
     .quick-actions {
