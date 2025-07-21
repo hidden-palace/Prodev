@@ -317,27 +317,15 @@ async function handleLogoUpload(event) {
 async function loadCurrentBranding() {
   try {
     console.log('🔍 FRONTEND DEBUG: Loading current branding...');
+    console.log('🔍 FRONTEND DEBUG: Loading current branding...');
     
     const response = await fetch('/api/branding');
-    
-    console.log('📡 FRONTEND DEBUG: Branding API response status:', response.status);
-    console.log('📡 FRONTEND DEBUG: Branding API response ok:', response.ok);
-    
-    if (!response.ok) {
-      console.error('❌ FRONTEND DEBUG: Branding API failed with status:', response.status);
-      const errorText = await response.text();
-      console.error('❌ FRONTEND DEBUG: Error response:', errorText);
-      return;
-    }
-    
     const branding = await response.json();
     
     console.log('📡 FRONTEND DEBUG: Current branding data:', branding);
     
     if (branding.logo_url) {
       updateLogoPreview(branding.logo_url);
-    } else {
-      console.log('ℹ️ FRONTEND DEBUG: No logo URL found in branding data');
     }
     
     // Update color inputs if they exist
@@ -432,13 +420,9 @@ function initializeExportDropdown() {
   // Handle dropdown item clicks
   const dropdownItems = exportDropdown.querySelectorAll('.dropdown-item');
   dropdownItems.forEach(item => {
-    // Remove any existing listeners
-    const newItem = item.cloneNode(true);
-    item.parentNode.replaceChild(newItem, item);
-    
-    newItem.addEventListener('click', (e) => {
+    item.addEventListener('click', (e) => {
       e.stopPropagation();
-      const format = newItem.getAttribute('data-format');
+      const format = item.getAttribute('data-format');
       if (format) {
         exportFilteredLeads(format);
       }
@@ -657,25 +641,35 @@ function loadConversation(employeeId) {
 }
 
 function reattachEventListeners() {
-  // Re-attach event listeners for HTML preview buttons
-  const viewFullBtns = chatMessages.querySelectorAll('.view-full-btn');
-  viewFullBtns.forEach(btn => {
-    btn.onclick = () => toggleHtmlView(btn);
-  });
+  console.log('🔗 Reattaching event listeners for chat elements...');
   
-  const copyBtns = chatMessages.querySelectorAll('.copy-btn');
-  copyBtns.forEach(btn => {
+  // Re-attach event listeners for HTML preview buttons using data-action attributes
+  const actionButtons = chatMessages.querySelectorAll('[data-action]');
+  actionButtons.forEach(btn => {
+    const action = btn.getAttribute('data-action');
     const content = btn.getAttribute('data-content');
-    if (content) {
-      btn.onclick = () => copyToClipboard(btn, content);
-    }
-  });
-  
-  const downloadBtns = chatMessages.querySelectorAll('.download-btn');
-  downloadBtns.forEach(btn => {
-    const content = btn.getAttribute('data-content');
-    if (content) {
-      btn.onclick = () => downloadHtml(content);
+    
+    // Remove any existing listeners to prevent duplicates
+    btn.replaceWith(btn.cloneNode(true));
+    const newBtn = chatMessages.querySelector(`[data-action="${action}"][data-content="${content}"]`) || 
+                   chatMessages.querySelector(`[data-action="${action}"]`);
+    
+    if (newBtn) {
+      switch (action) {
+        case 'toggleHtmlView':
+          newBtn.addEventListener('click', () => toggleHtmlView(newBtn));
+          break;
+        case 'copyToClipboard':
+          if (content) {
+            newBtn.addEventListener('click', () => copyToClipboard(newBtn, decodeURIComponent(content)));
+          }
+          break;
+        case 'downloadHtml':
+          if (content) {
+            newBtn.addEventListener('click', () => downloadHtml(decodeURIComponent(content)));
+          }
+          break;
+      }
     }
   });
 }
@@ -1013,7 +1007,7 @@ function createHtmlPreview(htmlContent) {
   header.className = 'code-header';
   header.innerHTML = `
     <span class="code-type">Landing Page HTML</span>
-    <button class="view-full-btn" data-action="toggleHtmlView">View Full Code</button>
+    <button class="view-full-btn" onclick="toggleHtmlView(this)">View Full Code</button>
   `;
   
   const preview = document.createElement('div');
@@ -1028,9 +1022,11 @@ function createHtmlPreview(htmlContent) {
   const actions = document.createElement('div');
   actions.className = 'code-actions';
   
+  // Store content in data attributes for event handlers
+  const escapedContent = escapeHtml(htmlContent).replace(/'/g, "\\'");
   actions.innerHTML = `
-    <button class="copy-btn" data-action="copyToClipboard" data-content="${encodeURIComponent(htmlContent)}">Copy Code</button>
-    <button class="download-btn" data-action="downloadHtml" data-content="${encodeURIComponent(htmlContent)}">Download HTML</button>
+    <button class="copy-btn" data-content="${escapedContent}" onclick="copyToClipboard(this, this.getAttribute('data-content'))">Copy Code</button>
+    <button class="download-btn" data-content="${escapedContent}" onclick="downloadHtml(this.getAttribute('data-content'))">Download HTML</button>
   `;
   
   container.appendChild(header);
@@ -1055,7 +1051,10 @@ function toggleHtmlView(button) {
 }
 
 function copyToClipboard(button, content) {
-  navigator.clipboard.writeText(content).then(() => {
+  // Unescape the content
+  const unescapedContent = content.replace(/\\'/g, "'");
+  
+  navigator.clipboard.writeText(unescapedContent).then(() => {
     const originalText = button.textContent;
     button.textContent = 'Copied!';
     setTimeout(() => {
@@ -1071,7 +1070,10 @@ function copyToClipboard(button, content) {
 }
 
 function downloadHtml(content) {
-  const blob = new Blob([content], { type: 'text/html' });
+  // Unescape the content
+  const unescapedContent = content.replace(/\\'/g, "'");
+  
+  const blob = new Blob([unescapedContent], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
