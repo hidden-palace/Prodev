@@ -82,6 +82,30 @@ class ClientAPI {
   async delete(endpoint, options = {}) {
     return this.request('DELETE', endpoint, options);
   }
+
+  /**
+   * Fetch company branding data including logo
+   */
+  async getBranding() {
+    try {
+      return await this.get('/branding');
+    } catch (error) {
+      console.error('Failed to fetch branding data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update company logo
+   */
+  async updateLogo(logoData) {
+    try {
+      return await this.post('/branding/logo', logoData);
+    } catch (error) {
+      console.error('Failed to update logo:', error);
+      throw error;
+    }
+  }
 }
 
 // Create singleton instance

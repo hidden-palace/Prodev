@@ -26,22 +26,26 @@ router.get('/', async (req, res, next) => {
       });
     }
 
-    // Fetch actual branding data from database
+    // Fetch company logo and branding data from company_branding table
     let brandingData = null;
     try {
+      console.log('🔍 Querying company_branding table for logo data...');
       const { data, error } = await supabaseService.client
         .from('company_branding')
-        .select('*')
+        .select('id, logo_url, primary_color, secondary_color, accent_color, created_at, updated_at')
         .single();
       
       if (!error && data) {
         brandingData = data;
+        console.log('✅ Logo data retrieved:', { hasLogo: !!data.logo_url, logoUrl: data.logo_url });
+      } else if (error) {
+        console.log('⚠️ Database query error:', error.message);
       }
     } catch (dbError) {
-      console.log('Database query failed, using defaults:', dbError.message);
+      console.log('❌ Database query failed, using defaults:', dbError.message);
     }
 
-    // Use database data or fall back to defaults
+    // Use database data or fall back to defaults (no logo)
     const resultBranding = brandingData || {
       id: '1',
       logo_url: null,
@@ -52,14 +56,22 @@ router.get('/', async (req, res, next) => {
       updated_at: new Date().toISOString()
     };
 
-    console.log('✅ Returning branding data:', { logo_url: resultBranding.logo_url });
+    console.log('✅ Returning branding data:', { 
+      hasLogo: !!resultBranding.logo_url, 
+      logoUrl: resultBranding.logo_url,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Add cache headers for logo data
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
     res.json(resultBranding);
 
   } catch (err) {
-    console.error('❌ Error in branding GET:', err);
+    console.error('❌ Error fetching company branding data:', err);
     res.status(500).json({
-      error: 'Internal server error',
-      details: err.message
+      error: 'Failed to fetch company logo',
+      details: err.message,
+      fallback_available: true
     });
   }
 });
