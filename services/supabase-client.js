@@ -145,6 +145,7 @@ class SupabaseService {
           postal_code: lead.postalCode || lead.postal_code || null,
           country: lead.countryCode || lead.country || 'US',
           industry: lead.categoryName || lead.industry || lead.category || 'Unknown',
+          source_platform: lead.source_platform || null,
           categories: lead.categories || [],
           ...scores,
           source_data: lead,
