@@ -80,7 +80,7 @@ class SupabaseService {
           industry: lead.categoryName || lead.industry || lead.category || 'Unknown',
           source_platform: lead.source_platform || null,
           categories: lead.categories || [],
-          score: lead.score || 0,
+          score: lead.score || 5,
           source_data: lead,
           employee_id: employeeId,
           validated: false,
