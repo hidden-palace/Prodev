@@ -91,9 +91,6 @@ function updateSidebarLogo(logoUrl) {
 /**
  * Load branding data and setup sidebar logo
  */
-/**
- * Setup navigation between different sections
- */
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const contentSections = document.querySelectorAll('.content-section');
