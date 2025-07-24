@@ -45,71 +45,6 @@ class SupabaseService {
   }
 
   /**
-   * Calculate lead scores based on business data
-   */
-  calculateLeadScores(leadData) {
-    const scores = {
-      relevance_score: 0,
-      contact_role_score: 0,
-      location_score: 0,
-      completeness_score: 0,
-      online_presence_score: 0
-    };
-
-    // Relevance Score (1-5) - Based on business type and categories
-    if (leadData.categories && Array.isArray(leadData.categories)) {
-      const relevantCategories = ['florist', 'flower', 'wedding', 'event', 'gift', 'plant', 'nursery'];
-      const matchingCategories = leadData.categories.filter(cat => 
-        relevantCategories.some(rel => cat.toLowerCase().includes(rel))
-      );
-      scores.relevance_score = Math.min(5, Math.max(1, matchingCategories.length + 1));
-    } else {
-      scores.relevance_score = 3; // Default moderate relevance
-    }
-
-    // Contact Role Score (1-5) - Based on contact information quality
-    if (leadData.contact_name && leadData.role_title) {
-      const seniorRoles = ['owner', 'manager', 'director', 'ceo', 'president', 'founder'];
-      const hasRole = seniorRoles.some(role => 
-        leadData.role_title.toLowerCase().includes(role)
-      );
-      scores.contact_role_score = hasRole ? 5 : 3;
-    } else if (leadData.contact_name) {
-      scores.contact_role_score = 2;
-    } else {
-      scores.contact_role_score = 1;
-    }
-
-    // Location Score (1-5) - Based on location data completeness
-    let locationPoints = 0;
-    if (leadData.address) locationPoints++;
-    if (leadData.city) locationPoints++;
-    if (leadData.state) locationPoints++;
-    if (leadData.postal_code) locationPoints++;
-    if (leadData.country) locationPoints++;
-    scores.location_score = Math.max(1, locationPoints);
-
-    // Completeness Score (1-5) - Based on overall data completeness
-    let completenessPoints = 0;
-    if (leadData.business_name) completenessPoints++;
-    if (leadData.phone) completenessPoints++;
-    if (leadData.email) completenessPoints++;
-    if (leadData.website) completenessPoints++;
-    if (leadData.address) completenessPoints++;
-    scores.completeness_score = Math.max(1, completenessPoints);
-
-    // Online Presence Score (1-5) - Based on digital presence
-    let onlinePoints = 0;
-    if (leadData.website) onlinePoints += 2;
-    if (leadData.email) onlinePoints++;
-    if (leadData.totalScore && leadData.totalScore > 4) onlinePoints++;
-    if (leadData.reviewsCount && leadData.reviewsCount > 10) onlinePoints++;
-    scores.online_presence_score = Math.min(5, Math.max(1, onlinePoints));
-
-    return scores;
-  }
-
-  /**
    * Process and save leads from AI agent response
    */
   async processAndSaveLeads(leadsData, employeeId) {
@@ -117,8 +52,6 @@ class SupabaseService {
       console.log(`📊 Processing ${leadsData.length} leads from ${employeeId}`);
       
       const processedLeads = leadsData.map(lead => {
-        const scores = this.calculateLeadScores(lead);
-        
         // Parse location string (e.g., "Dana Point, CA" -> city: "Dana Point", state: "CA")
         let city = null;
         let state = null;
@@ -147,7 +80,7 @@ class SupabaseService {
           industry: lead.categoryName || lead.industry || lead.category || 'Unknown',
           source_platform: lead.source_platform || null,
           categories: lead.categories || [],
-          ...scores,
+          score: lead.score || 0,
           source_data: lead,
           employee_id: employeeId,
           validated: false,
@@ -236,14 +169,10 @@ class SupabaseService {
         'categories',
         'source_platform',
         'rating',
+        'score',
         'specialties',
         'profile_link',
         'notes',
-        'relevance_score',
-        'contact_role_score',
-        'location_score',
-        'completeness_score',
-        'online_presence_score',
         'validated',
         'outreach_sent',
         'response_received',
@@ -416,7 +345,7 @@ class SupabaseService {
         this.escapeCsvField(lead.city || 'Unknown City'),
         this.escapeCsvField(lead.state || 'Unknown State'),
         this.escapeCsvField(lead.address || 'No Address'),
-        this.calculateAverageScore(lead),
+        this.getLeadScore(lead),
         this.escapeCsvField(this.getLeadStatusText(lead))
       ];
       csvRows.push(row.join(','));
@@ -448,18 +377,10 @@ class SupabaseService {
   }
 
   /**
-   * Calculate average score from individual scores
+   * Get score from lead data
    */
-  calculateAverageScore(lead) {
-    const scores = [
-      lead.relevance_score || 0,
-      lead.contact_role_score || 0,
-      lead.location_score || 0,
-      lead.completeness_score || 0,
-      lead.online_presence_score || 0
-    ];
-    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    return average.toFixed(1);
+  getLeadScore(lead) {
+    return lead.score || 0;
   }
 
   /**
@@ -501,12 +422,7 @@ class SupabaseService {
       xml += `    <rating>${lead.rating || ''}</rating>\n`;
       xml += `    <profile_link>${this.escapeXml(lead.profile_link || '')}</profile_link>\n`;
       xml += `    <notes>${this.escapeXml(lead.notes || '')}</notes>\n`;
-      xml += `    <relevance_score>${lead.relevance_score || ''}</relevance_score>\n`;
-      xml += `    <contact_role_score>${lead.contact_role_score || ''}</contact_role_score>\n`;
-      xml += `    <location_score>${lead.location_score || ''}</location_score>\n`;
-      xml += `    <completeness_score>${lead.completeness_score || ''}</completeness_score>\n`;
-      xml += `    <online_presence_score>${lead.online_presence_score || ''}</online_presence_score>\n`;
-      xml += `    <average_score>${lead.average_score || ''}</average_score>\n`;
+      xml += `    <score>${lead.score || ''}</score>\n`;
       xml += `    <validated>${lead.validated ? 'true' : 'false'}</validated>\n`;
       xml += `    <outreach_sent>${lead.outreach_sent ? 'true' : 'false'}</outreach_sent>\n`;
       xml += `    <response_received>${lead.response_received ? 'true' : 'false'}</response_received>\n`;
@@ -581,7 +497,7 @@ class SupabaseService {
         outreach_sent: data.filter(l => l.outreach_sent).length,
         responses: data.filter(l => l.response_received).length,
         converted: data.filter(l => l.converted).length,
-        average_score: data.reduce((sum, l) => sum + (l.average_score || 0), 0) / data.length,
+        average_score: data.reduce((sum, l) => sum + (l.score || 0), 0) / data.length,
         by_employee: {},
         recent: data.filter(l => {
           const created = new Date(l.created_at);
