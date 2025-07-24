@@ -75,7 +75,7 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       console.error('❌ LOGO UPLOAD DEBUG: Invalid file type detected:', req.file.mimetype);
       return res.status(400).json({
         error: 'Invalid file type',
-        details: 'Only PNG, JPEG, and SVG files are allowed for logos.'
+        details: 'Only PNG, JPEG, and SVG files are allowed for logos. For raster images (PNG/JPEG), dimensions must be exactly 500x500px.'
       });
     }
     
@@ -87,6 +87,10 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
       });
     }
 
+    // Client-side should have validated dimensions for raster images
+    if (req.file.mimetype !== 'image/svg+xml') {
+      console.log('📤 LOGO UPLOAD DEBUG: Raster image upload - dimensions should be validated client-side as 500x500px');
+    }
     // Upload to storage
     console.log('🚀 LOGO UPLOAD DEBUG: Calling storageService.uploadLogo...');
     const uploadResult = await storageService.uploadLogo(req.file, req.file.originalname);
@@ -128,13 +132,21 @@ router.post('/logo', upload.single('logo'), async (req, res, next) => {
     console.error('❌ LOGO UPLOAD DEBUG: Error message:', err.message);
     console.error('❌ LOGO UPLOAD DEBUG: Error stack:', err.stack);
     
+    // Enhanced error response for dimension validation failures
+    let errorMessage = err.message;
+    let suggestionMessage = 'Check your file format and size.';
+    
+    if (err.message.includes('500x500') || err.message.includes('dimensions')) {
+      suggestionMessage = 'Please ensure your image is exactly 500x500 pixels. You can resize your image using any image editor before uploading.';
+    } else if (err.message.includes('Bucket not found')) {
+      suggestionMessage = 'The storage buckets may not exist. Please check your Supabase dashboard and ensure the "logos" bucket is created.';
+    }
+
     // Enhanced error response for debugging
     const failureResponse = {
       message: 'Logo upload failed',
-      details: err.message,
-      suggestion: err.message.includes('Bucket not found') ? 
-        'The storage buckets may not exist. Please check your Supabase dashboard and ensure the "logos" bucket is created.' : 
-        'Check your Supabase configuration and file format.',
+      details: errorMessage,
+      suggestion: suggestionMessage,
       context: {
         hasFile: !!req.file,
         fileName: req.file?.originalname,
