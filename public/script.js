@@ -126,6 +126,21 @@ function setupNavigation() {
                     case 'dashboard-section':
                         loadDashboardData();
                         break;
+                    case 'calls-section':
+                        loadCallsData();
+                        break;
+                    case 'campaigns-section':
+                        loadCampaignsData();
+                        break;
+                    case 'landing-pages-section':
+                        loadLandingPagesData();
+                        break;
+                    case 'employees-section':
+                        loadEmployeesData();
+                        break;
+                    case 'status-section':
+                        loadStatusData();
+                        break;
                 }
             }
         });
@@ -807,6 +822,76 @@ function showNotification(message, type = 'info') {
             notification.remove();
         }
     }, 5000);
+}
+
+/**
+ * Load calls section data
+ */
+async function loadCallsData() {
+    try {
+        console.log('📞 Loading calls data...');
+        // This section will show static content from HTML
+        // Future: Add API calls for call statistics if needed
+    } catch (error) {
+        console.error('❌ Error loading calls data:', error);
+    }
+}
+
+/**
+ * Load campaigns section data
+ */
+async function loadCampaignsData() {
+    try {
+        console.log('📢 Loading campaigns data...');
+        // This section will show static content from HTML
+        // Future: Add API calls for campaign data if needed
+    } catch (error) {
+        console.error('❌ Error loading campaigns data:', error);
+    }
+}
+
+/**
+ * Load landing pages section data
+ */
+async function loadLandingPagesData() {
+    try {
+        console.log('📄 Loading landing pages data...');
+        // This section will show static content from HTML
+        // Future: Add API calls for landing page data if needed
+    } catch (error) {
+        console.error('❌ Error loading landing pages data:', error);
+    }
+}
+
+/**
+ * Load employees section data
+ */
+async function loadEmployeesData() {
+    try {
+        console.log('👥 Loading employees data...');
+        // This section will show static content from HTML
+        // Future: Add API calls for employee data if needed
+    } catch (error) {
+        console.error('❌ Error loading employees data:', error);
+    }
+}
+
+/**
+ * Load status section data
+ */
+async function loadStatusData() {
+    try {
+        console.log('📊 Loading status data...');
+        // Try to load server status
+        const response = await fetch('/api/status');
+        if (response.ok) {
+            const statusData = await response.json();
+            console.log('✅ Status data loaded:', statusData);
+            // Update status displays if needed
+        }
+    } catch (error) {
+        console.error('❌ Error loading status data:', error);
+    }
 }
 
 /**
