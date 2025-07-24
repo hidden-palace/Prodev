@@ -127,14 +127,14 @@
                 <td id="size-status">-</td>
             </tr>
             <tr>
-                <td><strong>Exact Dimensions</strong></td>
-                <td>500×500px (for PNG/JPEG)</td>
+                <td><strong>Min Dimensions</strong></td>
+                <td>200×50px minimum</td>
                 <td id="file-dimensions">-</td>
                 <td id="dimensions-status">-</td>
             </tr>
             <tr>
                 <td><strong>Recommended</strong></td>
-                <td>PNG/JPEG 500×500px or SVG</td>
+                <td>SVG for scalability</td>
                 <td id="file-recommendation">-</td>
                 <td id="recommendation-status">-</td>
             </tr>
@@ -231,18 +231,10 @@
 
             // Recommendation
             const isSVG = file.type === 'image/svg+xml';
-            const isPNG = file.type === 'image/png';
-            const isJPEG = file.type === 'image/jpeg';
-            let recText = 'Unknown format';
-            if (isSVG) recText = 'SVG (Scalable)';
-            else if (isPNG) recText = 'PNG (Good for logos)';
-            else if (isJPEG) recText = 'JPEG (Use PNG for logos)';
-            
-            document.getElementById('file-recommendation').textContent = recText;
+            document.getElementById('file-recommendation').textContent = isSVG ? 'SVG (Recommended)' : 'Raster image';
             document.getElementById('recommendation-status').innerHTML = isSVG ? 
                 '<span class="status-indicator status-success"></span>Optimal' : 
-                isPNG ? '<span class="status-indicator status-success"></span>Good' :
-                '<span class="status-indicator status-warning"></span>Consider PNG';
+                '<span class="status-indicator status-info"></span>Good';
 
             log(`Format validation: ${formatValid ? 'PASS' : 'FAIL'} (${file.type})`, formatValid ? 'success' : 'error');
             log(`Size validation: ${sizeValid ? 'PASS' : 'FAIL'} (${(file.size / 1024 / 1024).toFixed(2)}MB)`, sizeValid ? 'success' : 'error');
@@ -270,26 +262,24 @@
                         const width = this.naturalWidth;
                         const height = this.naturalHeight;
                         
-                        // Exact dimension validation for raster images
-                        const requiredWidth = 500;
-                        const requiredHeight = 500;
-                        const dimensionsValid = width === requiredWidth && height === requiredHeight;
+                        // Dimension validation
+                        const minWidth = 200;
+                        const minHeight = 50;
+                        const dimensionsValid = width >= minWidth && height >= minHeight;
                         validationResults.dimensions = dimensionsValid;
                         
                         document.getElementById('file-dimensions').textContent = `${width}×${height}px`;
                         document.getElementById('dimensions-status').innerHTML = dimensionsValid ? 
                             '<span class="status-indicator status-success"></span>Valid' : 
-                            '<span class="status-indicator status-error"></span>Must be 500×500px';
+                            '<span class="status-indicator status-error"></span>Too small';
 
                         analysisDiv.innerHTML = `
                             <p><strong>Dimensions:</strong> ${width}×${height}px</p>
-                            <p><strong>Required:</strong> 500×500px</p>
                             <p><strong>Aspect Ratio:</strong> ${(width/height).toFixed(2)}:1</p>
                             <p><strong>File Name:</strong> ${file.name}</p>
-                            ${!dimensionsValid ? '<p style="color: #dc2626;"><strong>⚠️ Image must be exactly 500x500 pixels for logo upload</strong></p>' : ''}
                         `;
 
-                        log(`Dimensions: ${width}×${height}px (Required: 500×500px) ${dimensionsValid ? 'PASS' : 'FAIL'}`, dimensionsValid ? 'success' : 'error');
+                        log(`Dimensions: ${width}×${height}px (${dimensionsValid ? 'PASS' : 'FAIL'})`, dimensionsValid ? 'success' : 'error');
                         
                         // Update upload button state
                         const allValid = validationResults.format && validationResults.size && validationResults.dimensions;
@@ -302,10 +292,10 @@
                 analysisDiv.innerHTML = `
                     <p><strong>Format:</strong> SVG (Vector)</p>
                     <p><strong>File Name:</strong> ${file.name}</p>
-                    <p><strong>Note:</strong> SVG images are scalable and don't require exact dimensions</p>
+                    <p><strong>Note:</strong> SVG dimensions will be validated server-side</p>
                 `;
                 
-                // For SVG, dimensions are always valid as they're scalable
+                // For SVG, assume dimensions are valid for client-side testing
                 validationResults.dimensions = true;
                 document.getElementById('file-dimensions').textContent = 'Vector (scalable)';
                 document.getElementById('dimensions-status').innerHTML = '<span class="status-indicator status-success"></span>Scalable';

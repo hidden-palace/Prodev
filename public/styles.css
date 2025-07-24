@@ -74,24 +74,6 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   display: none; /* Hidden by default, shown when logo is loaded */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Logo visibility states */
-.company-logo.has-logo .logo-icon {
-  display: none;
-}
-
-.company-logo.has-logo #company-logo-img {
-  display: block;
-}
-
-.company-logo:not(.has-logo) .logo-icon {
-  display: flex;
-}
-
-.company-logo:not(.has-logo) #company-logo-img {
-  display: none;
 }
 
 .company-info h3 {
