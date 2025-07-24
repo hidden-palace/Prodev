@@ -62,6 +62,28 @@ class LeadProcessor {
       console.log('🔍 DEBUG: processLeadData - First lead sample keys:', Object.keys(leadsData[0]));
       console.log('🔍 DEBUG: processLeadData - First lead sample data:', JSON.stringify(leadsData[0], null, 2));
 
+      // DIAGNOSTIC: Check for email and phone fields in the first lead
+      if (leadsData.length > 0) {
+        const firstLead = leadsData[0];
+        console.log('🔍 DIAGNOSTIC: Email/Phone Field Analysis:');
+        console.log('   📧 Email field:', firstLead.email || 'NOT FOUND');
+        console.log('   📞 Phone field:', firstLead.phone || 'NOT FOUND');
+        console.log('   📞 Phone alternatives:');
+        console.log('     - phoneUnformatted:', firstLead.phoneUnformatted || 'NOT FOUND');
+        console.log('     - phone_number:', firstLead.phone_number || 'NOT FOUND');
+        console.log('     - phoneNumber:', firstLead.phoneNumber || 'NOT FOUND');
+        console.log('   🔍 All available fields containing "email":', Object.keys(firstLead).filter(key => key.toLowerCase().includes('email')));
+        console.log('   🔍 All available fields containing "phone":', Object.keys(firstLead).filter(key => key.toLowerCase().includes('phone')));
+        
+        // Check for nested contact information
+        if (firstLead.contact) {
+          console.log('   🔍 Contact object found:', firstLead.contact);
+        }
+        if (firstLead.contactInfo) {
+          console.log('   🔍 ContactInfo object found:', firstLead.contactInfo);
+        }
+      }
+
       // Process and save leads to Supabase
       console.log('🔍 DEBUG: processLeadData - About to call supabaseService.processAndSaveLeads...');
       const savedLeads = await this.supabaseService.processAndSaveLeads(leadsData, employeeId);
