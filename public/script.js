@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Load initial branding and setup sidebar logo
     await loadBrandingData();
     
-    // Load initial branding and setup sidebar logo
-    await loadBrandingData();
-    
     // Setup navigation
     setupNavigation();
     
@@ -89,7 +86,7 @@ function updateSidebarLogo(logoUrl) {
 }
 
 /**
- * Load branding data and setup sidebar logo
+ * Setup navigation functionality
  */
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
@@ -270,109 +267,6 @@ function setupLogoUpload() {
             
             await uploadLogoFile(file);
         });
-    }
-}
-
-/**
- * Validate image dimensions client-side
- */
-function validateImageDimensions(file) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        
-        img.onload = function() {
-            URL.revokeObjectURL(url);
-            resolve({
-                width: this.naturalWidth,
-                height: this.naturalHeight
-            });
-        };
-        
-        img.onerror = function() {
-            URL.revokeObjectURL(url);
-            reject(new Error('Failed to load image for dimension validation'));
-        };
-        
-        img.src = url;
-    });
-}
-
-/**
- * Upload logo file to server
- */
-async function uploadLogoFile(file) {
-    const uploadBtn = document.getElementById('upload-logo-btn');
-    const uploadStatus = document.getElementById('upload-status');
-    
-    try {
-        // Show loading state
-        if (uploadBtn) {
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<span class="spinner" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px;"></span>Uploading...';
-        }
-        
-        if (uploadStatus) {
-            uploadStatus.innerHTML = '<span style="color: #3b82f6;">🔄 Uploading logo...</span>';
-        }
-        
-        // Create form data
-        const formData = new FormData();
-        formData.append('logo', file);
-        
-        // Upload to server
-        console.log('🚀 Uploading logo to server...');
-        const response = await fetch('/api/storage/logo', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            console.log('✅ Logo uploaded successfully:', result.logo_url);
-            
-            // Update sidebar logo immediately
-            updateSidebarLogo(result.logo_url);
-            
-            // Show success status
-            if (uploadStatus) {
-                uploadStatus.innerHTML = '<span style="color: #10b981;">✅ Logo uploaded successfully!</span>';
-            }
-            
-            // Reset upload button
-            if (uploadBtn) {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Upload Logo';
-            }
-            
-            // Clear file input
-            document.getElementById('logo-upload').value = '';
-            document.getElementById('logo-preview').innerHTML = '';
-            
-            // Show notification
-            showNotification('Logo uploaded successfully!', 'success');
-            
-        } else {
-            throw new Error(result.details || result.message || 'Upload failed');
-        }
-        
-    } catch (error) {
-        console.error('❌ Logo upload failed:', error);
-        
-        // Show error status
-        if (uploadStatus) {
-            uploadStatus.innerHTML = `<span style="color: #ef4444;">❌ Upload failed: ${error.message}</span>`;
-        }
-        
-        // Reset upload button
-        if (uploadBtn) {
-            uploadBtn.disabled = false;
-            uploadBtn.textContent = 'Upload Logo';
-        }
-        
-        // Show notification
-        showNotification(`Upload failed: ${error.message}`, 'error');
     }
 }
 
