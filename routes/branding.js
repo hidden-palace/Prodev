@@ -33,6 +33,7 @@ router.get('/', async (req, res, next) => {
       const { data, error } = await supabaseService.client
         .from('company_branding')
         .select('id, logo_url, primary_color, secondary_color, accent_color, created_at, updated_at')
+        .eq('id', '00000000-0000-0000-0000-000000000001') // Ensure we fetch the specific logo entry
         .single();
       
       if (!error && data) {

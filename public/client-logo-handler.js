@@ -73,15 +73,7 @@ class LogoHandler {
   async fetchAndDisplayLogo() {
     try {
       console.log('🎨 Logo Handler: Making API request to /api/branding...');
-      
-      const response = await fetch('/api/branding', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        cache: 'no-cache',
-        credentials: 'same-origin'
-      });
+      const brandingData = await window.clientAPI.getBranding();
 
       console.log('🎨 Logo Handler: API response status:', response.status);
       
@@ -89,8 +81,6 @@ class LogoHandler {
         console.error('🎨 Logo Handler: API request failed with status:', response.status);
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
-
-      const brandingData = await response.json();
       console.log('🎨 Logo Handler: Branding data received:', {
         hasLogo: !!brandingData.logo_url,
         logoUrl: brandingData.logo_url,
