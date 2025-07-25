@@ -13,7 +13,10 @@ class ClientAPI {
   }
 
   async request(method, endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Prevent duplicate baseURL if endpoint already includes it
+    const url = endpoint.startsWith(this.baseURL) 
+      ? endpoint 
+      : `${this.baseURL}${endpoint}`;
     const config = {
       method,
       headers: {
