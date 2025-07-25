@@ -50,9 +50,6 @@ router.get('/', async (req, res, next) => {
     const resultBranding = brandingData || {
       id: '1',
       logo_url: null,
-      primary_color: '#ec4899',
-      secondary_color: '#64748b',
-      accent_color: '#f97316',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -79,6 +76,11 @@ router.get('/', async (req, res, next) => {
 
 /**
  * POST /branding/logo - Save company logo
+ * 
+ * NOTE: This endpoint is redundant and should not be used for actual logo uploads.
+ * The proper endpoint for logo uploads is POST /api/storage/logo in routes/storage.js
+ * which handles file upload, storage to Supabase, and database persistence.
+ * This endpoint exists for backward compatibility but only returns mock data.
  */
 router.post('/logo', async (req, res, next) => {
   try {
@@ -98,21 +100,18 @@ router.post('/logo', async (req, res, next) => {
       });
     }
 
-    // For now, just return success without database update
+    // This is mock data - actual logo uploads should use /api/storage/logo
     const result = {
       id: '1',
       logo_url: logo_url,
-      primary_color: '#ec4899',
-      secondary_color: '#64748b',
-      accent_color: '#f97316',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    console.log('Logo saved successfully:', file_name);
+    console.log('Logo URL received (mock response):', file_name);
     res.json({
       success: true,
-      message: 'Logo saved successfully',
+      message: 'Logo URL received (use /api/storage/logo for actual uploads)',
       branding: result
     });
   } catch (err) {
