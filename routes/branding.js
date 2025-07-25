@@ -32,7 +32,7 @@ router.get('/', async (req, res, next) => {
       console.log('🔍 Querying company_branding table for logo data...');
       const { data, error } = await supabaseService.client
         .from('company_branding')
-        .select('id, logo_url, primary_color, secondary_color, accent_color, created_at, updated_at')
+        .select('id, logo_url, created_at, updated_at')
         .eq('id', '00000000-0000-0000-0000-000000000001') // Ensure we fetch the specific logo entry
         .single();
       
