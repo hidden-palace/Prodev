@@ -22,6 +22,211 @@ try {
 }
 
 /**
+ * Core function to process an assistant interaction, including chaining.
+ * This function handles thread management, message adding, running/polling assistants,
+ * and recursively calls itself for chaining if configured.
+ */
+async function processAssistantInteraction({ message, employeeId, threadId = null, runId = null, chainHistory = [] }) {
+  let currentThreadId = threadId;
+  let currentRunId = runId;
+  const employeeConfig = config.employees[employeeId];
+  const assistantId = employeeConfig.assistantId;
+
+  // CRITICAL: Validate employee configuration
+  if (!employeeConfig) {
+    throw { status: 404, error: 'Employee not found', details: `Employee '${employeeId}' is not configured` };
+  }
+  if (assistantId.includes('placeholder')) {
+    throw {
+      status: 503,
+      error: 'Assistant not configured',
+      details: `❌ ${employeeConfig.name} is not connected yet. Please contact your administrator to configure this AI employee.`,
+      employee: employeeConfig
+    };
+  }
+
+  // 1. Thread Management: Create new thread or validate existing one
+  if (!currentThreadId) {
+    console.log('Step 1: Creating new thread with isolation...');
+    const thread = await openaiService.createThread();
+    currentThreadId = thread.id;
+    webhookHandler.getIsolationManager().createConversationThread(employeeId, currentThreadId);
+    console.log(`✅ Thread created and registered for ${employeeConfig.name}:`, currentThreadId);
+  } else {
+    console.log('Step 1: Using existing thread with isolation validation:', currentThreadId);
+    try {
+      webhookHandler.getIsolationManager().validateThreadOwnership(currentThreadId, employeeId);
+      console.log(`✅ Thread ownership validated for ${employeeConfig.name}`);
+    } catch (isolationError) {
+      console.error(`🚨 CRITICAL ISOLATION VIOLATION:`, isolationError.message);
+      throw {
+        status: 403,
+        error: 'Thread access denied',
+        details: `Thread ${currentThreadId} does not belong to ${employeeConfig.name}. This is a critical isolation violation.`,
+        employee: employeeConfig,
+        isolation_error: isolationError.message
+      };
+    }
+    // Check for active runs on this thread ONLY if a new message is being added
+    if (message) {
+      console.log('🔍 Checking for active runs on thread...');
+      const runs = await openaiService.client.beta.threads.runs.list(currentThreadId, { limit: 1 });
+      if (runs.data.length > 0) {
+        const latestRun = runs.data[0];
+        console.log(`📊 Latest run status: ${latestRun.status} (${latestRun.id})`);
+        if (['queued', 'in_progress', 'requires_action'].includes(latestRun.status)) {
+          console.log(`⚠️ Thread ${currentThreadId} has active run ${latestRun.id} with status: ${latestRun.status}`);
+          if (latestRun.status === 'requires_action') {
+            const pendingCalls = webhookHandler.getEmployeePendingCalls(employeeId);
+            if (pendingCalls.length > 0) {
+              throw {
+                status: 409,
+                error: 'Thread busy with tool calls',
+                details: `${employeeConfig.name} is currently processing ${pendingCalls.length} tool call(s). Please wait for completion.`,
+                thread_id: currentThreadId,
+                run_id: latestRun.id,
+                pending_tool_calls: pendingCalls.length,
+                employee: employeeConfig,
+                current_status: 'requires_action'
+              };
+            }
+          } else {
+            throw {
+              status: 409,
+              error: 'Thread busy',
+              details: `${employeeConfig.name} is currently processing another request. Please wait for completion.`,
+              thread_id: currentThreadId,
+              run_id: latestRun.id,
+              current_status: latestRun.status,
+              employee: employeeConfig
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Add Message (if provided)
+  if (message) {
+    console.log('Step 2: Adding message to thread...');
+    await openaiService.addMessage(currentThreadId, message);
+    console.log('✅ Message added to thread successfully');
+  }
+
+  // 3. Run Assistant or Continue Run
+  if (!currentRunId) { // Only start a new run if no runId provided
+    console.log(`Step 3: Running ${employeeConfig.name}'s assistant (${assistantId})...`);
+    const run = await openaiService.runAssistant(currentThreadId, assistantId);
+    currentRunId = run.id;
+    console.log(`✅ ${employeeConfig.name}'s assistant run started:`, currentRunId);
+  }
+
+  // 4. Poll for completion
+  console.log(`Step 4: Polling for ${employeeConfig.name}'s completion...`);
+  const pollResult = await openaiService.pollRunStatus(currentThreadId, currentRunId, 20, 2000); // 40 seconds max
+  console.log(`✅ ${employeeConfig.name} polling completed, result status:`, pollResult.status);
+
+  // 5. Handle Result and Chaining
+  if (pollResult.status === 'completed') {
+    console.log(`✅ ${employeeConfig.name} completed without tool calls`);
+    const assistantMessage = await openaiService.getLatestAssistantMessage(currentThreadId);
+
+    const response = {
+      status: 'completed',
+      message: assistantMessage.content,
+      thread_id: currentThreadId,
+      run_id: currentRunId,
+      assistant_id: assistantId,
+      employee: employeeConfig,
+      chain_path: [...chainHistory, employeeId], // Add current employee to path
+      isolation_verified: true,
+      timestamp: new Date().toISOString()
+    };
+
+    // --- Chaining Logic ---
+    if (employeeConfig.chainsTo && chainHistory.length < config.maxChainDepth) {
+      const nextEmployeeId = employeeConfig.chainsTo;
+      if (config.employees[nextEmployeeId] && !chainHistory.includes(nextEmployeeId)) {
+        console.log(`🔗 Chaining from ${employeeId} to ${nextEmployeeId}`);
+        // Use the assistant's message as the new user message for the next assistant
+        return await processAssistantInteraction({
+          message: assistantMessage.content,
+          employeeId: nextEmployeeId,
+          threadId: currentThreadId, // Continue on the same thread
+          chainHistory: [...chainHistory, employeeId] // Pass updated chain history
+        });
+      } else if (chainHistory.includes(nextEmployeeId)) {
+        console.warn(`⚠️ Chain loop detected: ${nextEmployeeId} already in chain history. Stopping chain.`);
+      } else {
+        console.warn(`⚠️ Next employee ${nextEmployeeId} not found in configuration. Stopping chain.`);
+      }
+    }
+    // --- End Chaining Logic ---
+
+    return response; // Return final response if no chaining or chain stopped
+
+  } else if (pollResult.status === 'requires_action') {
+    console.log(`🔧 ${employeeConfig.name} requires tool calls:`, pollResult.toolCalls?.length || 0);
+
+    // Validate employee-specific webhook configuration
+    if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
+      console.error(`❌ Webhook URL not configured for ${employeeConfig.name}`);
+      throw {
+        status: 503,
+        error: 'Webhook not configured',
+        details: `External webhook URL is not configured for ${employeeConfig.name}. Tool calls cannot be processed.`,
+        employee: employeeConfig,
+        tool_calls: pollResult.toolCalls.map(tc => ({
+          id: tc.id,
+          function: tc.function.name,
+          arguments: JSON.parse(tc.function.arguments)
+        })),
+        thread_id: currentThreadId,
+        run_id: currentRunId
+      };
+    }
+
+    // CRITICAL: Send to CORRECT employee's webhook with bulletproof isolation
+    console.log(`=== SENDING TOOL CALLS TO ${employeeConfig.name.toUpperCase()}'S WEBHOOK ===`);
+    console.log(`🎯 BULLETPROOF WEBHOOK ROUTING:`);
+    console.log(`   Employee: ${employeeConfig.name}`);
+    console.log(`   Webhook URL: ${employeeConfig.webhookUrl}`);
+    console.log(`   Tool Calls: ${pollResult.toolCalls.length}`);
+    console.log(`   Thread ID: ${currentThreadId}`);
+    console.log(`   Run ID: ${currentRunId}`);
+
+    const webhookResults = await webhookHandler.sendToolCalls(
+      pollResult.toolCalls,
+      currentThreadId,
+      currentRunId,
+      employeeId // CRITICAL: Correct employee ID
+    );
+    console.log(`✅ Tool calls sent to ${employeeConfig.name}'s webhook successfully`);
+
+    return {
+      status: 'requires_action',
+      message: `Tool calls have been sent to ${employeeConfig.name}'s external webhook`,
+      thread_id: currentThreadId,
+      run_id: currentRunId,
+      assistant_id: assistantId,
+      employee: employeeConfig,
+      tool_calls: pollResult.toolCalls.map(tc => ({
+        id: tc.id,
+        function: tc.function.name,
+        arguments: JSON.parse(tc.function.arguments)
+      })),
+      webhook_results: webhookResults,
+      isolation_verified: true,
+      chain_path: [...chainHistory, employeeId],
+      timestamp: new Date().toISOString()
+    };
+  } else {
+    console.error('Unexpected result status:', pollResult.status);
+    throw new Error(`Unexpected assistant status: ${pollResult.status}`);
+  }
+}
+
+/**
  * GET /assistant-info - Get detailed assistant configuration
  */
 router.get('/assistant-info', async (req, res, next) => {
@@ -214,251 +419,14 @@ router.get('/run-status', async (req, res, next) => {
 /**
  * POST /ask - Handle user messages with BULLETPROOF employee isolation
  */
-router.post('/ask', validateAskRequest, async (req, res, next) => {
-  let threadId = null;
-  let runId = null;
-  let employeeId = null;
-  let assistantId = null;
-  
-  try {
-    console.log('=== BULLETPROOF ASK REQUEST PROCESSING ===');
-    console.log('Request timestamp:', new Date().toISOString());
-
-    // Check if services are properly initialized
-    if (!openaiService || !webhookHandler) {
-      console.error('Services not initialized');
-      return res.status(503).json({
-        error: 'Service unavailable',
-        details: 'Required services are not properly configured. Please check your environment variables.'
-      });
-    }
-
-    const { message, employee = 'brenden', thread_id } = req.body;
-    employeeId = employee;
-    
-    // Get employee configuration
-    const employeeConfig = config.employees[employee];
-    if (!employeeConfig) {
-      return res.status(404).json({
-        error: 'Employee not found',
-        details: `Employee '${employee}' is not configured`
-      });
-    }
-
-    assistantId = employeeConfig.assistantId;
-    
-    // CRITICAL: Validate employee configuration
-    console.log('🎯 BULLETPROOF EMPLOYEE VALIDATION:');
-    console.log(`   Employee ID: ${employeeId}`);
-    console.log(`   Employee Name: ${employeeConfig.name}`);
-    console.log(`   Employee Role: ${employeeConfig.role}`);
-    console.log(`   Assistant ID: ${assistantId}`);
-    console.log(`   Webhook URL: ${employeeConfig.webhookUrl}`);
-    
-    // Check if assistant ID is placeholder
-    if (assistantId.includes('placeholder')) {
-      return res.status(503).json({
-        error: 'Assistant not configured',
-        details: `❌ ${employeeConfig.name} is not connected yet. Please contact your administrator to configure this AI employee.`,
-        employee: employeeConfig
-      });
-    }
-    
-    console.log(`🎯 Processing message for ${employeeConfig.name} (${employeeConfig.role})`);
-    console.log('📝 Message:', message);
-
-    // Step 1: Create or use existing thread with isolation
-    if (thread_id) {
-      console.log('Step 1: Using existing thread with isolation validation:', thread_id);
-      threadId = thread_id;
-      
-      // CRITICAL: Validate thread ownership through isolation manager
-      try {
-        webhookHandler.getIsolationManager().validateThreadOwnership(threadId, employeeId);
-        console.log(`✅ Thread ownership validated for ${employeeConfig.name}`);
-      } catch (isolationError) {
-        console.error(`🚨 CRITICAL ISOLATION VIOLATION:`, isolationError.message);
-        return res.status(403).json({
-          error: 'Thread access denied',
-          details: `Thread ${threadId} does not belong to ${employeeConfig.name}. This is a critical isolation violation.`,
-          employee: employeeConfig,
-          isolation_error: isolationError.message
-        });
-      }
-      
-      // Check for active runs on this thread
-      try {
-        console.log('🔍 Checking for active runs on thread...');
-        const runs = await openaiService.client.beta.threads.runs.list(threadId, { limit: 1 });
-        
-        if (runs.data.length > 0) {
-          const latestRun = runs.data[0];
-          console.log(`📊 Latest run status: ${latestRun.status} (${latestRun.id})`);
-          
-          if (['queued', 'in_progress', 'requires_action'].includes(latestRun.status)) {
-            console.log(`⚠️ Thread ${threadId} has active run ${latestRun.id} with status: ${latestRun.status}`);
-            
-            if (latestRun.status === 'requires_action') {
-              const pendingCalls = webhookHandler.getEmployeePendingCalls(employeeId);
-              
-              if (pendingCalls.length > 0) {
-                console.log(`🔧 Found ${pendingCalls.length} pending tool calls for ${employeeConfig.name}`);
-                return res.status(409).json({
-                  error: 'Thread busy with tool calls',
-                  details: `${employeeConfig.name} is currently processing ${pendingCalls.length} tool call(s). Please wait for completion.`,
-                  thread_id: threadId,
-                  run_id: latestRun.id,
-                  pending_tool_calls: pendingCalls.length,
-                  employee: employeeConfig,
-                  status: 'requires_action'
-                });
-              }
-            } else {
-              return res.status(409).json({
-                error: 'Thread busy',
-                details: `${employeeConfig.name} is currently processing another request. Please wait for completion.`,
-                thread_id: threadId,
-                run_id: latestRun.id,
-                current_status: latestRun.status,
-                employee: employeeConfig
-              });
-            }
-          }
-        }
-      } catch (runCheckError) {
-        console.warn('⚠️ Could not check run status, proceeding anyway:', runCheckError.message);
-      }
-    } else {
-      console.log('Step 1: Creating new thread with isolation...');
-      const thread = await openaiService.createThread();
-      threadId = thread.id;
-      
-      // CRITICAL: Register thread in isolation manager
-      webhookHandler.getIsolationManager().createConversationThread(employeeId, threadId);
-      console.log(`✅ Thread created and registered for ${employeeConfig.name}:`, threadId);
-    }
-    
-    // Step 2: Add user message to thread
-    console.log('Step 2: Adding message to thread...');
-    await openaiService.addMessage(threadId, message);
-    console.log('✅ Message added to thread successfully');
-    
-    // Step 3: Run the CORRECT assistant for this employee
-    console.log(`Step 3: Running ${employeeConfig.name}'s assistant (${assistantId})...`);
-    const run = await openaiService.runAssistant(threadId, assistantId);
-    runId = run.id;
-    console.log(`✅ ${employeeConfig.name}'s assistant run started:`, runId);
-    
-    // Step 4: Poll for completion
-    console.log(`Step 4: Polling for ${employeeConfig.name}'s completion...`);
-    const result = await openaiService.pollRunStatus(threadId, runId, 20, 2000); // 40 seconds max
-    console.log(`✅ ${employeeConfig.name} polling completed, result status:`, result.status);
-    
-    if (result.status === 'completed') {
-      console.log(`✅ ${employeeConfig.name} completed without tool calls`);
-      
-      const assistantMessage = await openaiService.getLatestAssistantMessage(threadId);
-      
-      const response = {
-        status: 'completed',
-        message: assistantMessage.content,
-        thread_id: threadId,
-        run_id: runId,
-        assistant_id: assistantId,
-        employee: employeeConfig,
-        isolation_verified: true,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`✅ Sending completed response for ${employeeConfig.name}`);
-      res.json(response);
-      
-    } else if (result.status === 'requires_action') {
-      console.log(`🔧 ${employeeConfig.name} requires tool calls:`, result.toolCalls?.length || 0);
-      
-      // Validate employee-specific webhook configuration
-      if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
-        console.error(`❌ Webhook URL not configured for ${employeeConfig.name}`);
-        return res.status(503).json({
-          error: 'Webhook not configured',
-          details: `External webhook URL is not configured for ${employeeConfig.name}. Tool calls cannot be processed.`,
-          employee: employeeConfig,
-          tool_calls: result.toolCalls.map(tc => ({
-            id: tc.id,
-            function: tc.function.name,
-            arguments: JSON.parse(tc.function.arguments)
-          })),
-          thread_id: threadId,
-          run_id: runId
-        });
-      }
-      
-      // CRITICAL: Send to CORRECT employee's webhook with bulletproof isolation
-      console.log(`=== SENDING TOOL CALLS TO ${employeeConfig.name.toUpperCase()}'S WEBHOOK ===`);
-      console.log(`🎯 BULLETPROOF WEBHOOK ROUTING:`);
-      console.log(`   Employee: ${employeeConfig.name}`);
-      console.log(`   Webhook URL: ${employeeConfig.webhookUrl}`);
-      console.log(`   Tool Calls: ${result.toolCalls.length}`);
-      console.log(`   Thread ID: ${threadId}`);
-      console.log(`   Run ID: ${runId}`);
-      
-      const webhookResults = await webhookHandler.sendToolCalls(
-        result.toolCalls,
-        threadId,
-        runId,
-        employeeId // CRITICAL: Correct employee ID
-      );
-      console.log(`✅ Tool calls sent to ${employeeConfig.name}'s webhook successfully`);
-      
-      const response = {
-        status: 'requires_action',
-        message: `Tool calls have been sent to ${employeeConfig.name}'s external webhook`,
-        thread_id: threadId,
-        run_id: runId,
-        assistant_id: assistantId,
-        employee: employeeConfig,
-        tool_calls: result.toolCalls.map(tc => ({
-          id: tc.id,
-          function: tc.function.name,
-          arguments: JSON.parse(tc.function.arguments)
-        })),
-        webhook_results: webhookResults,
-        isolation_verified: true,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`✅ Sending requires_action response for ${employeeConfig.name}`);
-      res.json(response);
-    } else {
-      console.error('Unexpected result status:', result.status);
-      throw new Error(`Unexpected assistant status: ${result.status}`);
-    }
-    
+    const result = await processAssistantInteraction({ message, employeeId, threadId });
+    res.json(result);
   } catch (error) {
-    console.error('=== BULLETPROOF ASK REQUEST ERROR ===');
-    console.error('Error timestamp:', new Date().toISOString());
-    console.error('Employee ID:', employeeId);
-    console.error('Assistant ID:', assistantId);
-    console.error('Thread ID:', threadId);
-    console.error('Run ID:', runId);
-    console.error('Error:', error);
-    
-    // Enhanced error response with context
-    const errorResponse = {
-      error: 'Request processing failed',
-      details: error.message,
-      context: {
-        employee_id: employeeId,
-        employee_name: employeeId ? config.employees[employeeId]?.name : null,
-        assistant_id: assistantId,
-        thread_id: threadId,
-        run_id: runId,
-        isolation_enabled: true,
-        timestamp: new Date().toISOString()
-      }
-    };
-    
-    next(errorResponse);
+    console.error('❌ Error in /api/ask endpoint:', error);
+    if (error && typeof error === 'object' && error.status) {
+      return res.status(error.status).json(error);
+    }
+    next(error);
   }
 });
 
@@ -466,37 +434,9 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
  * POST /webhook-response - Handle webhook responses with BULLETPROOF isolation
  */
 router.post('/webhook-response', validateWebhookResponse, async (req, res, next) => {
-  let processedResponse = null;
-  
   try {
-    console.log('=== BULLETPROOF WEBHOOK RESPONSE PROCESSING ===');
-    console.log('Timestamp:', new Date().toISOString());
-    
-    // Check if services are properly initialized
-    if (!openaiService || !webhookHandler) {
-      console.error('Services not initialized');
-      return res.status(503).json({
-        error: 'Service unavailable',
-        details: 'Services are not properly configured.'
-      });
-    }
-    
-    console.log('🔍 Processing webhook response with bulletproof isolation...');
-    
-    // CRITICAL: Process through bulletproof isolation system
-    processedResponse = webhookHandler.processWebhookResponse(req.body);
-    console.log(`✅ Webhook response processed with bulletproof isolation for ${processedResponse.employee_name}`);
-    
-    // CRITICAL: Validate isolation integrity
-    console.log('🎯 BULLETPROOF ISOLATION VALIDATION:');
-    console.log(`   Tool Call ID: ${processedResponse.tool_call_id}`);
-    console.log(`   Employee ID: ${processedResponse.employee_id}`);
-    console.log(`   Employee Name: ${processedResponse.employee_name}`);
-    console.log(`   Thread ID: ${processedResponse.thread_id}`);
-    console.log(`   Run ID: ${processedResponse.run_id}`);
-    console.log(`   Correlation Verified: ${processedResponse.correlation_verified}`);
-    console.log(`   Isolation Verified: ${processedResponse.isolation_verified}`);
-    
+    const processedResponse = webhookHandler.processWebhookResponse(req.body);
+
     // Check if this is lead data and process it
     if (leadProcessor && leadProcessor.isLeadData(processedResponse.output)) {
       console.log(`🎯 Detected lead data from ${processedResponse.employee_name}, processing...`);
@@ -527,11 +467,10 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
         processed: false
       };
     }
-    
+
     // Submit tool output back to OpenAI
     console.log(`🚀 Submitting tool output to OpenAI for ${processedResponse.employee_name}`);
-    
-    const submitResult = await openaiService.submitToolOutputs(
+    await openaiService.submitToolOutputs(
       processedResponse.thread_id,
       processedResponse.run_id,
       [{
@@ -539,123 +478,23 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
         output: processedResponse.output
       }]
     );
-    console.log(`✅ Tool output submitted successfully for ${processedResponse.employee_name}. Status:`, submitResult.status);
-    
-    console.log(`⏳ Starting polling for completion for ${processedResponse.employee_name}...`);
-    
-    // Poll for final completion
-    const result = await openaiService.pollRunStatus(
+    console.log(`✅ Tool output submitted successfully for ${processedResponse.employee_name}.`);
+
+    // Continue the run and potentially trigger chaining
+    const finalChainResult = await processAssistantInteraction({
+      message: null, // No new user message, just continue the run
+      employeeId: processedResponse.employee_id,
       processedResponse.thread_id,
       processedResponse.run_id,
-      90, // 3 minutes
-      2000 // 2 second intervals
-    );
-    console.log(`✅ Final polling completed for ${processedResponse.employee_name}, status:`, result.status);
-    
-    if (result.status === 'completed') {
-      console.log(`📝 Getting final assistant message for ${processedResponse.employee_name}...`);
-      
-      const assistantMessage = await openaiService.getLatestAssistantMessage(
-        processedResponse.thread_id
-      );
-      console.log(`✅ ${processedResponse.employee_name} final message retrieved successfully`);
-      
-      const response = {
-        status: 'completed',
-        message: assistantMessage.content,
-        thread_id: processedResponse.thread_id,
-        run_id: processedResponse.run_id,
-        tool_call_id: processedResponse.tool_call_id,
-        employee_id: processedResponse.employee_id,
-        employee_name: processedResponse.employee_name,
-        lead_processing: processedResponse.lead_processing,
-        isolation_verified: true,
-        correlation_verified: true,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`✅ Sending webhook completion response for ${processedResponse.employee_name}`);
-      res.json(response);
-      
-    } else if (result.status === 'requires_action') {
-      console.log(`🔧 ${processedResponse.employee_name} requires more actions:`, result.toolCalls?.length || 0, 'tool calls');
-      
-      // Send additional tool calls to employee-specific webhook
-      if (result.toolCalls && result.toolCalls.length > 0) {
-        console.log(`🚀 Sending additional tool calls to ${processedResponse.employee_name} webhook...`);
-        const additionalWebhookResults = await webhookHandler.sendToolCalls(
-          result.toolCalls,
-          processedResponse.thread_id,
-          processedResponse.run_id,
-          processedResponse.employee_id
-        );
-        console.log(`✅ Additional webhook results for ${processedResponse.employee_name}:`, additionalWebhookResults);
-      }
-      
-      const response = {
-        status: 'requires_action',
-        message: `${processedResponse.employee_name} requires additional tool calls`,
-        thread_id: processedResponse.thread_id,
-        run_id: processedResponse.run_id,
-        tool_call_id: processedResponse.tool_call_id,
-        employee_id: processedResponse.employee_id,
-        employee_name: processedResponse.employee_name,
-        lead_processing: processedResponse.lead_processing,
-        tool_calls: result.toolCalls?.map(tc => ({
-          id: tc.id,
-          function: tc.function.name,
-          arguments: JSON.parse(tc.function.arguments)
-        })) || [],
-        isolation_verified: true,
-        correlation_verified: true,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`✅ Sending requires_action response for ${processedResponse.employee_name}`);
-      res.json(response);
-      
-    } else {
-      console.log(`⏳ ${processedResponse.employee_name} still processing or unknown status:`, result.status);
-      const response = {
-        status: result.status === 'unknown' ? 'processing' : result.status,
-        message: `Tool output submitted for ${processedResponse.employee_name}, assistant status: ${result.status}`,
-        thread_id: processedResponse.thread_id,
-        run_id: processedResponse.run_id,
-        tool_call_id: processedResponse.tool_call_id,
-        employee_id: processedResponse.employee_id,
-        employee_name: processedResponse.employee_name,
-        lead_processing: processedResponse.lead_processing,
-        current_status: result.status,
-        isolation_verified: true,
-        correlation_verified: true,
-        timestamp: new Date().toISOString()
-      };
-
-      console.log(`📊 Sending processing/status response for ${processedResponse.employee_name}`);
-      res.json(response);
-    }
-    
+      chainHistory: [] // Start fresh chain history for this internal continuation
+    });
+    res.json(finalChainResult);
   } catch (error) {
-    console.error('=== BULLETPROOF WEBHOOK RESPONSE ERROR ===');
-    console.error('Error timestamp:', new Date().toISOString());
-    console.error('Processed response:', processedResponse);
-    console.error('Error:', error);
-    
-    const errorResponse = {
-      error: 'Webhook response processing failed',
-      details: error.message,
-      context: {
-        tool_call_id: processedResponse?.tool_call_id,
-        thread_id: processedResponse?.thread_id,
-        run_id: processedResponse?.run_id,
-        employee_id: processedResponse?.employee_id,
-        employee_name: processedResponse?.employee_name,
-        isolation_enabled: true,
-        timestamp: new Date().toISOString()
-      }
-    };
-    
-    next(errorResponse);
+    console.error('❌ Error in /api/webhook-response endpoint:', error);
+    if (error && typeof error === 'object' && error.status) {
+      return res.status(error.status).json(error);
+    }
+    next(error);
   }
 });
 

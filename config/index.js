@@ -20,6 +20,8 @@ const config = {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
   },
+  maxChainDepth: parseInt(process.env.MAX_CHAIN_DEPTH) || 5, // Max number of assistant hops in a chain
+  },
   // AI Employee configurations with PRODUCTION webhook URLs
   employees: {
     brenden: {
@@ -28,6 +30,7 @@ const config = {
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
       webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e'
+      // chainsTo: 'van' // Example: Brenden chains to Van
     },
     van: {
       assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
@@ -35,6 +38,7 @@ const config = {
       role: 'page operator',
       specialty: 'Digital Marketing Designer',
       webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+      // chainsTo: null // Example: Van does not chain further
     },
     angel: {
       assistantId: 'asst_angel_placeholder',
@@ -42,6 +46,7 @@ const config = {
       role: 'voice caller',
       specialty: 'Voice Outreach Manager',
       webhookUrl: 'https://hook.eu2.make.com/angel_webhook_placeholder' // Add real webhook when ready
+      // chainsTo: null // Example: Angel does not chain further
     }
     // EASILY ADD MORE EMPLOYEES HERE:
     // sarah: {
