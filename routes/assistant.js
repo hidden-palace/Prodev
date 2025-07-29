@@ -419,6 +419,23 @@ router.get('/run-status', async (req, res, next) => {
 /**
  * POST /ask - Handle user messages with BULLETPROOF employee isolation
  */
+router.post('/ask', validateAskRequest, async (req, res, next) => {
+  try {
+    console.log('=== NEW ASK REQUEST WITH BULLETPROOF ISOLATION ===');
+    
+    if (!openaiService) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        details: 'OpenAI service is not properly configured.'
+      });
+    }
+
+    const { message, employee: employeeId, thread_id: threadId } = req.body;
+    
+    console.log(`🎯 Processing request for employee: ${employeeId}`);
+    console.log(`📝 Message: ${message}`);
+    console.log(`🧵 Thread ID: ${threadId || 'new thread'}`);
+
     const result = await processAssistantInteraction({ message, employeeId, threadId });
     res.json(result);
   } catch (error) {
@@ -484,8 +501,8 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
     const finalChainResult = await processAssistantInteraction({
       message: null, // No new user message, just continue the run
       employeeId: processedResponse.employee_id,
-      processedResponse.thread_id,
-      processedResponse.run_id,
+      threadId: processedResponse.thread_id,
+      runId: processedResponse.run_id,
       chainHistory: [] // Start fresh chain history for this internal continuation
     });
     res.json(finalChainResult);
