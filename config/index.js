@@ -21,7 +21,6 @@ const config = {
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
   },
   maxChainDepth: parseInt(process.env.MAX_CHAIN_DEPTH) || 5, // Max number of assistant hops in a chain
-  },
   // AI Employee configurations with PRODUCTION webhook URLs
   employees: {
     brenden: {
