@@ -43,7 +43,7 @@ class WebhookHandler {
       throw new Error(`CRITICAL ERROR: No tool webhooks configured for ${employeeConfig.name}`);
     }
 
-    const firstToolCallName = toolCalls[0]?.function?.name;
+    const firstToolCallName = toolCalls[0]?.function?.name; // This line is for initial validation, not for routing
     if (!toolWebhooks[firstToolCallName] || toolWebhooks[firstToolCallName].includes('placeholder')) {
       throw new Error(`CRITICAL ERROR: Webhook URL not configured for ${employeeConfig.name}`);
     }
@@ -86,7 +86,7 @@ class WebhookHandler {
           JSON.parse(toolCall.function.arguments)
         );
 
-        const toolWebhookUrl = toolWebhooks[toolCall.function.name]; // Dynamically get webhook URL based on tool name
+        const toolWebhookUrl = toolWebhooks[toolCall.function.name]; // Dynamically get webhook URL based on tool's function name
         if (!toolWebhookUrl) {
           throw new Error(`Webhook URL for tool '${toolCall.function.name}' is not configured for ${employeeConfig.name}. Please check 'toolWebhooks' in config/index.js`);
         }
