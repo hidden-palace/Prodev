@@ -33,8 +33,12 @@ class WebhookHandler {
       throw new Error(`CRITICAL ERROR: Employee '${employeeId}' not found in configuration`);
     }
 
-    // Validate tool-specific webhook configuration
+    // Validate tool-specific webhook configuration for the first tool call
     const toolWebhooks = employeeConfig.toolWebhooks;
+    if (!toolWebhooks) {
+      throw new Error(`CRITICAL ERROR: 'toolWebhooks' object not found for ${employeeConfig.name}. Please configure it in config/index.js`);
+    }
+
     if (!toolWebhooks || Object.keys(toolWebhooks).length === 0) {
       throw new Error(`CRITICAL ERROR: No tool webhooks configured for ${employeeConfig.name}`);
     }
@@ -82,7 +86,11 @@ class WebhookHandler {
           JSON.parse(toolCall.function.arguments)
         );
 
-        const toolWebhookUrl = toolWebhooks[toolCall.function.name];
+        const toolWebhookUrl = toolWebhooks[toolCall.function.name]; // Dynamically get webhook URL based on tool name
+        if (!toolWebhookUrl) {
+          throw new Error(`Webhook URL for tool '${toolCall.function.name}' is not configured for ${employeeConfig.name}. Please check 'toolWebhooks' in config/index.js`);
+        }
+
         if (!toolWebhookUrl || toolWebhookUrl.includes('placeholder')) {
           throw new Error(`Webhook URL for tool '${toolCall.function.name}' not configured for ${employeeConfig.name}`);
         }
@@ -113,7 +121,7 @@ class WebhookHandler {
           webhookUrl: toolWebhookUrl
         });
 
-        const result = await this.sendWebhookWithRetry(payload, employeeConfig.webhookUrl, employeeId);
+        const result = await this.sendWebhookWithRetry(payload, toolWebhookUrl, employeeId); // Use the specific tool's webhook URL
         results.push(result);
 
       } catch (err) {

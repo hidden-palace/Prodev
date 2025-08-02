@@ -28,8 +28,10 @@ const config = {
       name: 'AI Brenden',
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
-      toolWebhooks: {
-        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e'
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
+        // Add other tools for Brenden here, e.g.,
+        // process_data: 'https://your-other-webhook.com/process-data'
       }
       // chainsTo: 'van' // Example: Brenden chains to Van
     },
@@ -38,8 +40,9 @@ const config = {
       name: 'AI Van',
       role: 'page operator',
       specialty: 'Digital Marketing Designer',
-      toolWebhooks: {
-        validate_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+        validate_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9',
+        // Add other tools for Van here
       }
       // chainsTo: null // Example: Van does not chain further
     },
@@ -48,8 +51,9 @@ const config = {
       name: 'AI Angel',
       role: 'voice caller',
       specialty: 'Voice Outreach Manager',
-      toolWebhooks: {
-        make_call: 'https://hook.eu2.make.com/angel_webhook_placeholder' // Add real webhook when ready
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+        make_call: 'https://hook.eu2.make.com/angel_webhook_placeholder', // Add real webhook when ready
+        // Add other tools for Angel here
       }
       // chainsTo: null // Example: Angel does not chain further
     }
