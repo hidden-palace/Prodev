@@ -28,7 +28,9 @@ const config = {
       name: 'AI Brenden',
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
-      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e'
+      toolWebhooks: {
+        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e'
+      }
       // chainsTo: 'van' // Example: Brenden chains to Van
     },
     van: {
@@ -36,7 +38,9 @@ const config = {
       name: 'AI Van',
       role: 'page operator',
       specialty: 'Digital Marketing Designer',
-      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+      toolWebhooks: {
+        validate_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+      }
       // chainsTo: null // Example: Van does not chain further
     },
     angel: {
@@ -44,7 +48,9 @@ const config = {
       name: 'AI Angel',
       role: 'voice caller',
       specialty: 'Voice Outreach Manager',
-      webhookUrl: 'https://hook.eu2.make.com/angel_webhook_placeholder' // Add real webhook when ready
+      toolWebhooks: {
+        make_call: 'https://hook.eu2.make.com/angel_webhook_placeholder' // Add real webhook when ready
+      }
       // chainsTo: null // Example: Angel does not chain further
     }
     // EASILY ADD MORE EMPLOYEES HERE:
@@ -117,10 +123,17 @@ if (process.env.VITE_SUPABASE_ANON_KEY && !process.env.VITE_SUPABASE_ANON_KEY.st
 // Validate employee webhook URLs
 console.log('\n🔗 Employee Webhook Configuration:');
 Object.entries(config.employees).forEach(([key, employee]) => {
-  const isConfigured = employee.webhookUrl && !employee.webhookUrl.includes('placeholder');
-  const status = isConfigured ? '✅' : '⚠️';
-  const urlType = employee.webhookUrl.includes('webhook-test') ? '(TEST)' : '(PRODUCTION)';
-  console.log(`   ${status} ${employee.name}: ${employee.webhookUrl} ${isConfigured ? urlType : ''}`);
+  const hasToolWebhooks = employee.toolWebhooks && Object.keys(employee.toolWebhooks).length > 0;
+  const status = hasToolWebhooks ? '✅' : '⚠️';
+  console.log(`   ${status} ${employee.name}:`);
+  if (hasToolWebhooks) {
+    Object.entries(employee.toolWebhooks).forEach(([toolName, url]) => {
+      const urlType = url.includes('webhook-test') ? '(TEST)' : '(PRODUCTION)';
+      console.log(`     - Tool '${toolName}': ${url} ${url.includes('placeholder') ? '(PLACEHOLDER)' : urlType}`);
+    });
+  } else {
+    console.log(`     - No tool webhooks configured.`);
+  }
 });
 
 module.exports = config;

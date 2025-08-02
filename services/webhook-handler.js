@@ -33,8 +33,14 @@ class WebhookHandler {
       throw new Error(`CRITICAL ERROR: Employee '${employeeId}' not found in configuration`);
     }
 
-    // Validate webhook configuration
-    if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
+    // Validate tool-specific webhook configuration
+    const toolWebhooks = employeeConfig.toolWebhooks;
+    if (!toolWebhooks || Object.keys(toolWebhooks).length === 0) {
+      throw new Error(`CRITICAL ERROR: No tool webhooks configured for ${employeeConfig.name}`);
+    }
+
+    const firstToolCallName = toolCalls[0]?.function?.name;
+    if (!toolWebhooks[firstToolCallName] || toolWebhooks[firstToolCallName].includes('placeholder')) {
       throw new Error(`CRITICAL ERROR: Webhook URL not configured for ${employeeConfig.name}`);
     }
 
@@ -76,6 +82,13 @@ class WebhookHandler {
           JSON.parse(toolCall.function.arguments)
         );
 
+        const toolWebhookUrl = toolWebhooks[toolCall.function.name];
+        if (!toolWebhookUrl || toolWebhookUrl.includes('placeholder')) {
+          throw new Error(`Webhook URL for tool '${toolCall.function.name}' not configured for ${employeeConfig.name}`);
+        }
+
+        console.log(`🎯 Using webhook URL for tool '${toolCall.function.name}': ${toolWebhookUrl}`);
+
         // Prepare webhook payload with isolation metadata
         const payload = {
           tool_call_id: toolCall.id,
@@ -97,7 +110,7 @@ class WebhookHandler {
           toolCallId: toolCall.id,
           correlationKey: toolCallData.correlationKey,
           isolationKey: toolCallData.isolationKey,
-          webhookUrl: employeeConfig.webhookUrl
+          webhookUrl: toolWebhookUrl
         });
 
         const result = await this.sendWebhookWithRetry(payload, employeeConfig.webhookUrl, employeeId);
@@ -127,7 +140,7 @@ class WebhookHandler {
    * Send webhook with enhanced error handling and isolation tracking
    */
   async sendWebhookWithRetry(payload, webhookUrl, employeeId, attempt = 1) {
-    const maxAttempts = this.retryAttempts;
+    const maxAttempts = this.retryAttempts; // This webhookUrl is now the specific tool's webhookUrl
     const employeeConfig = config.employees[employeeId];
     
     try {
