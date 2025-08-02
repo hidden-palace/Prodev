@@ -168,24 +168,6 @@ async function processAssistantInteraction({ message, employeeId, threadId = nul
   } else if (pollResult.status === 'requires_action') {
     console.log(`🔧 ${employeeConfig.name} requires tool calls:`, pollResult.toolCalls?.length || 0);
 
-    // Validate employee-specific webhook configuration
-    if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
-      console.error(`❌ Webhook URL not configured for ${employeeConfig.name}`);
-      throw {
-        status: 503,
-        error: 'Webhook not configured',
-        details: `External webhook URL is not configured for ${employeeConfig.name}. Tool calls cannot be processed.`,
-        employee: employeeConfig,
-        tool_calls: pollResult.toolCalls.map(tc => ({
-          id: tc.id,
-          function: tc.function.name,
-          arguments: JSON.parse(tc.function.arguments)
-        })),
-        thread_id: currentThreadId,
-        run_id: currentRunId
-      };
-    }
-
     // CRITICAL: Send to CORRECT employee's webhook with bulletproof isolation
     console.log(`=== SENDING TOOL CALLS TO ${employeeConfig.name.toUpperCase()}'S WEBHOOK ===`);
     console.log(`🎯 BULLETPROOF WEBHOOK ROUTING:`);
