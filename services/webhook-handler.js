@@ -45,14 +45,14 @@ class WebhookHandler {
 
     const firstToolCallName = toolCalls[0]?.function?.name; // This line is for initial validation, not for routing
     if (!toolWebhooks[firstToolCallName] || toolWebhooks[firstToolCallName].includes('placeholder')) {
-      throw new Error(`CRITICAL ERROR: Webhook URL not configured for ${employeeConfig.name}`);
+      throw new Error(`CRITICAL ERROR: Webhook URL not configured for tool '${firstToolCallName}' in ${employeeConfig.name}`);
     }
 
     console.log(`🎯 EMPLOYEE VALIDATION PASSED:`, {
       employeeId,
       employeeName: employeeConfig.name,
       employeeRole: employeeConfig.role,
-      webhookUrl: employeeConfig.webhookUrl,
+      toolWebhooks: Object.keys(toolWebhooks),
       threadId,
       runId,
       toolCallsCount: toolCalls.length

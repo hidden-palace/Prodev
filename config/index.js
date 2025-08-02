@@ -29,8 +29,8 @@ const config = {
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
       toolWebhooks: {
-        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e', // Existing webhook for scrape_leads
-        name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94' // New webhook for name_to_binary
+        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
+        name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94'
       }
       // chainsTo: 'van' // Example: Brenden chains to Van
     },
