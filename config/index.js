@@ -51,7 +51,7 @@ const config = {
       role: 'Lead Generation Plan Strategist',
       specialty: 'Voice Outreach Manager',
       toolWebhooks: { // Use toolWebhooks object for multiple tools
-        make_call: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
+        get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
         // Add other tools for Angel here
       }
       // chainsTo: null // Example: Angel does not chain further
