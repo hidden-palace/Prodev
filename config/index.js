@@ -46,7 +46,7 @@ const config = {
       // chainsTo: null // Example: Van does not chain further
     },
     angel: {
-      assistantId: 'asst_angel_placeholder',
+      assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
       name: 'AI Angel',
       role: 'voice caller',
       specialty: 'Voice Outreach Manager',
