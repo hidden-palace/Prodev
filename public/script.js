@@ -1670,24 +1670,100 @@ function selectEmployee(employeeId) {
     conversationHistory[currentEmployee] = currentConversation;
   }
 
-  // Switch to new employee
+  // Update current employee
+  console.log('🔄 CRITICAL: Setting currentEmployee from', currentEmployee, 'to', employeeId);
   currentEmployee = employeeId;
-  currentConversation = conversationHistory[employeeId] || [];
+  console.log('🔄 CRITICAL: currentEmployee is now:', currentEmployee);
 
-  // Update UI
-  updateEmployeeHeader(selectedEmployee);
-  updateQuickActions(selectedEmployee.quickActions || []);
-  loadConversation(employeeId);
+  // Load or create conversation for new employee
+  loadConversationForEmployee(employeeId);
 
-  // Update active team member
+  // Update active team member visual state
   document.querySelectorAll('.team-member').forEach(member => {
     member.classList.remove('active');
-    if (member.dataset.employeeId === employeeId) {
+    const memberEmployeeId = member.dataset.employeeId;
+    if (memberEmployeeId === employeeId) {
       member.classList.add('active');
+      console.log('🎯 VISUAL UPDATE: Set active class for', employeeId);
     }
   });
 
-  console.log(`✅ Successfully switched to ${selectedEmployee.name}`);
+  // Update chat header with employee details
+  updateChatHeader(selectedEmployee);
+  updateQuickActions(selectedEmployee.quickActions || []);
+  updateChatTabs(selectedEmployee);
+  updateChatContent(selectedEmployee);
+
+  console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
+  console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
+  console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
+}
+
+async function sendMessage(message) {
+  if (!message.trim()) return;
+
+  // CRITICAL FIX: Verify currentEmployee before sending
+  console.log('🚨 SEND MESSAGE DEBUG: About to send message');
+  console.log('🚨 SEND MESSAGE DEBUG: currentEmployee:', currentEmployee);
+  console.log('🚨 SEND MESSAGE DEBUG: message:', message);
+  console.log('🚨 SEND MESSAGE DEBUG: currentConversation:', currentConversation);
+  
+  if (!currentEmployee) {
+    console.error('🚨 CRITICAL ERROR: No currentEmployee set! Defaulting to brenden');
+    currentEmployee = 'brenden';
+  }
+  
+  addMessageToUI(message, 'user');
+  
+  const messageInput = document.getElementById('messageInput');
+  const sendButton = document.querySelector('.send-button');
+  
+  messageInput.value = '';
+  sendButton.disabled = true;
+  
+  try {
+    showTypingIndicator();
+    
+    console.log('📡 API REQUEST DEBUG: Sending to employee:', currentEmployee);
+    console.log('📡 API REQUEST DEBUG: Request payload:', {
+      message: message,
+      employee: currentEmployee,
+      thread_id: currentConversation.thread_id
+    });
+    
+    const response = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message,
+        employee: currentEmployee,
+        thread_id: currentConversation.thread_id
+      })
+    });
+
+    const data = await response.json();
+    console.log('📡 API RESPONSE DEBUG: Received response:', data);
+    console.log('📡 API RESPONSE DEBUG: Response employee:', data.employee?.name);
+    
+    hideTypingIndicator();
+    
+    if (data.message) {
+      addMessageToUI(data.message, 'assistant');
+    }
+    
+    if (data.thread_id) {
+      currentConversation.thread_id = data.thread_id;
+    }
+    
+  } catch (error) {
+    console.error('Error sending message:', error);
+    hideTypingIndicator();
+    addMessageToUI('Sorry, there was an error processing your message.', 'assistant');
+  } finally {
+    sendButton.disabled = false;
+  }
 }
 
 // Load saved color scheme on page load
