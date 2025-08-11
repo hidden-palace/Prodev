@@ -49,8 +49,8 @@ const employees = {
   xavier: {
     name: 'AI Xavier',
     role: 'Strategic Analyst',
-    specialty: 'Lead Generation Plan Strategist',
-    description: 'Xavier develops comprehensive lead generation strategies, analyzes competitor landscapes, and creates data-driven plans to maximize conversion rates.',
+    specialty: 'Lead Generation Strategy',
+    description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize your outreach efforts and maximize conversion rates for sustainable business growth.',
     avatar: '/api/branding/employee-avatars/xavier.jpg',
     tags: ['Strategy', 'Analytics'],
     tasks: [
