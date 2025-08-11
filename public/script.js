@@ -830,6 +830,19 @@ async function handleChatSubmit(e) {
       message: message,
       employee: currentEmployee, // Ensure we're sending to the correct employee
       thread_id: currentThreadId // Use employee-specific thread (or null for new thread)
+        xavier: {
+            name: 'AI Xavier',
+            role: 'Strategic Analyst',
+            specialty: 'Lead Generation Plan Strategist',
+            description: 'Xavier develops comprehensive lead generation strategies, analyzes competitor landscapes, and creates data-driven plans to maximize conversion rates.',
+            avatar: '/api/branding/employee-avatars/xavier.jpg',
+            tags: ['Strategy', 'Analytics'],
+            tasks: [
+                { id: 1, title: 'Analyze competitor strategies', status: 'completed' },
+                { id: 2, title: 'Develop Q2 lead gen plan', status: 'in-progress' },
+                { id: 3, title: 'Create conversion optimization roadmap', status: 'pending' }
+            ]
+        }
     };
     
     console.log(`📤 API Request:`, requestBody);
@@ -1358,15 +1371,15 @@ function displayLeadsTable(leads) {
   
   // Create table body
   const tableBody = document.createElement('tbody');
-  leadsTable.appendChild(tableBody);
-  
+    // Generate team members (brenden, van, and xavier)
+    const teamMembers = ['brenden', 'van', 'xavier'].map(employeeId => {
   if (leads.length === 0) {
     // Hide download button when no leads
     if (downloadBtn) {
       downloadBtn.style.display = 'none';
     }
     
-    tableBody.innerHTML = `
+                        ${employee.name.split(' ')[1][0].toUpperCase()}
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
@@ -1374,7 +1387,7 @@ function displayLeadsTable(leads) {
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        ${employee.tags.map(tag => `<span class="tag ${tag.toLowerCase().replace(' ', '-')}">${tag}</span>`).join('')}
             </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>

@@ -46,15 +46,16 @@ const config = {
       // chainsTo: null // Example: Van does not chain further
     },
     Rey: {
+    xavier: {
       assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
-      name: 'AI Rey',
-      role: 'Lead Generation Plan Strategist',
-      specialty: 'Voice Outreach Manager',
+      name: 'AI Xavier',
+      role: 'strategic analyst',
+      specialty: 'Lead Generation Plan Strategist',
       toolWebhooks: { // Use toolWebhooks object for multiple tools
         get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
-        // Add other tools for Angel here
+        // Add other tools for Xavier here
       }
-      // chainsTo: null // Example: Angel does not chain further
+      // chainsTo: null // Example: Xavier does not chain further
     }
     // EASILY ADD MORE EMPLOYEES HERE:
     // sarah: {

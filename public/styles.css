@@ -1465,6 +1465,16 @@
     color: #7c3aed;
 }
 
+.tag.strategy {
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.tag.analytics {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
 .member-stats {
     display: flex;
     align-items: center;
