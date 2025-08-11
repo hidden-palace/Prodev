@@ -1369,30 +1369,16 @@ function displayLeadsTable(leads) {
     tableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        // Create styled avatar element
+        const avatarInitial = type === 'user' ? 'U' : employeeId.charAt(0).toUpperCase();
+        const senderName = type === 'user' ? 'You' : \`AI ${employeeId.charAt(0).toUpperCase() + employeeId.slice(1)}`;
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-   // Get proper avatar text
-   let avatarText;
-   let senderName;
-   
-   if (sender === 'user') {
-       avatarText = 'U';
-       senderName = 'You';
-   } else {
-       // Get the first letter of the current employee's name
-       const currentEmployee = getCurrentEmployee();
-       avatarText = currentEmployee.name.split(' ').pop().charAt(0); // Get first letter of last name (e.g., "Brenden" -> "B")
-       senderName = currentEmployee.name;
-   }
-   
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-           <div class="message-avatar">${avatarText}</div>
+                <div class="message-avatar ${type === 'user' ? 'user-avatar' : 'ai-avatar'}">${avatarInitial}</div>
+            <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-               <span class="sender-name">${senderName}</span>
+              <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
               <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
             </div>
           </div>
