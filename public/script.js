@@ -853,6 +853,21 @@ async function handleChatSubmit(e) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(requestBody)
+      xavier: {
+        id: 'xavier',
+        name: 'AI Xavier',
+        role: 'Strategic Analyst', 
+        specialty: 'Lead Generation Plan Strategist',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects for your business.',
+        tasks: [
+          { id: 1, title: 'Analyze Competitor Lead Generation Strategies', status: 'in-progress' },
+          { id: 2, title: 'Create Lead Scoring Framework', status: 'completed' },
+          { id: 3, title: 'Optimize Conversion Funnel Strategy', status: 'pending' }
+        ],
+        tags: ['Strategy', 'Analytics']
+      },
+      
     });
     
     const data = await response.json();
