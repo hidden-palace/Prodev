@@ -37,7 +37,7 @@ const employees = {
     name: 'AI Rey',
     role: 'Lead Generation Plan Strategist',
     specialty: 'Lead Generation Strategist',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'Professional Lead Generation Plan Strategist, I can generate comprehensive Lead Generation Plans including KPIs and Target Audience.',
     quickActions: [
       { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
