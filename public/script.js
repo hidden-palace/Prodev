@@ -1369,12 +1369,13 @@ function displayLeadsTable(leads) {
     tableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+        // Create styled avatar element
+        const avatarInitial = type === 'user' ? 'U' : employeeId.charAt(0).toUpperCase();
+        const senderName = type === 'user' ? 'You' : \`AI ${employeeId.charAt(0).toUpperCase() + employeeId.slice(1)}`;
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
+                <div class="message-avatar ${type === 'user' ? 'user-avatar' : 'ai-avatar'}">${avatarInitial}</div>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
               <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
@@ -1393,7 +1394,7 @@ function displayLeadsTable(leads) {
     downloadBtn.style.display = 'flex';
   }
   
-  console.log(\`📋 Displaying ${leads.length} leads in table`);
+  console.log(`📋 Displaying ${leads.length} leads in table`);
   
   leads.forEach(lead => {
     const row = document.createElement('tr');
@@ -1470,7 +1471,7 @@ function updateLeadsPagination(data) {
   if (paginationInfo) {
     const start = ((data.page || 1) - 1) * (data.limit || 50) + 1;
     const end = Math.min(start + (data.leads?.length || 0) - 1, data.total || 0);
-    paginationInfo.textContent = \`Showing ${start}-${end} of ${data.total || 0} leads`;
+    paginationInfo.textContent = `Showing ${start}-${end} of ${data.total || 0} leads`;
   }
   
   if (pageNumbers) {
@@ -1480,7 +1481,7 @@ function updateLeadsPagination(data) {
     
     for (let i = 1; i <= Math.min(totalPages, 5); i++) {
       const pageBtn = document.createElement('button');
-      pageBtn.className = \`page-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
       pageBtn.textContent = i;
       pageBtn.onclick = () => loadLeadsPage(i);
       pageNumbers.appendChild(pageBtn);
