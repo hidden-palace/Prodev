@@ -18,7 +18,8 @@ const employees = {
       { icon: '📊', text: 'Research wedding vendors', action: 'Research wedding vendors and event planners' },
       { icon: '🏢', text: 'Corporate clients search', action: 'Find corporate clients who need floral services' },
       { icon: '📋', text: 'Scrape LinkedIn For VAs', action: 'Scrape LinkedIn For Virtual Assistants' }
-    ]
+    ],
+    tags: ['Specialist', 'Marketing']
   },
   van: {
     name: 'AI Van',
@@ -31,7 +32,8 @@ const employees = {
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
-    ]
+    ],
+    tags: ['Marketing', 'Design']
   },
   Rey: {
     name: 'AI Rey',
@@ -44,7 +46,8 @@ const employees = {
       { icon: '📝', text: 'Generate a 3-Tier Lead Gen Strategy', action: 'Generate a 3-Tier Lead Gen Strategy' },
       { icon: '📊', text: 'Break Plan into Time-Phased Actions', action: 'Break Plan into Time-Phased Actions' },
       { icon: '🎯', text: ' Build KPI Tracking metrics', action: ' Build KPI Tracking metrics' }
-    ]
+    ],
+    tags: ['Strategy', 'Analytics']
   },
   xavier: {
     name: 'AI Xavier',
@@ -1570,6 +1573,121 @@ function viewLead(leadId) {
 function editLead(leadId) {
   // TODO: Implement lead editing
   console.log('Edit lead:', leadId);
+}
+
+function renderTeamMembers() {
+  console.log('🔧 SURGICAL: renderTeamMembers called');
+  console.log('🔧 SURGICAL: Available employees:', Object.keys(employees));
+  
+  const teamSection = document.querySelector('.team-members');
+  if (!teamSection) return;
+  
+  // SURGICAL FIX: Build team members dynamically from employees object
+  let teamHTML = '';
+  
+  Object.entries(employees).forEach(([employeeId, employee]) => {
+    const isActive = employeeId === 'brenden' ? 'active' : '';
+    const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
+    
+    teamHTML += `
+      <div class="team-member ${isActive}" data-employee-id="${employeeId}">
+        <div class="member-avatar">
+          <img src="${employee.avatar}" alt="${employee.name}">
+          <div class="status-indicator online"></div>
+        </div>
+        <div class="member-info">
+          <div class="member-name">${employee.name}</div>
+          <div class="member-role">${employee.role}</div>
+          <div class="member-tags">
+            ${employee.tags.map(tag => `<span class="tag ${tag.toLowerCase()}">${tag}</span>`).join('')}
+          </div>
+        </div>
+        <div class="member-stats">
+          <div class="notification-badge">${badgeCount}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  teamSection.innerHTML = teamHTML;
+  
+  console.log('🔧 SURGICAL: Team members HTML generated');
+  console.log('🔧 SURGICAL: Found team member elements:', document.querySelectorAll('.team-member').length);
+  
+  // SURGICAL VERIFICATION: Check each team member's data attribute
+  document.querySelectorAll('.team-member').forEach((member, index) => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
+  });
+}
+
+function attachTeamMemberListeners() {
+  console.log('🔧 SURGICAL: attachTeamMemberListeners called');
+  
+  // Add event listeners to team members
+  document.querySelectorAll('.team-member').forEach(member => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Attaching listener to team member: ${employeeId}`);
+    
+    member.addEventListener('click', () => {
+      console.log('🚨 SURGICAL CLICK: Team member clicked');
+      console.log('🚨 SURGICAL CLICK: data-employee-id:', member.dataset.employeeId);
+      console.log('🚨 SURGICAL CLICK: Available employees:', Object.keys(employees));
+      console.log('🚨 SURGICAL CLICK: Employee exists?', !!employees[employeeId]);
+      
+      if (employeeId && employees[employeeId]) {
+        console.log('🚨 SURGICAL CLICK: Calling selectEmployee with:', employeeId);
+        selectEmployee(employeeId);
+      } else {
+        console.error('🚨 SURGICAL ERROR: Employee not found:', employeeId);
+      }
+    });
+  });
+}
+
+function renderMainContent() {
+  renderTeamMembers();
+  attachTeamMemberListeners();
+  renderMainContent();
+}
+
+function selectEmployee(employeeId) {
+  console.log('🎯 SURGICAL SELECT: selectEmployee called with:', employeeId);
+  console.log('🎯 SURGICAL SELECT: Current employee:', currentEmployee);
+  console.log('🎯 SURGICAL SELECT: Employee exists?', !!employees[employeeId]);
+  
+  if (!employees[employeeId]) {
+    console.error('🚨 SURGICAL ERROR: Employee not found in selectEmployee:', employeeId);
+    console.error('🚨 SURGICAL ERROR: Available employees:', Object.keys(employees));
+    return;
+  }
+  
+  const selectedEmployee = employees[employeeId];
+  console.log('🎯 SURGICAL SELECT: Selected employee object:', selectedEmployee);
+
+  // Save current conversation before switching
+  if (currentEmployee && currentConversation) {
+    conversationHistory[currentEmployee] = currentConversation;
+  }
+
+  // Switch to new employee
+  currentEmployee = employeeId;
+  currentConversation = conversationHistory[employeeId] || [];
+
+  // Update UI
+  updateEmployeeHeader(selectedEmployee);
+  updateQuickActions(selectedEmployee.quickActions || []);
+  loadConversation(employeeId);
+
+  // Update active team member
+  document.querySelectorAll('.team-member').forEach(member => {
+    member.classList.remove('active');
+    if (member.dataset.employeeId === employeeId) {
+      member.classList.add('active');
+    }
+  });
+
+  console.log(`✅ Successfully switched to ${selectedEmployee.name}`);
 }
 
 // Load saved color scheme on page load
