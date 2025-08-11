@@ -977,26 +977,95 @@ function addMessage(content, role, isError = false) {
     messageEl.classList.add('error');
   }
   
+  // Create message avatar
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  if (role === 'user') {
+    avatar.textContent = 'U';
+    avatar.title = 'You';
+  } else {
+    const emp = currentEmployee || 'brenden';
+    avatar.textContent = emp.charAt(0).toUpperCase();
+    avatar.title = currentEmployee ? getEmployeeName(emp) : 'AI Assistant';
+  }
+
+  // Create message bubble container
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+
+  // Create message header
+  const header = document.createElement('div');
+  header.className = 'message-header';
+
+  const sender = document.createElement('span');
+  sender.className = 'message-sender';
+  sender.textContent = role === 'user' ? 'You' : (currentEmployee ? getEmployeeName(currentEmployee) : 'AI Assistant');
+
+  const timestamp = document.createElement('span');
+  timestamp.className = 'message-time';
+  timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  header.appendChild(sender);
+  header.appendChild(timestamp);
+
+  // Create message content with better formatting
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   
-  // Check if content contains HTML (like landing page code)
-  if (content.includes('<html') || content.includes('<!DOCTYPE')) {
-    const htmlPreview = createHtmlPreview(content);
-    messageContent.appendChild(htmlPreview);
+  // Format content with proper HTML rendering for AI responses
+  if (role !== 'user' && typeof content === 'string') {
+    // Convert basic markdown-like formatting to HTML
+    let formattedContent = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    
+    // Wrap in paragraphs if not already formatted
+    if (!formattedContent.includes('<p>')) {
+      formattedContent = '<p>' + formattedContent + '</p>';
+    }
+    
+    messageContent.innerHTML = formattedContent;
   } else {
     messageContent.textContent = content;
   }
-  
-  const messageTime = document.createElement('div');
-  messageTime.className = 'message-time';
-  messageTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-  messageEl.appendChild(messageContent);
-  messageEl.appendChild(messageTime);
+
+  // Handle special message types
+  if (isError) {
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'status-message';
+    
+    const icon = document.createElement('div');
+    icon.className = `status-icon error`;
+    icon.textContent = '✕';
+    
+    statusDiv.appendChild(icon);
+    statusDiv.appendChild(document.createTextNode(content));
+    messageContent.innerHTML = '';
+    messageContent.appendChild(statusDiv);
+  }
+
+  bubble.appendChild(header);
+  bubble.appendChild(messageContent);
+
+  messageEl.appendChild(avatar);
+  messageEl.appendChild(bubble);
   
   chatMessages.appendChild(messageEl);
   scrollToBottom();
+}
+
+// Helper function to get employee display name
+function getEmployeeName(employeeId) {
+  const names = {
+    'brenden': 'AI Brenden',
+    'van': 'AI Van', 
+    'Rey': 'AI Rey',
+    'angel': 'AI Angel'
+  };
+  return names[employeeId] || 'AI Assistant';
 }
 
 function createHtmlPreview(htmlContent) {
