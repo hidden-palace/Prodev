@@ -16,7 +16,9 @@
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
-  .header-actions {
+}
+
+.header-actions {
     display: flex;
     gap: 12px;
     align-items: center;
