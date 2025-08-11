@@ -40,10 +40,10 @@ const employees = {
     avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
     description: 'Professional voice outreach specialist for customer engagement and lead qualification. I handle phone campaigns with a personal touch.',
     quickActions: [
-      { icon: '📞', text: 'Start call campaign', action: 'Start a voice outreach campaign for new leads' },
-      { icon: '📝', text: 'Prepare call script', action: 'Prepare a call script for florist outreach' },
-      { icon: '📊', text: 'Call performance review', action: 'Review call campaign performance and metrics' },
-      { icon: '🎯', text: 'Qualify leads', action: 'Qualify leads through voice conversations' }
+      { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
+      { icon: '📝', text: 'Generate a 3-Tier Lead Gen Strategy', action: 'Generate a 3-Tier Lead Gen Strategy' },
+      { icon: '📊', text: 'Break Plan into Time-Phased Actions', action: 'Break Plan into Time-Phased Actions' },
+      { icon: '🎯', text: ' Build KPI Tracking metrics', action: ' Build KPI Tracking metrics' }
     ]
   }
 };
