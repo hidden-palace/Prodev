@@ -1068,51 +1068,6 @@ function getEmployeeName(employeeId) {
   return names[employeeId] || 'AI Assistant';
 }
 
-/**
- * Create avatar content - either profile picture or initials
- */
-async function createAvatarContent(avatar, sender) {
-    if (sender === 'user') {
-        avatar.textContent = 'You';
-        return;
-    }
-    
-    // For AI agents, try to load profile picture
-    const currentEmployee = getCurrentEmployee();
-    const initial = currentEmployee.charAt(0).toUpperCase();
-    
-    try {
-        // Check if we have a profile picture for this employee
-        const response = await fetch('/api/branding/employee-profiles');
-        const profiles = await response.json();
-        
-        const employeeProfile = profiles.find(p => p.employee_id === currentEmployee);
-        
-        if (employeeProfile && employeeProfile.profile_picture_url) {
-            // Create image element for profile picture
-            const img = document.createElement('img');
-            img.src = employeeProfile.profile_picture_url;
-            img.alt = `${currentEmployee} avatar`;
-            img.onerror = () => {
-                // If image fails to load, fall back to initial
-                avatar.innerHTML = '';
-                avatar.textContent = initial;
-                avatar.classList.add('fallback-initial');
-            };
-            avatar.appendChild(img);
-        } else {
-            // No profile picture available, use initial
-            avatar.textContent = initial;
-            avatar.classList.add('fallback-initial');
-        }
-    } catch (error) {
-        console.log('Could not load employee profiles, using initial:', error);
-        // Fall back to initial if API call fails
-        avatar.textContent = initial;
-        avatar.classList.add('fallback-initial');
-    }
-}
-
 function createHtmlPreview(htmlContent) {
   const container = document.createElement('div');
   container.className = 'html-preview';
@@ -1416,7 +1371,6 @@ function displayLeadsTable(leads) {
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
@@ -1439,7 +1393,7 @@ function displayLeadsTable(leads) {
     downloadBtn.style.display = 'flex';
   }
   
-  console.log(`📋 Displaying ${leads.length} leads in table`);
+  console.log(\`📋 Displaying ${leads.length} leads in table`);
   
   leads.forEach(lead => {
     const row = document.createElement('tr');
@@ -1516,7 +1470,7 @@ function updateLeadsPagination(data) {
   if (paginationInfo) {
     const start = ((data.page || 1) - 1) * (data.limit || 50) + 1;
     const end = Math.min(start + (data.leads?.length || 0) - 1, data.total || 0);
-    paginationInfo.textContent = `Showing ${start}-${end} of ${data.total || 0} leads`;
+    paginationInfo.textContent = \`Showing ${start}-${end} of ${data.total || 0} leads`;
   }
   
   if (pageNumbers) {
@@ -1526,7 +1480,7 @@ function updateLeadsPagination(data) {
     
     for (let i = 1; i <= Math.min(totalPages, 5); i++) {
       const pageBtn = document.createElement('button');
-      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.className = \`page-btn ${i === currentPage ? 'active' : ''}`;
       pageBtn.textContent = i;
       pageBtn.onclick = () => loadLeadsPage(i);
       pageNumbers.appendChild(pageBtn);
