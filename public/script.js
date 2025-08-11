@@ -33,7 +33,7 @@ const employees = {
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
     ]
   },
-  angel: {
+  Rey: {
     name: 'AI Rey',
     role: 'Lead Generation Plan Strategist',
     specialty: 'Lead Generation Strategist',
