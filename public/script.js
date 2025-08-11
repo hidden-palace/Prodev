@@ -11,7 +11,7 @@ const employees = {
     name: 'AI Brenden',
     role: 'lead scraper',
     specialty: 'Lead Research Specialist',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/brenden.jpeg',
     description: 'Expert data researcher specializing in B2B lead generation. I extract high-quality prospects from LinkedIn, Google Maps, and Yellow Pages with precision and attention to detail.',
     quickActions: [
       { icon: '🔍', text: 'Find florists in Los Angeles', action: 'Find florists in Los Angeles area' },
