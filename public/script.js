@@ -1068,6 +1068,74 @@ function getEmployeeName(employeeId) {
   return names[employeeId] || 'AI Assistant';
 }
 
+function createMessage(content, sender, timestamp) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    // Create avatar
+    const avatar = document.createElement('div');
+    avatar.className = `message-avatar ${sender}-avatar`;
+    
+    if (sender === 'user') {
+        avatar.textContent = 'You';
+    } else {
+        // Get the correct initial based on the current employee
+        const currentEmployee = getCurrentEmployee();
+        let initial = 'AI';
+        
+        if (currentEmployee === 'brenden') {
+            initial = 'B';
+        } else if (currentEmployee === 'rey' || currentEmployee === 'Rey') {
+            initial = 'R';
+        } else if (currentEmployee === 'van') {
+            initial = 'V';
+        }
+        
+        avatar.textContent = initial;
+    }
+    
+    // Create message header
+    const header = document.createElement('div');
+    header.className = 'message-header';
+    
+    const senderName = document.createElement('span');
+    senderName.className = 'message-sender';
+    senderName.textContent = sender === 'user' ? 'You' : `AI ${currentEmployee.charAt(0).toUpperCase() + currentEmployee.slice(1)}`;
+    
+    const time = document.createElement('span');
+    time.className = 'message-time';
+    time.textContent = timestamp;
+    
+    header.appendChild(senderName);
+    header.appendChild(time);
+    
+    // Create message content
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = content;
+    
+    // Assemble message
+    messageDiv.appendChild(avatar);
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.appendChild(header);
+    bubble.appendChild(messageContent);
+    
+    messageDiv.appendChild(bubble);
+    
+    return messageDiv;
+}
+
+// Helper function to get current employee from UI
+function getCurrentEmployee() {
+    const activeEmployee = document.querySelector('.team-member.active');
+    if (activeEmployee) {
+        return activeEmployee.dataset.employee || 'brenden';
+    }
+    return 'brenden'; // default
+}
+
 function createHtmlPreview(htmlContent) {
   const container = document.createElement('div');
   container.className = 'html-preview';
@@ -1369,13 +1437,13 @@ function displayLeadsTable(leads) {
     tableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-        // Create styled avatar element
-        const avatarInitial = type === 'user' ? 'U' : employeeId.charAt(0).toUpperCase();
-        const senderName = type === 'user' ? 'You' : \`AI ${employeeId.charAt(0).toUpperCase() + employeeId.slice(1)}`;
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                <div class="message-avatar ${type === 'user' ? 'user-avatar' : 'ai-avatar'}">${avatarInitial}</div>
+            </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
               <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
