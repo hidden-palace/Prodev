@@ -49,8 +49,8 @@ const employees = {
   xavier: {
     name: 'AI Xavier',
     role: 'Strategic Analyst',
-    specialty: 'Lead Generation Strategy',
-    description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize your outreach efforts and maximize conversion rates for sustainable business growth.',
+    specialty: 'Lead Generation Plan Strategist',
+    description: 'Xavier develops comprehensive lead generation strategies, analyzes competitor landscapes, and creates data-driven plans to maximize conversion rates.',
     avatar: '/api/branding/employee-avatars/xavier.jpg',
     tags: ['Strategy', 'Analytics'],
     tasks: [
@@ -1392,7 +1392,7 @@ function displayLeadsTable(leads) {
               <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
               <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
             </div>
-            <div class="team-member" data-employee="xavier">
+            <div class="team-member" data-employee-id="xavier">
                 <div class="member-avatar">
                     <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="AI Xavier">
                     <div class="status-indicator online"></div>
@@ -1413,6 +1413,34 @@ function displayLeadsTable(leads) {
         </td>
       </tr>
     `;
+    
+    // SURGICAL FIX: Ensure Xavier's team member has correct data attribute
+    const xavierMember = document.querySelector('.team-member[data-employee-id="xavier"]');
+    if (!xavierMember) {
+      console.error('🚨 SURGICAL ERROR: Xavier team member not found with data-employee-id="xavier"');
+      // Find Xavier by content and fix the attribute
+      const allMembers = document.querySelectorAll('.team-member');
+      allMembers.forEach(member => {
+        if (member.textContent.includes('AI Xavier')) {
+          console.log('🔧 SURGICAL FIX: Adding data-employee-id to Xavier element');
+          member.setAttribute('data-employee-id', 'xavier');
+        }
+      });
+    }
+    
+    // Add event listeners to team members
+    document.querySelectorAll('.team-member').forEach(member => {
+      member.addEventListener('click', () => {
+        console.log('🔍 SURGICAL DEBUG: Team member clicked:', member);
+        console.log('🔍 SURGICAL DEBUG: data-employee-id:', member.dataset.employeeId);
+        const employeeId = member.dataset.employeeId;
+        console.log('🔍 SURGICAL DEBUG: Extracted employeeId:', employeeId);
+        console.log('🔍 SURGICAL DEBUG: Available employees:', Object.keys(employees));
+        if (employeeId && employees[employeeId]) {
+          selectEmployee(employeeId);
+        }
+      });
+    });
     
     leadsTable.appendChild(tableBody);
     return;
