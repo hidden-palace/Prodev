@@ -27,7 +27,7 @@ const employees = {
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
-      { icon: '🎨', text: 'Create Valentine's page', action: 'Create a Valentine\'s Day landing page for flower sales' },
+      { icon: '🎨', text: 'Create Valentine\'s page', action: 'Create a Valentine\'s Day landing page for flower sales' },
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
@@ -45,22 +45,8 @@ const employees = {
       { icon: '📊', text: 'Break Plan into Time-Phased Actions', action: 'Break Plan into Time-Phased Actions' },
       { icon: '🎯', text: ' Build KPI Tracking metrics', action: ' Build KPI Tracking metrics' }
     ]
-  },
-  xavier: {  // <--- Add this block
-    name: 'AI Xavier',
-    role: 'content generator',
-    specialty: 'Content Generation AI',
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
-    description: 'Content generation AI specializing in creating engaging UGC and social media content tailored for your brand.',
-    quickActions: [
-      { icon: '🎥', text: 'Generate UGC script', action: 'Generate a UGC video script' },
-      { icon: '✍️', text: 'Create social media posts', action: 'Create social media posts for product launch' },
-      { icon: '📢', text: 'Write ad copy', action: 'Write ad copy for new campaign' },
-      { icon: '🗓️', text: 'Plan content calendar', action: 'Plan a monthly content calendar' }
-    ]
   }
-};
-
+}; 
 
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount;
