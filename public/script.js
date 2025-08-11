@@ -838,7 +838,7 @@ async function handleChatSubmit(e) {
   // Show typing indicator
   const typingIndicator = showTypingIndicator();
   
-  try {
+            specialty: 'Lead Generation Plan Strategist',
     const requestBody = {
       message: message,
       employee: currentEmployee, // Ensure we're sending to the correct employee
