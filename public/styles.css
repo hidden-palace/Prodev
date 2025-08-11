@@ -1820,6 +1820,36 @@
     box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
 }
 
+/* Profile picture styling */
+.message-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    border: none !important;
+}
+
+/* Fallback styling when using initials */
+.message-avatar.fallback-initial {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Override styles when avatar contains an image */
+.message-avatar:has(img) {
+    background: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    border: 2px solid white !important;
+}
+
+/* CSS fallback for browsers that don't support :has() */
+.message-avatar.has-image {
+    background: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    border: 2px solid white !important;
+}
+
 .typing-indicator {
     display: flex;
     gap: 4px;

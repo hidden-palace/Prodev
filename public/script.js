@@ -1068,72 +1068,49 @@ function getEmployeeName(employeeId) {
   return names[employeeId] || 'AI Assistant';
 }
 
-function createMessage(content, sender, timestamp) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}`;
-    
-    // Create avatar
-    const avatar = document.createElement('div');
-    avatar.className = `message-avatar ${sender}-avatar`;
-    
+/**
+ * Create avatar content - either profile picture or initials
+ */
+async function createAvatarContent(avatar, sender) {
     if (sender === 'user') {
         avatar.textContent = 'You';
-    } else {
-        // Get the correct initial based on the current employee
-        const currentEmployee = getCurrentEmployee();
-        let initial = 'AI';
+        return;
+    }
+    
+    // For AI agents, try to load profile picture
+    const currentEmployee = getCurrentEmployee();
+    const initial = currentEmployee.charAt(0).toUpperCase();
+    
+    try {
+        // Check if we have a profile picture for this employee
+        const response = await fetch('/api/branding/employee-profiles');
+        const profiles = await response.json();
         
-        if (currentEmployee === 'brenden') {
-            initial = 'B';
-        } else if (currentEmployee === 'rey' || currentEmployee === 'Rey') {
-            initial = 'R';
-        } else if (currentEmployee === 'van') {
-            initial = 'V';
+        const employeeProfile = profiles.find(p => p.employee_id === currentEmployee);
+        
+        if (employeeProfile && employeeProfile.profile_picture_url) {
+            // Create image element for profile picture
+            const img = document.createElement('img');
+            img.src = employeeProfile.profile_picture_url;
+            img.alt = `${currentEmployee} avatar`;
+            img.onerror = () => {
+                // If image fails to load, fall back to initial
+                avatar.innerHTML = '';
+                avatar.textContent = initial;
+                avatar.classList.add('fallback-initial');
+            };
+            avatar.appendChild(img);
+        } else {
+            // No profile picture available, use initial
+            avatar.textContent = initial;
+            avatar.classList.add('fallback-initial');
         }
-        
+    } catch (error) {
+        console.log('Could not load employee profiles, using initial:', error);
+        // Fall back to initial if API call fails
         avatar.textContent = initial;
+        avatar.classList.add('fallback-initial');
     }
-    
-    // Create message header
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    
-    const senderName = document.createElement('span');
-    senderName.className = 'message-sender';
-    senderName.textContent = sender === 'user' ? 'You' : `AI ${currentEmployee.charAt(0).toUpperCase() + currentEmployee.slice(1)}`;
-    
-    const time = document.createElement('span');
-    time.className = 'message-time';
-    time.textContent = timestamp;
-    
-    header.appendChild(senderName);
-    header.appendChild(time);
-    
-    // Create message content
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-    messageContent.textContent = content;
-    
-    // Assemble message
-    messageDiv.appendChild(avatar);
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.appendChild(header);
-    bubble.appendChild(messageContent);
-    
-    messageDiv.appendChild(bubble);
-    
-    return messageDiv;
-}
-
-// Helper function to get current employee from UI
-function getCurrentEmployee() {
-    const activeEmployee = document.querySelector('.team-member.active');
-    if (activeEmployee) {
-        return activeEmployee.dataset.employee || 'brenden';
-    }
-    return 'brenden'; // default
 }
 
 function createHtmlPreview(htmlContent) {

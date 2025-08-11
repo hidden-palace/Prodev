@@ -128,8 +128,24 @@ router.post('/logo', async (req, res, next) => {
  */
 router.get('/employee-profiles', async (req, res, next) => {
   try {
-    // Return empty array for now
-    res.json([]);
+    if (!supabaseService) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        details: 'Supabase service is not properly configured.'
+      });
+    }
+
+    // Fetch employee profiles from database
+    const { data: profiles, error: profilesError } = await supabaseService.client
+      .from('employee_profiles')
+      .select('*');
+
+    if (profilesError) {
+      console.error('❌ Error fetching employee profiles:', profilesError);
+      throw profilesError;
+    }
+
+    res.json(profiles || []);
   } catch (err) {
     console.error('Failure in employee profiles GET:', err);
     res.status(500).json({
