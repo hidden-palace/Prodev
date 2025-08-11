@@ -34,11 +34,11 @@ const employees = {
     ]
   },
   angel: {
-    name: 'AI Angel',
-    role: 'voice caller',
-    specialty: 'Voice Outreach Manager',
+    name: 'AI Rey',
+    role: 'Lead Generation Plan Strategist',
+    specialty: 'Lead Generation Strategist',
     avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-    description: 'Professional voice outreach specialist for customer engagement and lead qualification. I handle phone campaigns with a personal touch.',
+    description: 'Professional Lead Generation Plan Strategist, I can generate comprehensive Lead Generation Plans including KPIs and Target Audience.',
     quickActions: [
       { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
       { icon: '📝', text: 'Generate a 3-Tier Lead Gen Strategy', action: 'Generate a 3-Tier Lead Gen Strategy' },
