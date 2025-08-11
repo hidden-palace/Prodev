@@ -838,7 +838,7 @@ async function handleChatSubmit(e) {
   // Show typing indicator
   const typingIndicator = showTypingIndicator();
   
-            specialty: 'Lead Generation Plan Strategist',
+  try {
     const requestBody = {
       message: message,
       employee: currentEmployee, // Ensure we're sending to the correct employee
@@ -1406,7 +1406,7 @@ function displayLeadsTable(leads) {
     downloadBtn.style.display = 'flex';
   }
   
-  console.log(\`📋 Displaying ${leads.length} leads in table`);
+  console.log(`📋 Displaying ${leads.length} leads in table`);
   
   leads.forEach(lead => {
     const row = document.createElement('tr');
@@ -1485,7 +1485,7 @@ function updateLeadsPagination(data) {
   if (paginationInfo) {
     const start = ((data.page || 1) - 1) * (data.limit || 50) + 1;
     const end = Math.min(start + (data.leads?.length || 0) - 1, data.total || 0);
-    paginationInfo.textContent = \`Showing ${start}-${end} of ${data.total || 0} leads`;
+    paginationInfo.textContent = `Showing ${start}-${end} of ${data.total || 0} leads`;
   }
   
   if (pageNumbers) {
@@ -1495,7 +1495,7 @@ function updateLeadsPagination(data) {
     
     for (let i = 1; i <= Math.min(totalPages, 5); i++) {
       const pageBtn = document.createElement('button');
-      pageBtn.className = \`page-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
       pageBtn.textContent = i;
       pageBtn.onclick = () => loadLeadsPage(i);
       pageNumbers.appendChild(pageBtn);
