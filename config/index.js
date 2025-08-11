@@ -46,7 +46,7 @@ const config = {
       // chainsTo: null // Example: Van does not chain further
     },
     Rey: {
-    }
+    },
     xavier: {
       assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
       name: 'AI Xavier',
