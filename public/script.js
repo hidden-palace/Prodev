@@ -1392,6 +1392,23 @@ function displayLeadsTable(leads) {
               <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
               <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
             </div>
+            <div class="team-member" data-employee="xavier">
+                <div class="member-avatar">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="AI Xavier">
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="member-info">
+                    <div class="member-name">AI Xavier</div>
+                    <div class="member-role">Strategic Analyst</div>
+                    <div class="member-tags">
+                        <span class="tag strategy">Strategy</span>
+                        <span class="tag analytics">Analytics</span>
+                    </div>
+                </div>
+                <div class="member-stats">
+                    <span class="notification-badge">2</span>
+                </div>
+            </div>
           </div>
         </td>
       </tr>
