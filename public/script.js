@@ -8,7 +8,7 @@ let isExportDropdownOpen = false; // Track export dropdown state
 // Global state management
 let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
-let isMessagePending = false; // Prevent double-clicks during processing
+let pendingMessages = {}; // Track pending messages per employee
 
 // Employee configurations
 const employees = {
@@ -208,7 +208,7 @@ function setupEmployeeProfiles() {
       }
       
       // Prevent processing if message is pending
-      if (isMessagePending) {
+      if (pendingMessages[clickedEmployeeId]) {
         console.warn('⚠️ Message pending, ignoring click');
         return;
       }
