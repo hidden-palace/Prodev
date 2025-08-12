@@ -381,53 +381,77 @@ function scrollToBottom() {
     }
 }
 
-function handleInputKeydown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleMessageSubmit(e);
-    }
-}
+function handleInputChange(employeeId) {
+    const input = document.getElementById(`input-${employeeId}`);
+    const charCount = document.getElementById(`char-count-${employeeId}`);
+    const sendButton = document.getElementById(`send-${employeeId}`);
 
-function handleInputChange() {
-    const input = document.getElementById('messageInput');
-    const charCount = document.querySelector('.character-count span');
-    const sendButton = document.querySelector('.send-button');
-    
     if (!input) return;
-    
+
     const length = input.value.length;
-    const maxLength = 2000;
-    
+    const maxLength = parseInt(input.getAttribute('maxlength')) || 2000;
+
     if (charCount) {
         charCount.textContent = length;
+        charCount.className = length > maxLength * 0.9 ? 'character-count warning' : 'character-count';
     }
-    
+
     if (sendButton) {
+        const isLoading = this.loadingStates.get(employeeId) || false;
         sendButton.disabled = isLoading || length === 0 || length > maxLength;
     }
-    
+
     // Auto-resize textarea
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 120) + 'px';
 }
 
-function setupNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // Remove active from all items
-            navItems.forEach(nav => nav.classList.remove('active'));
-            // Add active to clicked item
-            item.classList.add('active');
-            
-            // Get section from data attribute or text
-            const section = item.dataset.section || item.textContent.trim().toLowerCase().replace(/\s+/g, '');
-            switchSection(section);
-        });
-    });
-    
-    console.log('✅ Navigation setup complete');
+function closeChatContainer(employeeId) {
+    try {
+        console.log(`🗑️ Closing chat for ${employeeId}...`);
+
+        const chatContainer = document.getElementById(`chat-${employeeId}`);
+        if (chatContainer) {
+            chatContainer.remove();
+        }
+
+        // Remove from active chats
+        this.activeChats.delete(employeeId);
+
+        // Remove event listeners
+        this.removeEventListeners(employeeId);
+
+        // Update sidebar state
+        this.updateSidebarState(employeeId, false);
+
+        // Update counter
+        this.updateActiveChatCounter();
+
+        // Clear employee state
+        const employeeState = appState.employeeStates.get(employeeId);
+        if (employeeState) {
+            employeeState.isActive = false;
+            appState.employeeStates.set(employeeId, employeeState);
+        }
+
+        console.log(`✅ Chat closed for ${employeeId}`);
+
+    } catch (error) {
+        console.error(`❌ Error closing chat for ${employeeId}:`, error);
+    }
+}
+
+function updateActiveChatCounter() {
+    const counter = document.getElementById('active-chat-count');
+    if (counter) {
+        counter.textContent = this.activeChats.size;
+    }
+
+    // Show/hide welcome message based on active chats
+    const welcomeDiv = document.querySelector('.chat-welcome');
+    if (welcomeDiv) {
+        welcomeDiv.style.display = this.activeChats.size === 0 ? 'block' : 'none';
+    }
 }
 
 function updateSidebarState(employeeId, isActive) {
@@ -461,13 +485,13 @@ function setupGlobalEventListeners() {
     // Handle navigation between sections
     document.addEventListener('click', (e) => {
         if (e.target.matches('.nav-item')) {
-            handleNavigation(e.target);
+            this.handleNavigation(e.target);
         }
     });
 
     // Handle window resize
     window.addEventListener('resize', () => {
-        handleWindowResize();
+        this.handleWindowResize();
     });
 
     console.log('✅ Global event listeners setup');
@@ -485,7 +509,7 @@ function handleNavigation(navItem) {
     // Handle section switching
     const section = navItem.dataset.section;
     if (section) {
-        switchToSection(section);
+        this.switchToSection(section);
     }
 }
 
@@ -506,8 +530,8 @@ function switchToSection(sectionId) {
 
 function handleWindowResize() {
     // Adjust chat containers on window resize
-    activeChats.forEach((chatData, employeeId) => {
-        scrollToBottom(employeeId);
+    this.activeChats.forEach((chatData, employeeId) => {
+        this.scrollToBottom(employeeId);
     });
 }
 
@@ -534,31 +558,32 @@ function showErrorNotification(message) {
 
 function handleSystemError(error) {
     console.error('🚨 SYSTEM ERROR:', error);
-    showErrorNotification('System initialization failed. Please refresh the page.');
+    this.showErrorNotification('System initialization failed. Please refresh the page.');
 }
 
 // Public API methods
 function getSystemStatus() {
     return {
-        initialized: true,
-        activeChats: 1,
-        employees: Object.keys(EMPLOYEES),
-        loadingStates: { [currentEmployee]: isLoading }
+        initialized: appState.isInitialized,
+        activeChats: this.activeChats.size,
+        employees: Object.keys(this.employees),
+        loadingStates: Object.fromEntries(this.loadingStates)
     };
 }
 
 function getEmployeeState(employeeId) {
-    return EMPLOYEES[employeeId];
+    return appState.employeeStates.get(employeeId);
 }
 
 function getAllEmployeeStates() {
-    return EMPLOYEES;
+    return Object.fromEntries(appState.employeeStates);
 }
 
 // Navigation and General App Logic
 class AppManager {
     constructor() {
         this.currentSection = 'employees';
+        this.chatSystem = new MultiAgentChatSystem();
     }
 
     async initialize() {
@@ -567,6 +592,9 @@ class AppManager {
         try {
             // Setup navigation
             this.setupNavigation();
+            
+            // Initialize chat system
+            await this.chatSystem.initialize();
 
             // Load other components
             await this.loadDashboardData();
@@ -684,7 +712,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         appManager = new AppManager();
         await appManager.initialize();
         
-        // Make globally available for debugging
+        // Make chat system globally available for debugging
+        window.chatSystem = appManager.chatSystem;
         window.appManager = appManager;
         
         console.log('🎉 Orchid Republic Multi-Agent Chat System Ready!');
@@ -696,7 +725,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Export for potential module use
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AppManager };
-}undefined' && module.exports) {
-    module.exports = { AppManager };
+    module.exports = { MultiAgentChatSystem, AppManager };
 }
