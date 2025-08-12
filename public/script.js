@@ -1961,6 +1961,7 @@ function attachTeamMemberListeners() {
 function renderMainContent() {
   renderTeamMembers();
   attachTeamMemberListeners();
+  renderMainContent();
 }
 
 function selectEmployee(employeeId) {
