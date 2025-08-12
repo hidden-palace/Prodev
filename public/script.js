@@ -116,6 +116,27 @@ function createEmployeeElement(employee) {
     return memberDiv;
 }
 
+function setupChatInterface() {
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (messageForm && messageInput) {
+        messageForm.addEventListener('submit', handleMessageSubmit);
+        messageInput.addEventListener('keydown', handleInputKeydown);
+        messageInput.addEventListener('input', handleInputChange);
+        console.log('✅ Chat interface event listeners attached');
+    } else {
+        console.error('❌ Chat form or input not found');
+    }
+}
+
+// Global State for Multi-Agent System
+const appState = {
+    isInitialized: false,
+    employeeStates: new Map(),
+    eventListeners: new Map()
+};
+
 // Multi-Agent Chat System Class
 class MultiAgentChatSystem {
     constructor() {
@@ -124,16 +145,9 @@ class MultiAgentChatSystem {
         this.loadingStates = new Map();
         this.messageCounters = new Map();
         
-        // Initialize app state
-        this.appState = {
-            isInitialized: false,
-            employeeStates: new Map(),
-            eventListeners: new Map()
-        };
-
         // Initialize employee states
         Object.keys(this.employees).forEach(employeeId => {
-            this.appState.employeeStates.set(employeeId, {
+            appState.employeeStates.set(employeeId, {
                 threadId: null,
                 isActive: false,
                 messageCount: 0
@@ -145,10 +159,13 @@ class MultiAgentChatSystem {
         try {
             console.log('🔧 Initializing Multi-Agent Chat System...');
             
-            await this.setupChatInterface();
+            // Setup global event listeners
             this.setupGlobalEventListeners();
             
-            this.appState.isInitialized = true;
+            // Setup sidebar click handlers
+            this.setupSidebarHandlers();
+            
+            appState.isInitialized = true;
             console.log('✅ Multi-Agent Chat System initialized');
             
         } catch (error) {
@@ -157,33 +174,19 @@ class MultiAgentChatSystem {
         }
     }
 
-    async setupChatInterface() {
-        const chatInterface = document.querySelector('.chat-interface');
-        if (!chatInterface) {
-            console.error('❌ Chat interface container not found');
-            return;
-        }
-
-        // Create multi-chat container
-        const multiChatContainer = document.createElement('div');
-        multiChatContainer.id = 'multi-chat-container';
-        multiChatContainer.className = 'multi-chat-container';
-        multiChatContainer.innerHTML = `
-            <div class="chat-welcome">
-                <div class="welcome-content">
-                    <h3>🤖 AI Employee Dashboard</h3>
-                    <p>Select an AI employee from the sidebar to start chatting. You can have multiple conversations running simultaneously!</p>
-                    <div class="active-chats-counter">
-                        <span>Active Chats: <span id="active-chat-count">0</span></span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        chatInterface.innerHTML = '';
-        chatInterface.appendChild(multiChatContainer);
-
-        console.log('✅ Chat interface setup complete');
+    setupSidebarHandlers() {
+        const teamMembers = document.querySelectorAll('.team-member');
+        
+        teamMembers.forEach(member => {
+            member.addEventListener('click', () => {
+                const employeeId = member.dataset.employee;
+                if (employeeId && this.employees[employeeId]) {
+                    this.activateEmployeeChat(employeeId);
+                }
+            });
+        });
+        
+        console.log('✅ Sidebar handlers setup for all employees');
     }
 
     async activateEmployeeChat(employeeId) {
@@ -330,7 +333,7 @@ class MultiAgentChatSystem {
         if (closeBtn) closeBtn.addEventListener('click', closeHandler);
 
         // Store listeners for cleanup
-        this.appState.eventListeners.set(employeeId, {
+        appState.eventListeners.set(employeeId, {
             form: { element: form, event: 'submit', handler: formHandler },
             input: { element: input, event: 'input', handler: inputHandler },
             keydown: { element: input, event: 'keydown', handler: keydownHandler },
@@ -341,14 +344,14 @@ class MultiAgentChatSystem {
     }
 
     removeEventListeners(employeeId) {
-        const listeners = this.appState.eventListeners.get(employeeId);
+        const listeners = appState.eventListeners.get(employeeId);
         if (listeners) {
             Object.values(listeners).forEach(listener => {
                 if (listener && listener.element) {
                     listener.element.removeEventListener(listener.event, listener.handler);
                 }
             });
-            this.appState.eventListeners.delete(employeeId);
+            appState.eventListeners.delete(employeeId);
         }
     }
 
@@ -376,7 +379,7 @@ class MultiAgentChatSystem {
             this.handleInputChange(employeeId);
 
             // Get current thread state
-            const employeeState = this.appState.employeeStates.get(employeeId);
+            const employeeState = appState.employeeStates.get(employeeId);
 
             // Send to API
             const response = await fetch('/api/ask', {
@@ -401,7 +404,7 @@ class MultiAgentChatSystem {
             // Update thread ID if new
             if (data.thread_id && data.thread_id !== employeeState.threadId) {
                 employeeState.threadId = data.thread_id;
-                this.appState.employeeStates.set(employeeId, employeeState);
+                appState.employeeStates.set(employeeId, employeeState);
             }
 
             // Add assistant response
@@ -597,10 +600,10 @@ How can I help you today?`,
             this.updateActiveChatCounter();
 
             // Clear employee state
-            const employeeState = this.appState.employeeStates.get(employeeId);
+            const employeeState = appState.employeeStates.get(employeeId);
             if (employeeState) {
                 employeeState.isActive = false;
-                this.appState.employeeStates.set(employeeId, employeeState);
+                appState.employeeStates.set(employeeId, employeeState);
             }
 
             console.log(`✅ Chat closed for ${employeeId}`);
@@ -733,7 +736,7 @@ How can I help you today?`,
     // Public API methods
     getSystemStatus() {
         return {
-            initialized: this.appState.isInitialized,
+            initialized: appState.isInitialized,
             activeChats: this.activeChats.size,
             employees: Object.keys(this.employees),
             loadingStates: Object.fromEntries(this.loadingStates)
@@ -741,11 +744,11 @@ How can I help you today?`,
     }
 
     getEmployeeState(employeeId) {
-        return this.appState.employeeStates.get(employeeId);
+        return appState.employeeStates.get(employeeId);
     }
 
     getAllEmployeeStates() {
-        return Object.fromEntries(this.appState.employeeStates);
+        return Object.fromEntries(appState.employeeStates);
     }
 }
 
