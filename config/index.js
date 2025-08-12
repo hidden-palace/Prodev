@@ -56,7 +56,7 @@ const config = {
       }
       // chainsTo: null // Example: Angel does not chain further
     },
-    Xavier: {
+    xavier: {
       assistantId: 'asst_6oDeBjbnFlAiagSEJDWHvBtl',
       name: 'AI Xavier',
       role: 'Content generation AI',
