@@ -45,7 +45,7 @@ const config = {
       }
       // chainsTo: null // Example: Van does not chain further
     },
-    Rey: {
+    rey: {
       assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
       name: 'AI Rey',
       role: 'Lead Generation Plan Strategist',
