@@ -1740,7 +1740,7 @@ function renderTeamMembers() {
       <div class="team-member ${isActive}" data-employee-id="${employeeId}">
         <div class="member-avatar">
           <img src="${employee.avatar}" alt="${employee.name}">
-          <div class="status-indicator online"></div>
+    const messagesContainer = document.getElementById(`messages-${currentEmployee?.id}`);
         </div>
         <div class="member-info">
           <div class="member-name">${employee.name}</div>
@@ -2079,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (secondaryInput) secondaryInput.value = colors.secondary;
       if (secondaryPicker) secondaryPicker.value = colors.secondary;
       if (accentInput) accentInput.value = colors.accent;
-      if (accentPicker) accentPicker.value = colors.accent;
+    const typingIndicator = document.querySelector(`#messages-${currentEmployee?.id} .typing-indicator-message`);
     } catch (error) {
       console.error('Failed to load saved colors:', error);
     }
