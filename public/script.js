@@ -79,8 +79,6 @@ let activeChats = new Set(); // Tracks which chats are currently open
 // 🚀 Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 AI Employee Multi-Chat System Initializing...');
-  console.log('🔍 DEBUG: Available employees:', Object.keys(EMPLOYEES));
-  console.log('🔍 DEBUG: Xavier config:', EMPLOYEES.Xavier);
   initializeEmployeeProfiles();
   setupGlobalEventListeners();
   console.log('✅ Multi-Chat System Ready!');
@@ -96,24 +94,20 @@ function initializeEmployeeProfiles() {
     return;
   }
 
-  console.log('🔍 DEBUG: Team members container found:', teamMembersContainer);
   teamMembersContainer.innerHTML = ''; // Clear existing content
 
   Object.values(EMPLOYEES).forEach(employee => {
-    console.log('🔍 DEBUG: Creating profile for:', employee.name, employee.id);
     const memberElement = createEmployeeProfileElement(employee);
     teamMembersContainer.appendChild(memberElement);
   });
 
   console.log('✅ Employee profiles initialized');
-  console.log('🔍 DEBUG: Total profiles created:', teamMembersContainer.children.length);
 }
 
 /**
  * 🏗️ Create Employee Profile Element
  */
 function createEmployeeProfileElement(employee) {
-  console.log('🔍 DEBUG: Creating profile element for:', employee.name);
   const memberDiv = document.createElement('div');
   memberDiv.className = 'team-member';
   memberDiv.dataset.employeeId = employee.id;
@@ -141,7 +135,6 @@ function createEmployeeProfileElement(employee) {
     openEmployeeChat(employee.id);
   });
 
-  console.log('✅ DEBUG: Profile element created for:', employee.name);
   return memberDiv;
 }
 
@@ -149,17 +142,11 @@ function createEmployeeProfileElement(employee) {
  * 💬 Open Employee Chat (Multi-Chat Architecture)
  */
 function openEmployeeChat(employeeId) {
-  console.log('🔍 DEBUG: openEmployeeChat called with:', employeeId);
-  console.log('🔍 DEBUG: Employee exists in EMPLOYEES:', !!EMPLOYEES[employeeId]);
-  
   if (!EMPLOYEES[employeeId]) {
     console.error(`❌ Employee ${employeeId} not found`);
-    console.error('❌ Available employees:', Object.keys(EMPLOYEES));
     return;
   }
 
-  console.log('✅ DEBUG: Employee found:', EMPLOYEES[employeeId].name);
-  
   // Hide welcome screen
   const welcomeScreen = document.getElementById('welcomeScreen');
   if (welcomeScreen) {
@@ -174,16 +161,9 @@ function openEmployeeChat(employeeId) {
     return;
   }
 
-  console.log('🔍 DEBUG: Creating new chat container for:', employeeId);
   // Create new chat container
   const chatContainer = createEmployeeChatContainer(employeeId);
   const multiChatInterface = document.getElementById('multiChatInterface');
-  
-  if (!multiChatInterface) {
-    console.error('❌ multiChatInterface not found in DOM');
-    return;
-  }
-  
   multiChatInterface.appendChild(chatContainer);
 
   // Add to active chats
