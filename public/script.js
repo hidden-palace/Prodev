@@ -116,521 +116,637 @@ function createEmployeeElement(employee) {
     return memberDiv;
 }
 
-function setupChatInterface() {
-    const messageForm = document.getElementById('messageForm');
-    const messageInput = document.getElementById('messageInput');
-    
-    if (messageForm && messageInput) {
-        messageForm.addEventListener('submit', handleMessageSubmit);
-        messageInput.addEventListener('keydown', handleInputKeydown);
-        messageInput.addEventListener('input', handleInputChange);
-        console.log('✅ Chat interface event listeners attached');
-    } else {
-        console.error('❌ Chat form or input not found');
-    }
-}
-
-function switchEmployee(employeeId) {
-    console.log(`🔄 Switching to employee: ${employeeId}`);
-    
-    if (!EMPLOYEES[employeeId]) {
-        console.error(`❌ Employee ${employeeId} not found`);
-        return;
-    }
-    
-    currentEmployee = employeeId;
-    const employee = EMPLOYEES[employeeId];
-    
-    // Update chat header
-    updateChatHeader(employee);
-    
-    // Update sidebar active state
-    updateSidebarActiveState(employeeId);
-    
-    // Load employee's message history (if any)
-    loadEmployeeMessages(employeeId);
-    
-    console.log(`✅ Switched to ${employee.name}`);
-}
-
-function updateChatHeader(employee) {
-    // Update the chat header with employee information
-    const employeeNameEl = document.querySelector('.employee-details h3');
-    const employeeRoleEl = document.querySelector('.role-tag');
-    const employeeAvatarEl = document.querySelector('.employee-avatar img');
-    const employeeDescEl = document.querySelector('.employee-description p');
-    
-    if (employeeNameEl) employeeNameEl.textContent = employee.name;
-    if (employeeRoleEl) employeeRoleEl.textContent = employee.role;
-    if (employeeAvatarEl) {
-        employeeAvatarEl.src = employee.avatar;
-        employeeAvatarEl.alt = employee.name;
-    }
-    if (employeeDescEl) employeeDescEl.textContent = employee.description;
-    
-    console.log(`🏷️ Updated chat header for ${employee.name}`);
-}
-
-function setupChatEventListeners(employeeId) {
-    const form = document.getElementById(`form-${employeeId}`);
-    const input = document.getElementById(`input-${employeeId}`);
-    const closeBtn = document.querySelector(`[data-employee="${employeeId}"]`);
-    const charCount = document.getElementById(`char-count-${employeeId}`);
-
-    if (!form || !input) {
-        console.error(`❌ Form or input elements not found for ${employeeId}`);
-        return;
-    }
-
-    // Remove existing listeners to prevent duplicates
-    this.removeEventListeners(employeeId);
-
-    // Form submission
-    const formHandler = async (e) => {
-        e.preventDefault();
-        await this.handleMessageSubmission(employeeId);
-    };
-
-    // Input events
-    const inputHandler = () => {
-        this.handleInputChange(employeeId);
-    };
-
-    const keydownHandler = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            form.dispatchEvent(new Event('submit'));
-        }
-    };
-
-    // Close button
-    const closeHandler = () => {
-        this.closeChatContainer(employeeId);
-    };
-
-    // Add event listeners
-    form.addEventListener('submit', formHandler);
-    input.addEventListener('input', inputHandler);
-    input.addEventListener('keydown', keydownHandler);
-    if (closeBtn) closeBtn.addEventListener('click', closeHandler);
-
-    // Store listeners for cleanup
-    appState.eventListeners.set(employeeId, {
-        form: { element: form, event: 'submit', handler: formHandler },
-        input: { element: input, event: 'input', handler: inputHandler },
-        keydown: { element: input, event: 'keydown', handler: keydownHandler },
-        close: closeBtn ? { element: closeBtn, event: 'click', handler: closeHandler } : null
-    });
-
-    console.log(`✅ Event listeners setup for ${employeeId}`);
-}
-
-function removeEventListeners(employeeId) {
-    const listeners = appState.eventListeners.get(employeeId);
-    if (listeners) {
-        Object.values(listeners).forEach(listener => {
-            if (listener && listener.element) {
-                listener.element.removeEventListener(listener.event, listener.handler);
-            }
-        });
-        appState.eventListeners.delete(employeeId);
-    }
-}
-
-async function handleMessageSubmission(employeeId) {
-    try {
-        const input = document.getElementById(`input-${employeeId}`);
-        const message = input.value.trim();
-
-        if (!message) return;
-
-        console.log(`📤 Sending message to ${employeeId}: ${message.substring(0, 100)}...`);
-
-        // Set loading state for this specific employee
-        this.setLoadingState(employeeId, true);
-
-        // Add user message to chat
-        this.addMessage(employeeId, {
-            type: 'user',
-            content: message,
-            timestamp: new Date()
-        });
-
-        // Clear input
-        input.value = '';
-        this.handleInputChange(employeeId);
-
-        // Get current thread state
-        const employeeState = appState.employeeStates.get(employeeId);
-
-        // Send to API
-        const response = await fetch('/api/ask', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message,
-                employee: employeeId,
-                thread_id: employeeState.threadId
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(`📥 Response from ${employeeId}:`, data);
-
-        // Update thread ID if new
-        if (data.thread_id && data.thread_id !== employeeState.threadId) {
-            employeeState.threadId = data.thread_id;
-            appState.employeeStates.set(employeeId, employeeState);
-        }
-
-        // Add assistant response
-        if (data.message) {
-            this.addMessage(employeeId, {
-                type: 'assistant',
-                content: data.message,
-                timestamp: new Date()
-            });
-        }
-
-        // Handle different response statuses
-        if (data.status === 'requires_action') {
-            this.addMessage(employeeId, {
-                type: 'system',
-                content: `${this.employees[employeeId].name} is processing your request with external tools...`,
-                timestamp: new Date()
-            });
-        }
-
-    } catch (error) {
-        console.error(`❌ Error sending message to ${employeeId}:`, error);
-        this.addMessage(employeeId, {
-            type: 'error',
-            content: `Sorry, I encountered an error: ${error.message}`,
-            timestamp: new Date()
-        });
-        this.showErrorNotification(`Failed to send message to ${employeeId}`);
-    } finally {
-        // Always clear loading state for this specific employee
-        this.setLoadingState(employeeId, false);
-    }
-}
-
-function setLoadingState(employeeId, isLoading) {
-    this.loadingStates.set(employeeId, isLoading);
-    
-    const sendButton = document.getElementById(`send-${employeeId}`);
-    const messagesContainer = document.getElementById(`messages-${employeeId}`);
-    
-    if (sendButton) {
-        sendButton.disabled = isLoading;
-    }
-
-    if (messagesContainer) {
-        const existingTyping = messagesContainer.querySelector('.typing-indicator-message');
+// Multi-Agent Chat System Class
+class MultiAgentChatSystem {
+    constructor() {
+        this.employees = EMPLOYEES;
+        this.activeChats = new Map();
+        this.loadingStates = new Map();
+        this.messageCounters = new Map();
         
-        if (isLoading && !existingTyping) {
-            // Add typing indicator
-            const typingMessage = document.createElement('div');
-            typingMessage.className = 'message assistant typing-indicator-message';
-            typingMessage.innerHTML = `
-                <div class="message-content">
-                    <div class="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+        // Initialize app state
+        this.appState = {
+            isInitialized: false,
+            employeeStates: new Map(),
+            eventListeners: new Map()
+        };
+
+        // Initialize employee states
+        Object.keys(this.employees).forEach(employeeId => {
+            this.appState.employeeStates.set(employeeId, {
+                threadId: null,
+                isActive: false,
+                messageCount: 0
+            });
+        });
+    }
+
+    async initialize() {
+        try {
+            console.log('🔧 Initializing Multi-Agent Chat System...');
+            
+            await this.setupChatInterface();
+            this.setupGlobalEventListeners();
+            
+            this.appState.isInitialized = true;
+            console.log('✅ Multi-Agent Chat System initialized');
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize chat system:', error);
+            this.handleSystemError(error);
+        }
+    }
+
+    async setupChatInterface() {
+        const chatInterface = document.querySelector('.chat-interface');
+        if (!chatInterface) {
+            console.error('❌ Chat interface container not found');
+            return;
+        }
+
+        // Create multi-chat container
+        const multiChatContainer = document.createElement('div');
+        multiChatContainer.id = 'multi-chat-container';
+        multiChatContainer.className = 'multi-chat-container';
+        multiChatContainer.innerHTML = `
+            <div class="chat-welcome">
+                <div class="welcome-content">
+                    <h3>🤖 AI Employee Dashboard</h3>
+                    <p>Select an AI employee from the sidebar to start chatting. You can have multiple conversations running simultaneously!</p>
+                    <div class="active-chats-counter">
+                        <span>Active Chats: <span id="active-chat-count">0</span></span>
                     </div>
                 </div>
-            `;
-            messagesContainer.appendChild(typingMessage);
-            this.scrollToBottom(employeeId);
-        } else if (!isLoading && existingTyping) {
-            // Remove typing indicator
-            existingTyping.remove();
+            </div>
+        `;
+
+        chatInterface.innerHTML = '';
+        chatInterface.appendChild(multiChatContainer);
+
+        console.log('✅ Chat interface setup complete');
+    }
+
+    async activateEmployeeChat(employeeId) {
+        try {
+            console.log(`🎯 Activating chat for ${employeeId}...`);
+            
+            if (!this.employees[employeeId]) {
+                throw new Error(`Employee ${employeeId} not found in configuration`);
+            }
+
+            // Check if chat is already active
+            if (this.activeChats.has(employeeId)) {
+                console.log(`💬 Chat for ${employeeId} is already active`);
+                this.scrollToChatContainer(employeeId);
+                return;
+            }
+
+            const employee = this.employees[employeeId];
+            const chatContainer = await this.createChatContainer(employee);
+            
+            // Add to active chats
+            this.activeChats.set(employeeId, {
+                container: chatContainer,
+                employee: employee,
+                createdAt: new Date()
+            });
+
+            // Insert chat container
+            const multiChatContainer = document.getElementById('multi-chat-container');
+            const welcomeDiv = multiChatContainer.querySelector('.chat-welcome');
+            
+            if (welcomeDiv) {
+                multiChatContainer.insertBefore(chatContainer, welcomeDiv);
+            } else {
+                multiChatContainer.appendChild(chatContainer);
+            }
+
+            // Update active chat counter
+            this.updateActiveChatCounter();
+
+            // Initialize welcome message
+            await this.sendWelcomeMessage(employeeId);
+
+            // Setup chat-specific event listeners
+            this.setupChatEventListeners(employeeId);
+
+            // Update sidebar
+            this.updateSidebarState(employeeId, true);
+
+            console.log(`✅ Chat activated for ${employee.name}`);
+
+        } catch (error) {
+            console.error(`❌ Failed to activate chat for ${employeeId}:`, error);
+            this.showErrorNotification(`Failed to start chat with ${employeeId}: ${error.message}`);
         }
     }
 
-    console.log(`🔄 Loading state for ${employeeId}: ${isLoading}`);
-}
+    async createChatContainer(employee) {
+        const container = document.createElement('div');
+        container.className = 'employee-chat-container';
+        container.id = `chat-${employee.id}`;
+        container.dataset.employee = employee.id;
 
-function addMessage(employeeId, messageData) {
-    const messagesContainer = document.getElementById(`messages-${employeeId}`);
-    if (!messagesContainer) {
-        console.error(`❌ Messages container not found for ${employeeId}`);
-        return;
-    }
-
-    // Remove any existing typing indicators
-    const typingIndicator = messagesContainer.querySelector('.typing-indicator-message');
-    if (typingIndicator) {
-        typingIndicator.remove();
-    }
-
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${messageData.type}`;
-    
-    const timeString = messageData.timestamp.toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-
-    let messageContent = '';
-    if (messageData.type === 'system') {
-        messageContent = `
-            <div class="message-content system">
-                <em>${messageData.content}</em>
+        container.innerHTML = `
+            <div class="employee-chat-header">
+                <div class="employee-info">
+                    <img src="${employee.avatar}" alt="${employee.name}" class="employee-avatar-small" />
+                    <div>
+                        <h4>${employee.name}</h4>
+                        <span class="employee-role">${employee.role}</span>
+                    </div>
+                </div>
+                <button class="close-chat-btn" data-employee="${employee.id}">×</button>
             </div>
-            <div class="message-time">${timeString}</div>
-        `;
-    } else {
-        messageContent = `
-            <div class="message-content">
-                ${this.formatMessageContent(messageData.content)}
+            <div class="chat-messages" id="messages-${employee.id}">
+                <!-- Messages will be added here -->
             </div>
-            <div class="message-time">${timeString}</div>
+            <div class="chat-input-container">
+                <form class="chat-form" id="form-${employee.id}">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="input-${employee.id}"
+                            placeholder="Ask ${employee.name} anything..."
+                            rows="1"
+                            maxlength="2000"
+                        ></textarea>
+                        <button type="submit" class="send-button" id="send-${employee.id}">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="character-count">
+                        <span id="char-count-${employee.id}">0</span>/2000
+                    </div>
+                </form>
+            </div>
         `;
+
+        return container;
     }
 
-    messageElement.innerHTML = messageContent;
-    messagesContainer.appendChild(messageElement);
+    setupChatEventListeners(employeeId) {
+        const form = document.getElementById(`form-${employeeId}`);
+        const input = document.getElementById(`input-${employeeId}`);
+        const closeBtn = document.querySelector(`[data-employee="${employeeId}"]`);
+        const charCount = document.getElementById(`char-count-${employeeId}`);
 
-    // Update message counter and scroll
-    const currentCount = this.messageCounters.get(employeeId) || 0;
-    this.messageCounters.set(employeeId, currentCount + 1);
-    
-    this.scrollToBottom(employeeId);
-
-    console.log(`💬 Message added to ${employeeId} chat`);
-}
-
-function formatMessageContent(content) {
-    // Basic markdown-like formatting
-    return content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`(.*?)`/g, '<code>$1</code>')
-        .replace(/\n/g, '<br>');
-}
-
-async function sendWelcomeMessage(employeeId) {
-    const employee = this.employees[employeeId];
-    if (!employee) return;
-
-    const welcomeMessage = {
-        type: 'assistant',
-        content: `Hello! I'm ${employee.name}, your ${employee.role}. ${employee.description}
-
-How can I help you today?`,
-        timestamp: new Date()
-    };
-
-    // Add welcome message after a short delay
-    setTimeout(() => {
-        this.addMessage(employeeId, welcomeMessage);
-    }, 500);
-}
-
-function handleInputChange(employeeId) {
-    const input = document.getElementById(`input-${employeeId}`);
-    const charCount = document.getElementById(`char-count-${employeeId}`);
-    const sendButton = document.getElementById(`send-${employeeId}`);
-
-    if (!input) return;
-
-    const length = input.value.length;
-    const maxLength = parseInt(input.getAttribute('maxlength')) || 2000;
-
-    if (charCount) {
-        charCount.textContent = length;
-        charCount.className = length > maxLength * 0.9 ? 'character-count warning' : 'character-count';
-    }
-
-    if (sendButton) {
-        const isLoading = this.loadingStates.get(employeeId) || false;
-        sendButton.disabled = isLoading || length === 0 || length > maxLength;
-    }
-
-    // Auto-resize textarea
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-}
-
-function closeChatContainer(employeeId) {
-    try {
-        console.log(`🗑️ Closing chat for ${employeeId}...`);
-
-        const chatContainer = document.getElementById(`chat-${employeeId}`);
-        if (chatContainer) {
-            chatContainer.remove();
+        if (!form || !input) {
+            console.error(`❌ Form or input elements not found for ${employeeId}`);
+            return;
         }
 
-        // Remove from active chats
-        this.activeChats.delete(employeeId);
-
-        // Remove event listeners
+        // Remove existing listeners to prevent duplicates
         this.removeEventListeners(employeeId);
 
-        // Update sidebar state
-        this.updateSidebarState(employeeId, false);
+        // Form submission
+        const formHandler = async (e) => {
+            e.preventDefault();
+            await this.handleMessageSubmission(employeeId);
+        };
 
-        // Update counter
-        this.updateActiveChatCounter();
+        // Input events
+        const inputHandler = () => {
+            this.handleInputChange(employeeId);
+        };
 
-        // Clear employee state
-        const employeeState = appState.employeeStates.get(employeeId);
-        if (employeeState) {
-            employeeState.isActive = false;
-            appState.employeeStates.set(employeeId, employeeState);
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        };
+
+        // Close button
+        const closeHandler = () => {
+            this.closeChatContainer(employeeId);
+        };
+
+        // Add event listeners
+        form.addEventListener('submit', formHandler);
+        input.addEventListener('input', inputHandler);
+        input.addEventListener('keydown', keydownHandler);
+        if (closeBtn) closeBtn.addEventListener('click', closeHandler);
+
+        // Store listeners for cleanup
+        this.appState.eventListeners.set(employeeId, {
+            form: { element: form, event: 'submit', handler: formHandler },
+            input: { element: input, event: 'input', handler: inputHandler },
+            keydown: { element: input, event: 'keydown', handler: keydownHandler },
+            close: closeBtn ? { element: closeBtn, event: 'click', handler: closeHandler } : null
+        });
+
+        console.log(`✅ Event listeners setup for ${employeeId}`);
+    }
+
+    removeEventListeners(employeeId) {
+        const listeners = this.appState.eventListeners.get(employeeId);
+        if (listeners) {
+            Object.values(listeners).forEach(listener => {
+                if (listener && listener.element) {
+                    listener.element.removeEventListener(listener.event, listener.handler);
+                }
+            });
+            this.appState.eventListeners.delete(employeeId);
+        }
+    }
+
+    async handleMessageSubmission(employeeId) {
+        try {
+            const input = document.getElementById(`input-${employeeId}`);
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            console.log(`📤 Sending message to ${employeeId}: ${message.substring(0, 100)}...`);
+
+            // Set loading state for this specific employee
+            this.setLoadingState(employeeId, true);
+
+            // Add user message to chat
+            this.addMessage(employeeId, {
+                type: 'user',
+                content: message,
+                timestamp: new Date()
+            });
+
+            // Clear input
+            input.value = '';
+            this.handleInputChange(employeeId);
+
+            // Get current thread state
+            const employeeState = this.appState.employeeStates.get(employeeId);
+
+            // Send to API
+            const response = await fetch('/api/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    employee: employeeId,
+                    thread_id: employeeState.threadId
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log(`📥 Response from ${employeeId}:`, data);
+
+            // Update thread ID if new
+            if (data.thread_id && data.thread_id !== employeeState.threadId) {
+                employeeState.threadId = data.thread_id;
+                this.appState.employeeStates.set(employeeId, employeeState);
+            }
+
+            // Add assistant response
+            if (data.message) {
+                this.addMessage(employeeId, {
+                    type: 'assistant',
+                    content: data.message,
+                    timestamp: new Date()
+                });
+            }
+
+            // Handle different response statuses
+            if (data.status === 'requires_action') {
+                this.addMessage(employeeId, {
+                    type: 'system',
+                    content: `${this.employees[employeeId].name} is processing your request with external tools...`,
+                    timestamp: new Date()
+                });
+            }
+
+        } catch (error) {
+            console.error(`❌ Error sending message to ${employeeId}:`, error);
+            this.addMessage(employeeId, {
+                type: 'error',
+                content: `Sorry, I encountered an error: ${error.message}`,
+                timestamp: new Date()
+            });
+            this.showErrorNotification(`Failed to send message to ${employeeId}`);
+        } finally {
+            // Always clear loading state for this specific employee
+            this.setLoadingState(employeeId, false);
+        }
+    }
+
+    setLoadingState(employeeId, isLoading) {
+        this.loadingStates.set(employeeId, isLoading);
+        
+        const sendButton = document.getElementById(`send-${employeeId}`);
+        const messagesContainer = document.getElementById(`messages-${employeeId}`);
+        
+        if (sendButton) {
+            sendButton.disabled = isLoading;
         }
 
-        console.log(`✅ Chat closed for ${employeeId}`);
+        if (messagesContainer) {
+            const existingTyping = messagesContainer.querySelector('.typing-indicator-message');
+            
+            if (isLoading && !existingTyping) {
+                // Add typing indicator
+                const typingMessage = document.createElement('div');
+                typingMessage.className = 'message assistant typing-indicator-message';
+                typingMessage.innerHTML = `
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(typingMessage);
+                this.scrollToBottom(employeeId);
+            } else if (!isLoading && existingTyping) {
+                // Remove typing indicator
+                existingTyping.remove();
+            }
+        }
 
-    } catch (error) {
-        console.error(`❌ Error closing chat for ${employeeId}:`, error);
+        console.log(`🔄 Loading state for ${employeeId}: ${isLoading}`);
     }
-}
 
-function updateActiveChatCounter() {
-    const counter = document.getElementById('active-chat-count');
-    if (counter) {
-        counter.textContent = this.activeChats.size;
-    }
+    addMessage(employeeId, messageData) {
+        const messagesContainer = document.getElementById(`messages-${employeeId}`);
+        if (!messagesContainer) {
+            console.error(`❌ Messages container not found for ${employeeId}`);
+            return;
+        }
 
-    // Show/hide welcome message based on active chats
-    const welcomeDiv = document.querySelector('.chat-welcome');
-    if (welcomeDiv) {
-        welcomeDiv.style.display = this.activeChats.size === 0 ? 'block' : 'none';
-    }
-}
+        // Remove any existing typing indicators
+        const typingIndicator = messagesContainer.querySelector('.typing-indicator-message');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
 
-function updateSidebarState(employeeId, isActive) {
-    const memberElement = document.querySelector(`[data-employee="${employeeId}"]`);
-    if (memberElement) {
-        if (isActive) {
-            memberElement.classList.add('active');
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${messageData.type}`;
+        
+        const timeString = messageData.timestamp.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+
+        let messageContent = '';
+        if (messageData.type === 'system') {
+            messageContent = `
+                <div class="message-content system">
+                    <em>${messageData.content}</em>
+                </div>
+                <div class="message-time">${timeString}</div>
+            `;
         } else {
-            memberElement.classList.remove('active');
+            messageContent = `
+                <div class="message-content">
+                    ${this.formatMessageContent(messageData.content)}
+                </div>
+                <div class="message-time">${timeString}</div>
+            `;
         }
-    }
-}
 
-function scrollToBottom(employeeId) {
-    const messagesContainer = document.getElementById(`messages-${employeeId}`);
-    if (messagesContainer) {
-        setTimeout(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 100);
-    }
-}
+        messageElement.innerHTML = messageContent;
+        messagesContainer.appendChild(messageElement);
 
-function scrollToChatContainer(employeeId) {
-    const chatContainer = document.getElementById(`chat-${employeeId}`);
-    if (chatContainer) {
-        chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-function setupGlobalEventListeners() {
-    // Handle navigation between sections
-    document.addEventListener('click', (e) => {
-        if (e.target.matches('.nav-item')) {
-            this.handleNavigation(e.target);
-        }
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        this.handleWindowResize();
-    });
-
-    console.log('✅ Global event listeners setup');
-}
-
-function handleNavigation(navItem) {
-    // Remove active class from all nav items
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-
-    // Add active class to clicked item
-    navItem.classList.add('active');
-
-    // Handle section switching
-    const section = navItem.dataset.section;
-    if (section) {
-        this.switchToSection(section);
-    }
-}
-
-function switchToSection(sectionId) {
-    // Hide all content sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-
-    // Show target section
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.classList.add('active');
-    }
-
-    console.log(`📄 Switched to section: ${sectionId}`);
-}
-
-function handleWindowResize() {
-    // Adjust chat containers on window resize
-    this.activeChats.forEach((chatData, employeeId) => {
+        // Update message counter and scroll
+        const currentCount = this.messageCounters.get(employeeId) || 0;
+        this.messageCounters.set(employeeId, currentCount + 1);
+        
         this.scrollToBottom(employeeId);
-    });
-}
 
-function showErrorNotification(message) {
-    // Simple notification system
-    const notification = document.createElement('div');
-    notification.className = 'notification notification-error';
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span>❌ ${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
+        console.log(`💬 Message added to ${employeeId} chat`);
+    }
 
-    document.body.appendChild(notification);
+    formatMessageContent(content) {
+        // Basic markdown-like formatting
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+    }
 
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
+    async sendWelcomeMessage(employeeId) {
+        const employee = this.employees[employeeId];
+        if (!employee) return;
+
+        const welcomeMessage = {
+            type: 'assistant',
+            content: `Hello! I'm ${employee.name}, your ${employee.role}. ${employee.description}
+
+How can I help you today?`,
+            timestamp: new Date()
+        };
+
+        // Add welcome message after a short delay
+        setTimeout(() => {
+            this.addMessage(employeeId, welcomeMessage);
+        }, 500);
+    }
+
+    handleInputChange(employeeId) {
+        const input = document.getElementById(`input-${employeeId}`);
+        const charCount = document.getElementById(`char-count-${employeeId}`);
+        const sendButton = document.getElementById(`send-${employeeId}`);
+
+        if (!input) return;
+
+        const length = input.value.length;
+        const maxLength = parseInt(input.getAttribute('maxlength')) || 2000;
+
+        if (charCount) {
+            charCount.textContent = length;
+            charCount.className = length > maxLength * 0.9 ? 'character-count warning' : 'character-count';
         }
-    }, 5000);
-}
 
-function handleSystemError(error) {
-    console.error('🚨 SYSTEM ERROR:', error);
-    this.showErrorNotification('System initialization failed. Please refresh the page.');
-}
+        if (sendButton) {
+            const isLoading = this.loadingStates.get(employeeId) || false;
+            sendButton.disabled = isLoading || length === 0 || length > maxLength;
+        }
 
-// Public API methods
-function getSystemStatus() {
-    return {
-        initialized: appState.isInitialized,
-        activeChats: this.activeChats.size,
-        employees: Object.keys(this.employees),
-        loadingStates: Object.fromEntries(this.loadingStates)
-    };
-}
+        // Auto-resize textarea
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    }
 
-function getEmployeeState(employeeId) {
-    return appState.employeeStates.get(employeeId);
-}
+    closeChatContainer(employeeId) {
+        try {
+            console.log(`🗑️ Closing chat for ${employeeId}...`);
 
-function getAllEmployeeStates() {
-    return Object.fromEntries(appState.employeeStates);
+            const chatContainer = document.getElementById(`chat-${employeeId}`);
+            if (chatContainer) {
+                chatContainer.remove();
+            }
+
+            // Remove from active chats
+            this.activeChats.delete(employeeId);
+
+            // Remove event listeners
+            this.removeEventListeners(employeeId);
+
+            // Update sidebar state
+            this.updateSidebarState(employeeId, false);
+
+            // Update counter
+            this.updateActiveChatCounter();
+
+            // Clear employee state
+            const employeeState = this.appState.employeeStates.get(employeeId);
+            if (employeeState) {
+                employeeState.isActive = false;
+                this.appState.employeeStates.set(employeeId, employeeState);
+            }
+
+            console.log(`✅ Chat closed for ${employeeId}`);
+
+        } catch (error) {
+            console.error(`❌ Error closing chat for ${employeeId}:`, error);
+        }
+    }
+
+    updateActiveChatCounter() {
+        const counter = document.getElementById('active-chat-count');
+        if (counter) {
+            counter.textContent = this.activeChats.size;
+        }
+
+        // Show/hide welcome message based on active chats
+        const welcomeDiv = document.querySelector('.chat-welcome');
+        if (welcomeDiv) {
+            welcomeDiv.style.display = this.activeChats.size === 0 ? 'block' : 'none';
+        }
+    }
+
+    updateSidebarState(employeeId, isActive) {
+        const memberElement = document.querySelector(`[data-employee="${employeeId}"]`);
+        if (memberElement) {
+            if (isActive) {
+                memberElement.classList.add('active');
+            } else {
+                memberElement.classList.remove('active');
+            }
+        }
+    }
+
+    scrollToBottom(employeeId) {
+        const messagesContainer = document.getElementById(`messages-${employeeId}`);
+        if (messagesContainer) {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+    }
+
+    scrollToChatContainer(employeeId) {
+        const chatContainer = document.getElementById(`chat-${employeeId}`);
+        if (chatContainer) {
+            chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    setupGlobalEventListeners() {
+        // Handle navigation between sections
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.nav-item')) {
+                this.handleNavigation(e.target);
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.handleWindowResize();
+        });
+
+        console.log('✅ Global event listeners setup');
+    }
+
+    handleNavigation(navItem) {
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add active class to clicked item
+        navItem.classList.add('active');
+
+        // Handle section switching
+        const section = navItem.dataset.section;
+        if (section) {
+            this.switchToSection(section);
+        }
+    }
+
+    switchToSection(sectionId) {
+        // Hide all content sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show target section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+
+        console.log(`📄 Switched to section: ${sectionId}`);
+    }
+
+    handleWindowResize() {
+        // Adjust chat containers on window resize
+        this.activeChats.forEach((chatData, employeeId) => {
+            this.scrollToBottom(employeeId);
+        });
+    }
+
+    showErrorNotification(message) {
+        // Simple notification system
+        const notification = document.createElement('div');
+        notification.className = 'notification notification-error';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>❌ ${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    handleSystemError(error) {
+        console.error('🚨 SYSTEM ERROR:', error);
+        this.showErrorNotification('System initialization failed. Please refresh the page.');
+    }
+
+    // Public API methods
+    getSystemStatus() {
+        return {
+            initialized: this.appState.isInitialized,
+            activeChats: this.activeChats.size,
+            employees: Object.keys(this.employees),
+            loadingStates: Object.fromEntries(this.loadingStates)
+        };
+    }
+
+    getEmployeeState(employeeId) {
+        return this.appState.employeeStates.get(employeeId);
+    }
+
+    getAllEmployeeStates() {
+        return Object.fromEntries(this.appState.employeeStates);
+    }
 }
 
 // Navigation and General App Logic
