@@ -159,12 +159,30 @@ function setupEmployeeProfiles() {
       status: 'online'
     },
     { 
+      id: 'Van', 
+      name: 'AI Van', 
+      role: 'Landing Page Generation Expert', 
+      specialty: 'Landing Page Expert',
+      avatar: '/van-avatar.jpg',
+      description: 'Expert at creating comprehensive engaging landing pages that convert.',
+      status: 'online'
+    },
+    { 
       id: 'Rey', 
       name: 'AI Rey', 
       role: 'Lead Generation Plan Strategist', 
       specialty: 'Voice Outreach & Campaign Management',
       avatar: '/rey-avatar.jpg', 
       description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+      status: 'online'
+    },
+    { 
+      id: 'Xavier', 
+      name: 'AI Xavier', 
+      role: 'Content Generation AI', 
+      specialty: 'Expert UGC video generator',
+      avatar: '/van-avatar.jpg',
+      description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
       status: 'online'
     }
   ];
