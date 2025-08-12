@@ -79,6 +79,7 @@ let activeChats = new Set(); // Tracks which chats are currently open
 // 🚀 Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 AI Employee Multi-Chat System Initializing...');
+  console.log('🔍 DEBUG: DOM Content Loaded - Starting initialization');
   initializeEmployeeProfiles();
   setupGlobalEventListeners();
   console.log('✅ Multi-Chat System Ready!');
@@ -88,29 +89,47 @@ document.addEventListener('DOMContentLoaded', function() {
  * 👥 Initialize Employee Profiles in Sidebar
  */
 function initializeEmployeeProfiles() {
-  const teamMembersContainer = document.querySelector('.team-members');
+  console.log('🔍 DEBUG: initializeEmployeeProfiles called');
+  const teamMembersContainer = document.getElementById('team-members-container');
   if (!teamMembersContainer) {
-    console.error('❌ Team members container not found');
+    console.error('❌ CRITICAL: team-members-container not found in DOM');
+    console.error('❌ Available containers:', document.querySelectorAll('[id*="team"], [class*="team"]'));
     return;
   }
 
+  console.log('✅ Team members container found:', teamMembersContainer);
   teamMembersContainer.innerHTML = ''; // Clear existing content
 
+  console.log('🔍 DEBUG: Creating profiles for employees:', Object.keys(EMPLOYEES));
   Object.values(EMPLOYEES).forEach(employee => {
+    console.log('🔍 DEBUG: Creating profile for:', employee.name, employee.id);
     const memberElement = createEmployeeProfileElement(employee);
     teamMembersContainer.appendChild(memberElement);
+    console.log('✅ Profile created and appended for:', employee.name);
   });
 
-  console.log('✅ Employee profiles initialized');
+  console.log('✅ Employee profiles initialized - Total profiles created:', Object.keys(EMPLOYEES).length);
+  
+  // Verify Xavier specifically
+  const xavierProfile = document.querySelector('[data-employee-id="Xavier"]');
+  if (xavierProfile) {
+    console.log('✅ XAVIER: Profile element created successfully');
+  } else {
+    console.error('❌ XAVIER: Profile element NOT found after creation');
+  }
 }
 
 /**
  * 🏗️ Create Employee Profile Element
  */
 function createEmployeeProfileElement(employee) {
+  console.log('🔍 DEBUG: createEmployeeProfileElement called for:', employee.name, employee.id);
+  
   const memberDiv = document.createElement('div');
   memberDiv.className = 'team-member';
   memberDiv.dataset.employeeId = employee.id;
+  
+  console.log('🔍 DEBUG: Created div with dataset.employeeId:', memberDiv.dataset.employeeId);
   
   memberDiv.innerHTML = `
     <div class="member-avatar">
@@ -131,10 +150,14 @@ function createEmployeeProfileElement(employee) {
 
   // Add click event listener
   memberDiv.addEventListener('click', () => {
-    console.log(`👤 Opening chat with ${employee.name} (${employee.id})`);
+    console.log(`👤 CLICK EVENT: Opening chat with ${employee.name} (${employee.id})`);
+    if (employee.id === 'Xavier') {
+      console.log('🎯 XAVIER CLICKED: Attempting to open Xavier chat');
+    }
     openEmployeeChat(employee.id);
   });
 
+  console.log('✅ Profile element created with click listener for:', employee.name);
   return memberDiv;
 }
 
@@ -142,29 +165,50 @@ function createEmployeeProfileElement(employee) {
  * 💬 Open Employee Chat (Multi-Chat Architecture)
  */
 function openEmployeeChat(employeeId) {
+  console.log(`🎯 OPEN CHAT: Called for employeeId: ${employeeId}`);
+  
   if (!EMPLOYEES[employeeId]) {
-    console.error(`❌ Employee ${employeeId} not found`);
+    console.error(`❌ CRITICAL: Employee ${employeeId} not found in EMPLOYEES config`);
+    console.error('❌ Available employees:', Object.keys(EMPLOYEES));
     return;
   }
+
+  const employee = EMPLOYEES[employeeId];
+  console.log(`✅ Employee found: ${employee.name} (${employeeId})`);
 
   // Hide welcome screen
   const welcomeScreen = document.getElementById('welcomeScreen');
   if (welcomeScreen) {
+    console.log('🔍 DEBUG: Hiding welcome screen');
     welcomeScreen.style.display = 'none';
+  } else {
+    console.warn('⚠️ Welcome screen element not found');
   }
 
   // Check if chat already exists
   const existingChat = document.getElementById(`chat-${employeeId}`);
   if (existingChat) {
-    console.log(`📱 Chat with ${employeeId} already open, bringing to focus`);
+    console.log(`📱 Chat with ${employee.name} already open, bringing to focus`);
     existingChat.scrollIntoView({ behavior: 'smooth' });
     return;
   }
 
+  console.log(`🔍 DEBUG: Creating new chat container for ${employee.name}`);
   // Create new chat container
   const chatContainer = createEmployeeChatContainer(employeeId);
+  if (!chatContainer) {
+    console.error(`❌ Failed to create chat container for ${employee.name}`);
+    return;
+  }
+  
   const multiChatInterface = document.getElementById('multiChatInterface');
+  if (!multiChatInterface) {
+    console.error('❌ multiChatInterface element not found');
+    return;
+  }
+  
   multiChatInterface.appendChild(chatContainer);
+  console.log(`✅ Chat container appended for ${employee.name}`);
 
   // Add to active chats
   activeChats.add(employeeId);
@@ -172,7 +216,11 @@ function openEmployeeChat(employeeId) {
   // Update employee profile as active
   updateEmployeeProfileStatus(employeeId, 'active');
 
-  console.log(`✅ Chat opened with ${EMPLOYEES[employeeId].name}`);
+  console.log(`✅ Chat opened successfully with ${employee.name} (${employeeId})`);
+  
+  if (employeeId === 'Xavier') {
+    console.log('🎉 XAVIER: Chat interface created successfully!');
+  }
 }
 
 /**
@@ -180,6 +228,13 @@ function openEmployeeChat(employeeId) {
  */
 function createEmployeeChatContainer(employeeId) {
   const employee = EMPLOYEES[employeeId];
+  if (!employee) {
+    console.error(`❌ Cannot create chat container - employee ${employeeId} not found`);
+    return null;
+  }
+  
+  console.log(`🏗️ Creating chat container for ${employee.name}`);
+  
   const chatDiv = document.createElement('div');
   chatDiv.className = 'employee-chat-container';
   chatDiv.id = `chat-${employeeId}`;
@@ -238,6 +293,7 @@ function createEmployeeChatContainer(employeeId) {
   // Setup input auto-resize and character count
   setupChatInput(employeeId);
 
+  console.log(`✅ Chat container created successfully for ${employee.name}`);
   return chatDiv;
 }
 
