@@ -381,202 +381,243 @@ function scrollToBottom() {
     }
 }
 
-function handleInputChange(employeeId) {
-    const input = document.getElementById(`input-${employeeId}`);
-    const charCount = document.getElementById(`char-count-${employeeId}`);
-    const sendButton = document.getElementById(`send-${employeeId}`);
-
-    if (!input) return;
-
-    const length = input.value.length;
-    const maxLength = parseInt(input.getAttribute('maxlength')) || 2000;
-
-    if (charCount) {
-        charCount.textContent = length;
-        charCount.className = length > maxLength * 0.9 ? 'character-count warning' : 'character-count';
+function handleInputKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleMessageSubmit(e);
     }
-
-    if (sendButton) {
-        const isLoading = this.loadingStates.get(employeeId) || false;
-        sendButton.disabled = isLoading || length === 0 || length > maxLength;
-    }
-
-    // Auto-resize textarea
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
 }
 
-function closeChatContainer(employeeId) {
-    try {
-        console.log(`🗑️ Closing chat for ${employeeId}...`);
+function handleInputChange(e) {
+    // Handle input change logic here
+}
 
+function setupNavigation() {
+    // Setup navigation logic here
+}
+
+class MultiAgentChatSystem {
+    constructor() {
+        this.activeChats = new Map();
+        this.loadingStates = new Map();
+        this.employees = EMPLOYEES;
+    }
+
+    async initialize() {
+        console.log('🚀 Initializing Multi-Agent Chat System...');
+        
+        try {
+            // Initialize app state
+            this.initializeAppState();
+            
+            // Setup global event listeners
+            this.setupGlobalEventListeners();
+            
+            console.log('✅ Multi-Agent Chat System initialized');
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize chat system:', error);
+            this.handleSystemError(error);
+        }
+    }
+
+    initializeAppState() {
+        // Initialize global app state
+        window.appState = {
+            isInitialized: true,
+            employeeStates: new Map(),
+            currentSection: 'employees'
+        };
+
+        // Initialize employee states
+        Object.keys(this.employees).forEach(employeeId => {
+            window.appState.employeeStates.set(employeeId, {
+                isActive: false,
+                messages: [],
+                threadId: null,
+                isLoading: false
+            });
+        });
+
+        console.log('✅ App state initialized');
+    }
+
+    closeChatContainer(employeeId) {
+        try {
+            console.log(`🗑️ Closing chat for ${employeeId}...`);
+
+            const chatContainer = document.getElementById(`chat-${employeeId}`);
+            if (chatContainer) {
+                chatContainer.remove();
+            }
+
+            // Remove from active chats
+            this.activeChats.delete(employeeId);
+
+            // Remove event listeners
+            this.removeEventListeners(employeeId);
+
+            // Update sidebar state
+            this.updateSidebarState(employeeId, false);
+
+            // Update counter
+            this.updateActiveChatCounter();
+
+            // Clear employee state
+            const employeeState = window.appState.employeeStates.get(employeeId);
+            if (employeeState) {
+                employeeState.isActive = false;
+                window.appState.employeeStates.set(employeeId, employeeState);
+            }
+
+            console.log(`✅ Chat closed for ${employeeId}`);
+
+        } catch (error) {
+            console.error(`❌ Error closing chat for ${employeeId}:`, error);
+        }
+    }
+
+    removeEventListeners(employeeId) {
+        // Remove event listeners logic here
+    }
+
+    updateActiveChatCounter() {
+        const counter = document.getElementById('active-chat-count');
+        if (counter) {
+            counter.textContent = this.activeChats.size;
+        }
+
+        // Show/hide welcome message based on active chats
+        const welcomeDiv = document.querySelector('.chat-welcome');
+        if (welcomeDiv) {
+            welcomeDiv.style.display = this.activeChats.size === 0 ? 'block' : 'none';
+        }
+    }
+
+    updateSidebarState(employeeId, isActive) {
+        const memberElement = document.querySelector(`[data-employee="${employeeId}"]`);
+        if (memberElement) {
+            if (isActive) {
+                memberElement.classList.add('active');
+            } else {
+                memberElement.classList.remove('active');
+            }
+        }
+    }
+
+    scrollToBottom(employeeId) {
+        const messagesContainer = document.getElementById(`messages-${employeeId}`);
+        if (messagesContainer) {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+    }
+
+    scrollToChatContainer(employeeId) {
         const chatContainer = document.getElementById(`chat-${employeeId}`);
         if (chatContainer) {
-            chatContainer.remove();
-        }
-
-        // Remove from active chats
-        this.activeChats.delete(employeeId);
-
-        // Remove event listeners
-        this.removeEventListeners(employeeId);
-
-        // Update sidebar state
-        this.updateSidebarState(employeeId, false);
-
-        // Update counter
-        this.updateActiveChatCounter();
-
-        // Clear employee state
-        const employeeState = appState.employeeStates.get(employeeId);
-        if (employeeState) {
-            employeeState.isActive = false;
-            appState.employeeStates.set(employeeId, employeeState);
-        }
-
-        console.log(`✅ Chat closed for ${employeeId}`);
-
-    } catch (error) {
-        console.error(`❌ Error closing chat for ${employeeId}:`, error);
-    }
-}
-
-function updateActiveChatCounter() {
-    const counter = document.getElementById('active-chat-count');
-    if (counter) {
-        counter.textContent = this.activeChats.size;
-    }
-
-    // Show/hide welcome message based on active chats
-    const welcomeDiv = document.querySelector('.chat-welcome');
-    if (welcomeDiv) {
-        welcomeDiv.style.display = this.activeChats.size === 0 ? 'block' : 'none';
-    }
-}
-
-function updateSidebarState(employeeId, isActive) {
-    const memberElement = document.querySelector(`[data-employee="${employeeId}"]`);
-    if (memberElement) {
-        if (isActive) {
-            memberElement.classList.add('active');
-        } else {
-            memberElement.classList.remove('active');
+            chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
-}
 
-function scrollToBottom(employeeId) {
-    const messagesContainer = document.getElementById(`messages-${employeeId}`);
-    if (messagesContainer) {
+    setupGlobalEventListeners() {
+        // Handle navigation between sections
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.nav-item')) {
+                this.handleNavigation(e.target);
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.handleWindowResize();
+        });
+
+        console.log('✅ Global event listeners setup');
+    }
+
+    handleNavigation(navItem) {
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add active class to clicked item
+        navItem.classList.add('active');
+
+        // Handle section switching
+        const section = navItem.dataset.section;
+        if (section) {
+            this.switchToSection(section);
+        }
+    }
+
+    switchToSection(sectionId) {
+        // Hide all content sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show target section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+
+        console.log(`📄 Switched to section: ${sectionId}`);
+    }
+
+    handleWindowResize() {
+        // Adjust chat containers on window resize
+        this.activeChats.forEach((chatData, employeeId) => {
+            this.scrollToBottom(employeeId);
+        });
+    }
+
+    showErrorNotification(message) {
+        // Simple notification system
+        const notification = document.createElement('div');
+        notification.className = 'notification notification-error';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>❌ ${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 5 seconds
         setTimeout(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 100);
-    }
-}
-
-function scrollToChatContainer(employeeId) {
-    const chatContainer = document.getElementById(`chat-${employeeId}`);
-    if (chatContainer) {
-        chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-function setupGlobalEventListeners() {
-    // Handle navigation between sections
-    document.addEventListener('click', (e) => {
-        if (e.target.matches('.nav-item')) {
-            this.handleNavigation(e.target);
-        }
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        this.handleWindowResize();
-    });
-
-    console.log('✅ Global event listeners setup');
-}
-
-function handleNavigation(navItem) {
-    // Remove active class from all nav items
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-
-    // Add active class to clicked item
-    navItem.classList.add('active');
-
-    // Handle section switching
-    const section = navItem.dataset.section;
-    if (section) {
-        this.switchToSection(section);
-    }
-}
-
-function switchToSection(sectionId) {
-    // Hide all content sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-
-    // Show target section
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-        targetSection.classList.add('active');
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
-    console.log(`📄 Switched to section: ${sectionId}`);
-}
+    handleSystemError(error) {
+        console.error('🚨 SYSTEM ERROR:', error);
+        this.showErrorNotification('System initialization failed. Please refresh the page.');
+    }
 
-function handleWindowResize() {
-    // Adjust chat containers on window resize
-    this.activeChats.forEach((chatData, employeeId) => {
-        this.scrollToBottom(employeeId);
-    });
-}
+    // Public API methods
+    getSystemStatus() {
+        return {
+            initialized: window.appState.isInitialized,
+            activeChats: this.activeChats.size,
+            employees: Object.keys(this.employees),
+            loadingStates: Object.fromEntries(this.loadingStates)
+        };
+    }
 
-function showErrorNotification(message) {
-    // Simple notification system
-    const notification = document.createElement('div');
-    notification.className = 'notification notification-error';
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span>❌ ${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
+    getEmployeeState(employeeId) {
+        return window.appState.employeeStates.get(employeeId);
+    }
 
-    document.body.appendChild(notification);
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-function handleSystemError(error) {
-    console.error('🚨 SYSTEM ERROR:', error);
-    this.showErrorNotification('System initialization failed. Please refresh the page.');
-}
-
-// Public API methods
-function getSystemStatus() {
-    return {
-        initialized: appState.isInitialized,
-        activeChats: this.activeChats.size,
-        employees: Object.keys(this.employees),
-        loadingStates: Object.fromEntries(this.loadingStates)
-    };
-}
-
-function getEmployeeState(employeeId) {
-    return appState.employeeStates.get(employeeId);
-}
-
-function getAllEmployeeStates() {
-    return Object.fromEntries(appState.employeeStates);
+    getAllEmployeeStates() {
+        return Object.fromEntries(window.appState.employeeStates);
+    }
 }
 
 // Navigation and General App Logic
