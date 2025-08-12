@@ -1,9 +1,7 @@
-// Global state - Support for multiple simultaneous chats
+// Global state
 let currentEmployee = 'brenden';
-let employeeLoadingStates = new Map(); // Per-employee loading states
-let conversationThreads = {};
-let activeEmployeeChats = new Set(); // Track which employee chats are open
-let employeeChatContainers = new Map(); // Store chat containers
+let currentThreadId = null;
+let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
@@ -1829,15 +1827,21 @@ function renderTeamMembers() {
       chatInterface.appendChild(chatContainer);
     }
 
-    // Setup event listeners for this employee's chat
-    setupChatEventListeners(employee);
+    // Check if this specific employee is loading
+    if (employeeLoadingStates.get(employeeId)) {
+        console.log(`${employeeId} is already processing a message, please wait`);
   }
 
   // Setup chat interface for the active employee;
-  function setupChatInterface() {
-    const messageInput = document.getElementById('messageInput');
     const chatForm = document.getElementById('chatForm');
-    const sendButton = document.getElementById('sendButton');
+    const messagesContainer = document.getElementById(`messages-${employeeId}`);
+    const messageInput = document.getElementById(`input-${employeeId}`);
+    const sendButton = document.getElementById(`send-${employeeId}`);
+    
+    if (!messagesContainer || !messageInput || !sendButton) {
+        console.error(`Chat elements not found for employee ${employeeId}`);
+        return;
+    }
 
     if (!messageInput || !chatForm || !sendButton) {
       console.error('Chat interface elements not found');
@@ -2107,7 +2111,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const savedColors = localStorage.getItem('orchid-colors');
   if (savedColors) {
     try {
-      const colors = JSON.parse(savedColors);
+        // Set loading state for this specific employee
+        employeeLoadingStates.set(employeeId, true);
       document.documentElement.style.setProperty('--primary-color', colors.primary);
       document.documentElement.style.setProperty('--secondary-color', colors.secondary);
       document.documentElement.style.setProperty('--accent-color', colors.accent);
