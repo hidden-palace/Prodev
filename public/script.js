@@ -12,6 +12,7 @@ let pendingMessages = {}; // Track pending messages per employee
 
 // Employee configurations
 const employees = {
+  brenden: {
     id: 'brenden', 
     name: 'AI Brenden',
     role: 'lead scraper',
@@ -27,19 +28,21 @@ const employees = {
     tags: ['Specialist', 'Marketing']
   },
   van: {
+    id: 'van',
     name: 'AI Van',
     role: 'page operator',
     specialty: 'Digital Marketing Designer',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
-    id: 'van',
+      { icon: '🎨', text: 'Design landing page', action: 'Create a high-converting landing page design' },
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
     ],
     tags: ['Marketing', 'Design']
   },
+  Rey: {
     id: 'Rey',
     name: 'AI Rey',
     role: 'Strategic Analyst',
@@ -54,6 +57,7 @@ const employees = {
     ],
     tags: ['Strategy', 'Analytics']
   },
+  Xavier: {
     id: 'Xavier',
     name: 'AI Xavier',
     role: 'Content Specialist',
@@ -68,8 +72,6 @@ const employees = {
     ]
   }
 }; 
-
-const validEmployees = ['brenden', 'van', 'Rey', 'Xavier'];
 
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount, employeeList;
@@ -2181,10 +2183,11 @@ function getCurrentEmployeeName() {
 }
 
 function updateEmployeeHeader(employeeId) {
-  const employeeNames = {
-    'brenden': 'AI Brenden',
-    'Rey': 'AI Rey',
-    'Xavier': 'AI Xavier'
+  const employeeHeaders = {
+    brenden: { name: 'AI Brenden', role: 'Lead Research Specialist' },
+    van: { name: 'AI Van', role: 'Digital Marketing Designer' },
+    Rey: { name: 'AI Rey', role: 'Lead Generation Plan Strategist' },
+    Xavier: { name: 'AI Xavier', role: 'Content generation AI' }
   };
   
   const employeeRoles = {
