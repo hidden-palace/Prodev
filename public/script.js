@@ -172,7 +172,7 @@ function setupEmployeeProfiles() {
       name: 'AI Xavier',
       role: 'UGC Expert', 
       avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-    }
+    },
     { 
       id: 'Rey', 
       name: 'AI Rey', 
