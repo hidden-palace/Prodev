@@ -10,6 +10,9 @@ let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
 let pendingMessages = {}; // Track pending messages per employee
 
+// Valid employee IDs for validation
+const validEmployees = ['brenden', 'van', 'Rey', 'Xavier'];
+
 // Employee configurations
 const employees = {
   brenden: {
