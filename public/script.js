@@ -10,9 +10,6 @@ let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
 let pendingMessages = {}; // Track pending messages per employee
 
-// Valid employee IDs for validation
-const validEmployees = ['brenden', 'van', 'Rey', 'Xavier'];
-
 // Employee configurations
 const employees = {
   brenden: {
@@ -71,6 +68,14 @@ const employees = {
     ]
   }
 }; 
+
+// Employee header information for chat interface
+const employeeHeaders = {
+    'brenden': { name: 'AI Brenden', role: 'Lead Research Specialist' },
+    'van': { name: 'AI Van', role: 'Digital Marketing Designer' },
+    'Rey': { name: 'AI Rey', role: 'Voice Outreach Manager' },
+    'Xavier': { name: 'AI Xavier', role: 'UGC Expert' }
+};
 
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount, employeeList;
