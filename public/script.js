@@ -57,19 +57,20 @@ const employees = {
     tags: ['Strategy', 'Analytics']
   },
   xavier: {
-    id: 'xavier',
-    name: 'AI Xavier',
-    role: 'Content Specialist',
-    specialty: 'Content Generation AI',
-    avatar: '/api/branding/employee-avatars/xavier.jpg',
-    description: 'I create compelling content across all formats - from engaging blog posts and social media content to persuasive email campaigns and landing page copy. I understand audience psychology and craft messages that convert.',
-    tags: ['Content', 'Marketing'],
-    tasks: [
-      { id: 1, title: 'Create Email Campaign Content', status: 'in-progress' },
-      { id: 2, title: 'Write Landing Page Copy', status: 'pending' },
-      { id: 3, title: 'Develop Social Media Content', status: 'pending' }
-    ]
-  }
+  id: 'xavier',
+  name: 'AI Xavier',
+  role: 'Content Specialist',
+  specialty: 'Content Generation AI',
+  avatar: '/api/branding/employee-avatars/xavier.jpg',
+  description: 'I create compelling content across all formats – from engaging social media videos and UGC campaigns to persuasive email sequences and landing page copy. I understand audience psychology and craft messages that convert.',
+  quickActions: [
+    { icon: '🎥', text: 'Generate TikTok Video Concept', action: 'Generate TikTok Video Concept' },
+    { icon: '📹', text: 'Create Instagram Reel Script', action: 'Create Instagram Reel Script' },
+    { icon: '📝', text: 'Write UGC Video Caption', action: 'Write UGC Video Caption' },
+    { icon: '💡', text: 'Suggest 5 UGC Ideas', action: 'Suggest 5 UGC Ideas for brand' }
+  ],
+  tags: ['Content', 'Marketing']
+}
 };
 
 // Welcome messages
