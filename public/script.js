@@ -10,6 +10,14 @@ let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
 let pendingMessages = {}; // Track pending messages per employee
 
+// Welcome messages for each employee
+const welcomeMessages = {
+    'brenden': '👋 Hi! I\'m AI Brenden, your Lead Research Specialist. I can help you find and scrape high-quality leads from various sources. What kind of leads are you looking for today?',
+    'van': '🎨 Hello! I\'m AI Van, your Digital Marketing Designer. I specialize in creating landing pages and marketing materials. How can I help you with your marketing needs?',
+    'Rey': '📞 Hey there! I\'m AI Rey, your Voice Outreach Manager. I can help you develop outreach strategies and manage voice campaigns. What\'s your outreach goal?',
+    'Xavier': '🎬 Hi! I\'m AI Xavier, your UGC Expert. I specialize in creating and managing user-generated content strategies. How can I help you with content generation today?'
+};
+
 // Employee configurations
 const employees = {
   brenden: {
@@ -68,14 +76,6 @@ const employees = {
     ]
   }
 }; 
-
-// Employee header information for chat interface
-const employeeHeaders = {
-    'brenden': { name: 'AI Brenden', role: 'Lead Research Specialist' },
-    'van': { name: 'AI Van', role: 'Digital Marketing Designer' },
-    'Rey': { name: 'AI Rey', role: 'Voice Outreach Manager' },
-    'Xavier': { name: 'AI Xavier', role: 'UGC Expert' }
-};
 
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount, employeeList;
