@@ -430,37 +430,273 @@ function setupNavigation() {
     console.log('✅ Navigation setup complete');
 }
 
-function switchSection(sectionId) {
-    // Map common names to actual section IDs
-    const sectionMap = {
-        'dashboard': 'dashboard',
-        'leads': 'leads', 
-        'employees': 'employees',
-        'calls': 'calls',
-        'campaigns': 'campaigns',
-        'landingpages': 'landing-pages',
-        'landing pages': 'landing-pages',
-        'branding': 'branding',
-        'status': 'status'
-    };
-    
-    const targetSectionId = sectionMap[sectionId] || sectionId;
-    
+function updateSidebarState(employeeId, isActive) {
+    const memberElement = document.querySelector(`[data-employee="${employeeId}"]`);
+    if (memberElement) {
+        if (isActive) {
+            memberElement.classList.add('active');
+        } else {
+            memberElement.classList.remove('active');
+        }
+    }
+}
+
+function scrollToBottom(employeeId) {
+    const messagesContainer = document.getElementById(`messages-${employeeId}`);
+    if (messagesContainer) {
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
+    }
+}
+
+function scrollToChatContainer(employeeId) {
+    const chatContainer = document.getElementById(`chat-${employeeId}`);
+    if (chatContainer) {
+        chatContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function setupGlobalEventListeners() {
+    // Handle navigation between sections
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.nav-item')) {
+            handleNavigation(e.target);
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        handleWindowResize();
+    });
+
+    console.log('✅ Global event listeners setup');
+}
+
+function handleNavigation(navItem) {
+    // Remove active class from all nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Add active class to clicked item
+    navItem.classList.add('active');
+
+    // Handle section switching
+    const section = navItem.dataset.section;
+    if (section) {
+        switchToSection(section);
+    }
+}
+
+function switchToSection(sectionId) {
     // Hide all content sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    
+
     // Show target section
-    const targetSection = document.getElementById(targetSectionId);
+    const targetSection = document.getElementById(sectionId);
     if (targetSection) {
         targetSection.classList.add('active');
-        console.log(`📄 Switched to section: ${targetSectionId}`);
-    } else {
-        console.error(`❌ Section not found: ${targetSectionId}`);
+    }
+
+    console.log(`📄 Switched to section: ${sectionId}`);
+}
+
+function handleWindowResize() {
+    // Adjust chat containers on window resize
+    activeChats.forEach((chatData, employeeId) => {
+        scrollToBottom(employeeId);
+    });
+}
+
+function showErrorNotification(message) {
+    // Simple notification system
+    const notification = document.createElement('div');
+    notification.className = 'notification notification-error';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span>❌ ${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function handleSystemError(error) {
+    console.error('🚨 SYSTEM ERROR:', error);
+    showErrorNotification('System initialization failed. Please refresh the page.');
+}
+
+// Public API methods
+function getSystemStatus() {
+    return {
+        initialized: true,
+        activeChats: 1,
+        employees: Object.keys(EMPLOYEES),
+        loadingStates: { [currentEmployee]: isLoading }
+    };
+}
+
+function getEmployeeState(employeeId) {
+    return EMPLOYEES[employeeId];
+}
+
+function getAllEmployeeStates() {
+    return EMPLOYEES;
+}
+
+// Navigation and General App Logic
+class AppManager {
+    constructor() {
+        this.currentSection = 'employees';
+    }
+
+    async initialize() {
+        console.log('🚀 Initializing Orchid Republic application...');
+
+        try {
+            // Setup navigation
+            this.setupNavigation();
+
+            // Load other components
+            await this.loadDashboardData();
+            await this.loadLeadsData();
+
+            console.log('✅ Application initialized successfully');
+
+        } catch (error) {
+            console.error('❌ Failed to initialize application:', error);
+            this.handleInitializationError(error);
+        }
+    }
+
+    setupNavigation() {
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.textContent.trim().toLowerCase().replace(/\s+/g, '');
+                
+                // Map nav items to section IDs
+                const sectionMap = {
+                    'dashboard': 'dashboard',
+                    'leads': 'leads',
+                    'employees': 'employees',
+                    'calls': 'calls',
+                    'campaigns': 'campaigns',
+                    'landingpages': 'landing-pages',
+                    'branding': 'branding',
+                    'status': 'status'
+                };
+
+                const targetSection = sectionMap[section];
+                if (targetSection) {
+                    this.switchSection(targetSection);
+                    
+                    // Update nav state
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        console.log('✅ Navigation setup complete');
+    }
+
+    switchSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show target section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            this.currentSection = sectionId;
+            
+            // Load section-specific data
+            this.loadSectionData(sectionId);
+        }
+    }
+
+    async loadSectionData(sectionId) {
+        switch (sectionId) {
+            case 'dashboard':
+                await this.loadDashboardData();
+                break;
+            case 'leads':
+                await this.loadLeadsData();
+                break;
+            case 'status':
+                await this.loadStatusData();
+                break;
+        }
+    }
+
+    async loadDashboardData() {
+        // Dashboard loading logic would go here
+        console.log('📊 Loading dashboard data...');
+    }
+
+    async loadLeadsData() {
+        // Leads loading logic would go here
+        console.log('👥 Loading leads data...');
+    }
+
+    async loadStatusData() {
+        // Status loading logic would go here
+        console.log('🔧 Loading status data...');
+    }
+
+    handleInitializationError(error) {
+        const errorContainer = document.createElement('div');
+        errorContainer.className = 'initialization-error';
+        errorContainer.innerHTML = `
+            <div class="error-content">
+                <h3>⚠️ Application Failed to Load</h3>
+                <p>There was an error initializing the application: ${error.message}</p>
+                <button onclick="window.location.reload()" class="btn primary">Reload Page</button>
+            </div>
+        `;
+        
+        document.body.appendChild(errorContainer);
     }
 }
 
-// Make functions globally available for debugging
-window.switchEmployee = switchEmployee;
-window.EMPLOYEES = EMPLOYEES;
+// Initialize Application
+let appManager;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🎯 DOM loaded, initializing application...');
+        
+        appManager = new AppManager();
+        await appManager.initialize();
+        
+        // Make globally available for debugging
+        window.appManager = appManager;
+        
+        console.log('🎉 Orchid Republic Multi-Agent Chat System Ready!');
+        
+    } catch (error) {
+        console.error('🚨 Critical initialization error:', error);
+    }
+});
+
+// Export for potential module use
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { AppManager };
+}undefined' && module.exports) {
+    module.exports = { AppManager };
+}
