@@ -68,7 +68,7 @@ const employees = {
       { id: 1, title: 'Create Email Campaign Content', status: 'in-progress' },
       { id: 2, title: 'Write Landing Page Copy', status: 'pending' },
       { id: 3, title: 'Develop Social Media Content', status: 'pending' }
-    
+    ]
   }
 };
 
@@ -902,31 +902,27 @@ function updateQuickActions(quickActions) {
   
   quickActionsContainer.innerHTML = '';
   
-  if (Array.isArray(quickActions)) {
-    quickActions.forEach(action => {
-      const actionEl = document.createElement('div');
-      actionEl.className = 'quick-action';
-      actionEl.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 6v6l4 2"></path>
-        </svg>
-        <span>${action.icon} ${action.text}</span>
-      `;
-      
-      actionEl.addEventListener('click', () => {
-        if (messageInput) {
-          messageInput.value = action.action;
-          messageInput.focus();
-          updateCharacterCount();
-        }
-      });
-      
-      quickActionsContainer.appendChild(actionEl);
+  quickActions.forEach(action => {
+    const actionEl = document.createElement('div');
+    actionEl.className = 'quick-action';
+    actionEl.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 6v6l4 2"></path>
+      </svg>
+      <span>${action.icon} ${action.text}</span>
+    `;
+    
+    actionEl.addEventListener('click', () => {
+      if (messageInput) {
+        messageInput.value = action.action;
+        messageInput.focus();
+        updateCharacterCount();
+      }
     });
-  } else {
-    console.warn('Quick actions is not an array for current employee');
-  }
+    
+    quickActionsContainer.appendChild(actionEl);
+  });
 }
 
 function clearChatMessages() {
@@ -965,6 +961,13 @@ function startNewChat() {
   }
   
   // Reset thread and UI for current employee
+    const currentConfig = employeeConfig && employeeConfig[currentEmployee];
+    
+    if (!currentConfig || !currentConfig.assistantId) {
+        console.error('Employee configuration not found for:', currentEmployee);
+        displayMessage('System', 'Error: Employee configuration not available. Please refresh the page.', 'error');
+        return;
+    }
   currentThreadId = null;
   clearChatMessages();
   showWelcomeMessage(employees[currentEmployee]);
@@ -1112,7 +1115,8 @@ async function pollForCompletion(threadId, runId, maxAttempts = 60) {
           
           // Auto-refresh leads page if user is currently viewing it
           const leadsSection = document.getElementById('leads-section');
-          if (leadsSection && leadsSection.classList.contains('active')) {
+                employee: currentEmployee,
+                assistantId: currentConfig.assistantId
             console.log('📊 Auto-refreshing leads page...');
             await loadLeadsData();
           }
@@ -1976,4 +1980,249 @@ function renderMainContent() {
 }
 
 function selectEmployee(employeeId) {
-  console.log
+  console.log('🎯 SURGICAL SELECT: selectEmployee called with:', employeeId);
+  console.log('🎯 SURGICAL SELECT: Current employee:', currentEmployee);
+  console.log('🎯 SURGICAL SELECT: Employee exists?', !!employees[employeeId]);
+  
+  if (!employees[employeeId]) {
+    console.error('🚨 SURGICAL ERROR: Employee not found in selectEmployee:', employeeId);
+    console.error('🚨 SURGICAL ERROR: Available employees:', Object.keys(employees));
+    return;
+  }
+  
+  const selectedEmployee = employees[employeeId];
+  console.log('🎯 SURGICAL SELECT: Selected employee object:', selectedEmployee);
+
+  // Save current conversation before switching
+  if (currentEmployee && currentConversation) {
+    conversationHistory[currentEmployee] = currentConversation;
+  }
+
+  // Update current employee
+  console.log('🔄 CRITICAL: Setting currentEmployee from', currentEmployee, 'to', employeeId);
+  currentEmployee = employeeId;
+  console.log('🔄 CRITICAL: currentEmployee is now:', currentEmployee);
+
+  // Load or create conversation for new employee
+  loadConversationForEmployee(employeeId);
+
+  // Update active team member visual state
+  document.querySelectorAll('.team-member').forEach(member => {
+    member.classList.remove('active');
+    const memberEmployeeId = member.dataset.employeeId;
+    if (memberEmployeeId === employeeId) {
+      member.classList.add('active');
+      console.log('🎯 VISUAL UPDATE: Set active class for', employeeId);
+    }
+  });
+
+  // Update chat header with employee details
+  updateChatHeader(selectedEmployee);
+  updateQuickActions(selectedEmployee.quickActions || []);
+  updateChatTabs(selectedEmployee);
+  updateChatContent(selectedEmployee);
+
+  console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
+  console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
+  console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
+}
+
+function switchToEmployeeChat(employeeId) {
+    console.log(`🔄 Attempting to switch to employee: ${employeeId}`);
+    
+    // Debug: Check if employee exists in our array
+    const employee = Object.values(employees).find(emp => emp.id === employeeId);
+    if (!employee) {
+        console.error(`❌ Employee not found in employees array: ${employeeId}`);
+        console.log('Available employees:', Object.keys(employees));
+        return;
+    }
+    
+    console.log(`✅ Found employee:`, employee);
+    
+    // Validate employee ID
+    const validEmployees = Object.keys(employees);
+    if (!validEmployees.includes(employeeId)) {
+        console.error(`❌ Invalid employee ID: ${employeeId}`);
+        console.log('Valid employees:', validEmployees);
+        return;
+    }
+}
+
+async function sendMessage(message) {
+  console.log('📤 Sending message...');
+  console.log('📤 CRITICAL: About to send message with activeEmployeeId:', activeEmployeeId);
+  console.log('📤 CRITICAL: Message content:', message);
+  console.log('📤 CRITICAL: Thread ID for this employee:', conversationThreads[activeEmployeeId]);
+  
+  if (pendingMessages[activeEmployeeId]) {
+    console.warn('⚠️ Message already pending for', activeEmployeeId, ', skipping');
+    return;
+  }
+  
+  const currentEmployeeId = activeEmployeeId; // Store at start to avoid race conditions
+  pendingMessages[currentEmployeeId] = true;
+
+  if (!message.trim()) {
+    pendingMessages[currentEmployeeId] = false;
+    return;
+  }
+
+  // Clear input and disable send button
+  const messageInput = document.getElementById('messageInput');
+  updateSendButton();
+  if (messageInput) messageInput.value = '';
+  if (sendButton) sendButton.disabled = true;
+
+  try {
+    // Add user message to chat immediately
+    appendMessage(message, 'user', 'You');
+
+    console.log('🚀 CRITICAL: Making API request with employee:', activeEmployeeId);
+    
+    // Prepare message data with current employee context
+    const messageData = {
+      message: message,
+      employee: currentEmployeeId,
+      thread_id: conversationThreads[currentEmployeeId] || null
+    };
+    
+    console.log('🚀 CRITICAL: Full API payload:', messageData);
+
+    // Send to backend
+    const response = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📥 CRITICAL: API response received:', {
+      status: data.status,
+      employeeId: data.employee?.name || 'UNKNOWN',
+      messagePreview: data.message?.substring(0, 100) + '...'
+    });
+    
+    // Hide typing indicator as soon as we get a response
+    hideTypingIndicator();
+
+    // Store the thread ID for this employee
+    if (data.thread_id) {
+      conversationThreads[activeEmployeeId] = data.thread_id;
+      console.log(`💾 Stored thread ID for ${activeEmployeeId}:`, data.thread_id);
+    }
+    if (data.thread_id && currentEmployeeId === activeEmployeeId) {
+      conversationThreads[currentEmployeeId] = data.thread_id;
+      console.log(`🧵 Thread ID stored for ${currentEmployeeId}:`, data.thread_id);
+    }
+    const employeeName = data.employee?.name || `AI ${currentEmployeeId}`;
+    
+    console.log('💬 CRITICAL: Adding response from:', employeeName);
+    console.log('💬 CRITICAL: Expected employee was:', `AI ${currentEmployeeId}`);
+    
+    appendMessage(data.message, 'assistant', employeeName);
+
+    if (data.status === 'requires_action') {
+      console.log('⚠️ Assistant requires additional actions');
+    }
+
+  } catch (error) {
+    console.error('❌ Error sending message:', error);
+    hideTypingIndicator();
+    
+    // Always hide typing indicator on error
+    hideTypingIndicator();
+    
+    appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
+  } finally {
+    pendingMessages[currentEmployeeId] = false;
+    updateSendButton();
+  }
+}
+
+// Load saved color scheme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedColors = localStorage.getItem('orchid-colors');
+  if (savedColors) {
+    try {
+      const colors = JSON.parse(savedColors);
+      document.documentElement.style.setProperty('--primary-color', colors.primary);
+      document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+      document.documentElement.style.setProperty('--accent-color', colors.accent);
+      
+      // Update form inputs
+      const primaryInput = document.getElementById('primaryInput');
+      const primaryPicker = document.getElementById('primaryPicker');
+      const secondaryInput = document.getElementById('secondaryInput');
+      const secondaryPicker = document.getElementById('secondaryPicker');
+      const accentInput = document.getElementById('accentInput');
+      const accentPicker = document.getElementById('accentPicker');
+      
+      if (primaryInput) primaryInput.value = colors.primary;
+      if (primaryPicker) primaryPicker.value = colors.primary;
+      if (secondaryInput) secondaryInput.value = colors.secondary;
+      if (secondaryPicker) secondaryPicker.value = colors.secondary;
+      if (accentInput) accentInput.value = colors.accent;
+      if (accentPicker) accentPicker.value = colors.accent;
+    } catch (error) {
+      console.error('Failed to load saved colors:', error);
+    }
+  }
+});
+
+function updateSendButton() {
+  const isPending = pendingMessages[activeEmployeeId];
+  sendButton.disabled = isPending;
+  sendButton.textContent = isPending ? 'Sending...' : 'Send';
+  
+  // Update placeholder to show current employee
+  const currentEmployee = getCurrentEmployeeName();
+  messageInput.placeholder = isPending ? 
+    `Waiting for ${currentEmployee}...` : 
+    `Message ${currentEmployee}...`;
+}
+
+function getCurrentEmployeeName() {
+  const names = {
+    'brenden': 'AI Brenden',
+    'Rey': 'AI Rey',
+    'van': 'AI Van'
+  };
+  return names[activeEmployeeId] || `AI ${activeEmployeeId}`;
+}
+
+function updateEmployeeHeader(employeeId) {
+  const employeeNames = {
+    'brenden': 'AI Brenden',
+    'Rey': 'AI Rey',
+    'Xavier': 'AI Xavier'
+  };
+  
+  const employeeRoles = {
+    'brenden': 'Lead Research Specialist',
+    'Rey': 'Voice Outreach Manager',
+    'Xavier': 'UGC Expert'
+  };
+  
+  const employeeAvatars = {
+    'brenden': 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Rey': 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Xavier': 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  };
+  
+  const nameElement = document.querySelector('.employee-details h3');
+  const roleElement = document.querySelector('.role-tag');
+  const avatarElement = document.querySelector('.employee-avatar img');
+  
+  if (nameElement) nameElement.textContent = employeeNames[employeeId] || 'Unknown Employee';
+  if (roleElement) roleElement.textContent = employeeRoles[employeeId] || 'Unknown Role';
+  if (avatarElement) avatarElement.src = employeeAvatars[employeeId] || '';
+  
+  console.log('Employee header updated for:', employeeId);
+}
