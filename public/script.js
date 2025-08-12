@@ -152,10 +152,10 @@ function setupEmployeeProfiles() {
     { 
       id: 'brenden', 
       name: 'AI Brenden', 
-      role: 'lead scraper', 
-      specialty: 'Lead Research Specialist',
-      avatar: 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-      description: 'Specializes in finding and qualifying high-value leads through advanced web scraping and research techniques.',
+      role: 'Lead Research Specialist', 
+      specialty: 'Lead Generation & Data Research',
+      avatar: '/brenden-avatar.jpg',
+      description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
       status: 'online'
     },
     { 
@@ -171,18 +171,18 @@ function setupEmployeeProfiles() {
       id: 'Rey', 
       name: 'AI Rey', 
       role: 'Lead Generation Plan Strategist', 
-      specialty: 'Voice Outreach Manager',
-      avatar: 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', 
-      description: 'Expert in creating comprehensive lead generation strategies and managing voice outreach campaigns.',
+      specialty: 'Voice Outreach & Campaign Management',
+      avatar: '/rey-avatar.jpg', 
+      description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
       status: 'online'
     },
     { 
       id: 'Xavier', 
       name: 'AI Xavier', 
-      role: 'Content generation AI', 
-      specialty: 'UGC Expert',
-      avatar: 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-      description: 'Specializes in generating user-generated content and creative marketing materials.',
+      role: 'Content Generation AI', 
+      specialty: 'Expert UGC video generator',
+      avatar: '/van-avatar.jpg',
+      description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
       status: 'online'
     }
   ];
@@ -1740,7 +1740,7 @@ function renderTeamMembers() {
       <div class="team-member ${isActive}" data-employee-id="${employeeId}">
         <div class="member-avatar">
           <img src="${employee.avatar}" alt="${employee.name}">
-          <div class="status-indicator online"></div>
+    const messagesContainer = document.getElementById(`messages-${currentEmployee?.id}`);
         </div>
         <div class="member-info">
           <div class="member-name">${employee.name}</div>
@@ -2079,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (secondaryInput) secondaryInput.value = colors.secondary;
       if (secondaryPicker) secondaryPicker.value = colors.secondary;
       if (accentInput) accentInput.value = colors.accent;
-      if (accentPicker) accentPicker.value = colors.accent;
+    const typingIndicator = document.querySelector(`#messages-${currentEmployee?.id} .typing-indicator-message`);
     } catch (error) {
       console.error('Failed to load saved colors:', error);
     }
@@ -2105,4 +2105,34 @@ function getCurrentEmployeeName() {
     'van': 'AI Van'
   };
   return names[activeEmployeeId] || `AI ${activeEmployeeId}`;
+}
+
+function updateEmployeeHeader(employeeId) {
+  const employeeNames = {
+    'brenden': 'AI Brenden',
+    'Rey': 'AI Rey',
+    'Xavier': 'AI Xavier'
+  };
+  
+  const employeeRoles = {
+    'brenden': 'Lead Research Specialist',
+    'Rey': 'Voice Outreach Manager',
+    'Xavier': 'UGC Expert'
+  };
+  
+  const employeeAvatars = {
+    'brenden': 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Rey': 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Xavier': 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  };
+  
+  const nameElement = document.querySelector('.employee-details h3');
+  const roleElement = document.querySelector('.role-tag');
+  const avatarElement = document.querySelector('.employee-avatar img');
+  
+  if (nameElement) nameElement.textContent = employeeNames[employeeId] || 'Unknown Employee';
+  if (roleElement) roleElement.textContent = employeeRoles[employeeId] || 'Unknown Role';
+  if (avatarElement) avatarElement.src = employeeAvatars[employeeId] || '';
+  
+  console.log('Employee header updated for:', employeeId);
 }
