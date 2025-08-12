@@ -1727,6 +1727,11 @@ function renderTeamMembers() {
   // SURGICAL FIX: Build team members dynamically from employees object
   let teamHTML = '';
   
+    // Create chat interfaces for all employees
+    employees.forEach(employee => {
+      createChatInterface(employee);
+    });
+
   Object.entries(employees).forEach(([employeeId, employee]) => {
     const isActive = employeeId === 'brenden' ? 'active' : '';
     const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
@@ -1761,6 +1766,119 @@ function renderTeamMembers() {
     const employeeId = member.dataset.employeeId;
     console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
   });
+  // Create chat interface for an employee
+  function createChatInterface(employee) {
+    const chatInterface = document.querySelector('.chat-interface');
+    if (!chatInterface) {
+      console.error('Chat interface container not found');
+      return;
+    }
+
+    // Check if chat container already exists for this employee
+    let chatContainer = document.getElementById(`chat-${employee.id}`);
+    if (chatContainer) {
+      return; // Already exists
+    }
+
+    // Create chat container for this employee
+    chatContainer = document.createElement('div');
+    chatContainer.id = `chat-${employee.id}`;
+    chatContainer.className = 'employee-chat-container';
+    chatContainer.style.display = 'none';
+    
+    chatContainer.innerHTML = `
+      <div class="chat-messages" id="messages-${employee.id}">
+        <div class="welcome-message">
+          <div class="welcome-avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="welcome-content">
+            <h4>Welcome to ${employee.name}</h4>
+            <p>${employee.description}</p>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-container">
+        <form class="chat-form" id="chat-form-${employee.id}">
+          <div class="input-wrapper">
+            <textarea id="messageInput-${employee.id}" placeholder="Ask ${employee.name} anything..." rows="1"></textarea>
+            <button type="submit" class="send-button" id="send-button-${employee.id}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="character-count" id="char-count-${employee.id}">0/4000</div>
+        </form>
+      </div>
+    `;
+
+    // Find the chat-content container and append
+    const chatContent = chatInterface.querySelector('.chat-content');
+    if (chatContent) {
+      chatContent.appendChild(chatContainer);
+    } else {
+      chatInterface.appendChild(chatContainer);
+    }
+
+    // Setup event listeners for this employee's chat
+    setupChatEventListeners(employee);
+  }
+
+  // Setup event listeners for a specific employee's chat
+  function setupChatEventListeners(employee) {
+    const form = document.getElementById(`chat-form-${employee.id}`);
+    const input = document.getElementById(`messageInput-${employee.id}`);
+    const charCount = document.getElementById(`char-count-${employee.id}`);
+    const sendButton = document.getElementById(`send-button-${employee.id}`);
+
+    if (!form || !input || !charCount || !sendButton) {
+      console.error(`Failed to find chat elements for ${employee.id}`);
+      return;
+    }
+
+    // Character count
+    input.addEventListener('input', () => {
+      const length = input.value.length;
+      charCount.textContent = `${length}/4000`;
+      charCount.classList.toggle('warning', length > 3500);
+      charCount.classList.toggle('error', length > 4000);
+      sendButton.disabled = length === 0 || length > 4000;
+    });
+
+    // Auto-resize textarea
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const message = input.value.trim();
+      if (!message || currentEmployee?.id !== employee.id) return;
+      
+      await sendMessage(message);
+      input.value = '';
+      input.style.height = 'auto';
+      charCount.textContent = '0/4000';
+      sendButton.disabled = true;
+    });
+
+    // Enter key handling
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  }
 }
 
 function attachTeamMemberListeners() {
