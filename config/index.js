@@ -48,24 +48,13 @@ const config = {
     Rey: {
       assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
       name: 'AI Rey',
-      role: 'strategic analyst', 
-      specialty: 'Lead Generation Plan Strategist',
-      toolWebhooks: {
-        get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a',
-        // Add other tools for Rey here
-      }
-      // chainsTo: null
-    },
-    xavier: {
-      assistantId: 'asst_6oDeBjbnFlAiagSEJDWHvBtl',
-      name: 'AI Xavier',
-      role: 'content specialist',
-      specialty: 'Content Generation AI',
+      role: 'Lead Generation Plan Strategist',
+      specialty: 'Voice Outreach Manager',
       toolWebhooks: { // Use toolWebhooks object for multiple tools
-        generate_content: 'https://pccommandcenter.app.n8n.cloud/webhook-test/xavier-content-webhook', // Add real webhook when ready
-        // Add other tools for Xavier here
+        get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
+        // Add other tools for Angel here
       }
-      // chainsTo: null // Example: Xavier does not chain further
+      // chainsTo: null // Example: Angel does not chain further
     }
     // EASILY ADD MORE EMPLOYEES HERE:
     // sarah: {

@@ -16,9 +16,7 @@
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
-}
-
-.header-actions {
+  .header-actions {
     display: flex;
     gap: 12px;
     align-items: center;
@@ -1465,16 +1463,6 @@
 .tag.voice {
     background: #f3e8ff;
     color: #7c3aed;
-}
-
-.tag.strategy {
-    background: #ecfdf5;
-    color: #065f46;
-}
-
-.tag.analytics {
-    background: #eff6ff;
-    color: #1e40af;
 }
 
 .member-stats {
