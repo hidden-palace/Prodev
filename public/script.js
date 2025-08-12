@@ -184,7 +184,7 @@ function setupEmployeeProfiles() {
     name: 'AI Xavier', 
     role: 'Content Generation AI', 
     specialty: 'Expert UGC video generator',
-    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
+    avatar: '/xavier-avatar.jpg',
     description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
     status: 'online'
   },
