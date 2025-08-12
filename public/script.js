@@ -4,7 +4,6 @@ let currentThreadId = null;
 let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
-let conversationThreads = {}; // Store thread IDs for each employee
 
 // Employee configurations
 const employees = {
@@ -648,7 +647,7 @@ function loadConversation(employeeId) {
     // Show welcome message for new conversation
     clearChatMessages();
     showWelcomeMessage(employees[employeeId]);
-    currentThreadId = conversationThreads[employeeId] || null; // Load existing conversation thread for this employee or create new one
+    currentThreadId = null; // No thread yet for this employee
     
     console.log(`🆕 New conversation for ${employees[employeeId]?.name}:`, {
       employee: employeeId,
@@ -877,10 +876,8 @@ async function handleChatSubmit(e) {
     }
     
     // Update thread ID for this employee
-    if (data.thread_id && data.thread_id !== currentThreadId) {
+    if (data.thread_id) {
       currentThreadId = data.thread_id;
-      // Store the thread ID for this specific employee
-      conversationThreads[currentEmployee] = data.thread_id;
       console.log(`🧵 Thread updated for ${employees[currentEmployee]?.name}: ${currentThreadId}`);
     }
     
@@ -1700,44 +1697,6 @@ function selectEmployee(employeeId) {
   console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
   console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
   console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
-}
-
-// Load conversation history when switching employees
-function loadConversationHistory(employeeId) {
-    // In a full implementation, you might want to fetch and display 
-    // previous messages from the server for this employee's thread
-    console.log(`📚 Loading conversation history for ${getEmployeeName(employeeId)}`);
-    
-    // For now, we just clear the display since we don't store message history
-    // but the backend will maintain the conversation context via the thread_id
-    const chatMessages = document.getElementById('chat-messages');
-    if (chatMessages) {
-        chatMessages.innerHTML = `
-            <div class="welcome-message">
-                <div class="welcome-avatar">
-                    🤖
-                </div>
-                <div class="welcome-content">
-                    <h4>Welcome back!</h4>
-                    <p>Continue your conversation with ${getEmployeeName(employeeId)}. Previous context is maintained.</p>
-                </div>
-            </div>
-        `;
-    }
-}
-
-// Handle employee click with improved error handling
-function handleEmployeeClick(employeeId, employeeName) {
-    console.log('👤 Employee clicked:', employeeId, employeeName);
-    
-    try {
-        setActiveEmployee(employeeId);
-        loadConversationHistory(employeeId);
-        console.log('✅ Successfully switched to:', employeeName);
-    } catch (error) {
-        console.error('❌ Failed to switch employee:', error);
-        showError('Failed to switch to ' + employeeName + '. Please try again.');
-    }
 }
 
 async function sendMessage(message) {
