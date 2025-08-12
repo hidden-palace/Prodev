@@ -161,49 +161,44 @@ function setupEmployeeProfiles() {
   console.log('🔧 Setting up employee profiles...');
   
   const employees = [
-    { 
-      id: 'brenden', 
-      name: 'AI Brenden', 
-      role: 'Lead Research Specialist', 
-      specialty: 'Lead Generation & Data Research',
-      avatar: '/brenden-avatar.jpg',
-      description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
-      status: 'online'
-    },
-    { 
-      id: 'Van', 
-      name: 'AI Van', 
-      role: 'Landing Page Generation Expert', 
-      specialty: 'Landing Page Expert',
-      avatar: '/van-avatar.jpg',
-      description: 'Expert at creating comprehensive engaging landing pages that convert.',
-      status: 'online'
-    },
-    {
-      id: 'Xavier',
-      name: 'AI Xavier',
-      role: 'UGC Expert', 
-      avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-    },
-    { 
-      id: 'Rey', 
-      name: 'AI Rey', 
-      role: 'Lead Generation Plan Strategist', 
-      specialty: 'Voice Outreach & Campaign Management',
-      avatar: '/rey-avatar.jpg', 
-      description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
-      status: 'online'
-    },
-    { 
-      id: 'Xavier', 
-      name: 'AI Xavier', 
-      role: 'Content Generation AI', 
-      specialty: 'Expert UGC video generator',
-      avatar: '/van-avatar.jpg',
-      description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
-      status: 'online'
-    }
-  ];
+  { 
+    id: 'brenden', 
+    name: 'AI Brenden', 
+    role: 'Lead Research Specialist', 
+    specialty: 'Lead Generation & Data Research',
+    avatar: '/brenden-avatar.jpg',
+    description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
+    status: 'online'
+  },
+  { 
+    id: 'van', 
+    name: 'AI Van', 
+    role: 'Landing Page Generation Expert', 
+    specialty: 'Landing Page Expert',
+    avatar: '/van-avatar.jpg',
+    description: 'Expert at creating comprehensive engaging landing pages that convert.',
+    status: 'online'
+  },
+  { 
+    id: 'xavier', 
+    name: 'AI Xavier', 
+    role: 'Content Generation AI', 
+    specialty: 'Expert UGC video generator',
+    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
+    description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
+    status: 'online'
+  },
+  { 
+    id: 'rey', 
+    name: 'AI Rey', 
+    role: 'Lead Generation Plan Strategist', 
+    specialty: 'Voice Outreach & Campaign Management',
+    avatar: '/rey-avatar.jpg', 
+    description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+    status: 'online'
+  }
+];
+
 
   // Clear existing employee list and ensure fresh state
   employeeList.innerHTML = '';
