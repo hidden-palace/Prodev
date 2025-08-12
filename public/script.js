@@ -12,7 +12,7 @@ let pendingMessages = {}; // Track pending messages per employee
 
 // Employee configurations
 const employees = {
-  brenden: {
+    id: 'brenden', 
     name: 'AI Brenden',
     role: 'lead scraper',
     specialty: 'Lead Research Specialist',
@@ -33,14 +33,14 @@ const employees = {
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
-      { icon: '🎨', text: 'Create Valentine\'s page', action: 'Create a Valentine\'s Day landing page for flower sales' },
+    id: 'van',
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
     ],
     tags: ['Marketing', 'Design']
   },
-  Rey: {
+    id: 'Rey',
     name: 'AI Rey',
     role: 'Strategic Analyst',
     specialty: 'Lead Generation Plan Strategist',
@@ -54,7 +54,7 @@ const employees = {
     ],
     tags: ['Strategy', 'Analytics']
   },
-  xavier: {
+    id: 'Xavier',
     name: 'AI Xavier',
     role: 'Content Specialist',
     specialty: 'Content Generation AI',
