@@ -18,7 +18,8 @@ const employees = {
       { icon: '📊', text: 'Research wedding vendors', action: 'Research wedding vendors and event planners' },
       { icon: '🏢', text: 'Corporate clients search', action: 'Find corporate clients who need floral services' },
       { icon: '📋', text: 'Scrape LinkedIn For VAs', action: 'Scrape LinkedIn For Virtual Assistants' }
-    ]
+    ],
+    tags: ['Specialist', 'Marketing']
   },
   van: {
     name: 'AI Van',
@@ -31,19 +32,34 @@ const employees = {
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
-    ]
+    ],
+    tags: ['Marketing', 'Design']
   },
   Rey: {
     name: 'AI Rey',
-    role: 'Lead Generation Plan Strategist',
-    specialty: 'Lead Generation Strategist',
+    role: 'Strategic Analyst',
+    specialty: 'Lead Generation Plan Strategist',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
-    description: 'Professional Lead Generation Plan Strategist, I can generate comprehensive Lead Generation Plans including KPIs and Target Audience.',
+    description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects.',
     quickActions: [
       { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
       { icon: '📝', text: 'Generate a 3-Tier Lead Gen Strategy', action: 'Generate a 3-Tier Lead Gen Strategy' },
       { icon: '📊', text: 'Break Plan into Time-Phased Actions', action: 'Break Plan into Time-Phased Actions' },
       { icon: '🎯', text: ' Build KPI Tracking metrics', action: ' Build KPI Tracking metrics' }
+    ],
+    tags: ['Strategy', 'Analytics']
+  },
+  xavier: {
+    name: 'AI Xavier',
+    role: 'Content Specialist',
+    specialty: 'Content Generation AI',
+    description: 'I create compelling content across all formats - from engaging blog posts and social media content to persuasive email campaigns and landing page copy. I understand audience psychology and craft messages that convert.',
+    avatar: '/api/branding/employee-avatars/xavier.jpg',
+    tags: ['Content', 'Marketing'],
+    tasks: [
+      { id: 1, title: 'Create Email Campaign Content', status: 'in-progress' },
+      { id: 2, title: 'Write Landing Page Copy', status: 'pending' },
+      { id: 3, title: 'Develop Social Media Content', status: 'pending' }
     ]
   }
 }; 
@@ -1358,7 +1374,6 @@ function displayLeadsTable(leads) {
   
   // Create table body
   const tableBody = document.createElement('tbody');
-  leadsTable.appendChild(tableBody);
   
   if (leads.length === 0) {
     // Hide download button when no leads
@@ -1374,18 +1389,63 @@ function displayLeadsTable(leads) {
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
               <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
               <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
             </div>
+            <div class="team-member" data-employee-id="xavier">
+                <div class="member-avatar">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="AI Xavier">
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="member-info">
+                    <div class="member-name">AI Xavier</div>
+                    <div class="member-role">Content Specialist</div>
+                    <div class="member-tags">
+                        <span class="tag content">Content</span>
+                        <span class="tag marketing">Marketing</span>
+                    </div>
+                </div>
+                <div class="member-stats">
+                    <span class="notification-badge">2</span>
+                </div>
+            </div>
           </div>
         </td>
       </tr>
     `;
     
+    // SURGICAL FIX: Ensure Xavier's team member has correct data attribute
+    const xavierMember = document.querySelector('.team-member[data-employee-id="xavier"]');
+    if (!xavierMember) {
+      console.error('🚨 SURGICAL ERROR: Xavier team member not found with data-employee-id="xavier"');
+      // Find Xavier by content and fix the attribute
+      const allMembers = document.querySelectorAll('.team-member');
+      allMembers.forEach(member => {
+        if (member.textContent.includes('AI Xavier')) {
+          console.log('🔧 SURGICAL FIX: Adding data-employee-id to Xavier element');
+          member.setAttribute('data-employee-id', 'xavier');
+        }
+      });
+    }
+    
+    // Add event listeners to team members
+    document.querySelectorAll('.team-member').forEach(member => {
+      member.addEventListener('click', () => {
+        console.log('🔍 SURGICAL DEBUG: Team member clicked:', member);
+        console.log('🔍 SURGICAL DEBUG: data-employee-id:', member.dataset.employeeId);
+        const employeeId = member.dataset.employeeId;
+        console.log('🔍 SURGICAL DEBUG: Extracted employeeId:', employeeId);
+        console.log('🔍 SURGICAL DEBUG: Available employees:', Object.keys(employees));
+        if (employeeId && employees[employeeId]) {
+          selectEmployee(employeeId);
+        }
+      });
+    });
+    
+    leadsTable.appendChild(tableBody);
     return;
   }
   
@@ -1440,6 +1500,8 @@ function displayLeadsTable(leads) {
     `;
     tableBody.appendChild(row);
   });
+  
+  leadsTable.appendChild(tableBody);
 }
 
 function getScoreClass(score) {
@@ -1511,6 +1573,197 @@ function viewLead(leadId) {
 function editLead(leadId) {
   // TODO: Implement lead editing
   console.log('Edit lead:', leadId);
+}
+
+function renderTeamMembers() {
+  console.log('🔧 SURGICAL: renderTeamMembers called');
+  console.log('🔧 SURGICAL: Available employees:', Object.keys(employees));
+  
+  const teamSection = document.querySelector('.team-members');
+  if (!teamSection) return;
+  
+  // SURGICAL FIX: Build team members dynamically from employees object
+  let teamHTML = '';
+  
+  Object.entries(employees).forEach(([employeeId, employee]) => {
+    const isActive = employeeId === 'brenden' ? 'active' : '';
+    const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
+    
+    teamHTML += `
+      <div class="team-member ${isActive}" data-employee-id="${employeeId}">
+        <div class="member-avatar">
+          <img src="${employee.avatar}" alt="${employee.name}">
+          <div class="status-indicator online"></div>
+        </div>
+        <div class="member-info">
+          <div class="member-name">${employee.name}</div>
+          <div class="member-role">${employee.role}</div>
+          <div class="member-tags">
+            ${employee.tags.map(tag => `<span class="tag ${tag.toLowerCase()}">${tag}</span>`).join('')}
+          </div>
+        </div>
+        <div class="member-stats">
+          <div class="notification-badge">${badgeCount}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  teamSection.innerHTML = teamHTML;
+  
+  console.log('🔧 SURGICAL: Team members HTML generated');
+  console.log('🔧 SURGICAL: Found team member elements:', document.querySelectorAll('.team-member').length);
+  
+  // SURGICAL VERIFICATION: Check each team member's data attribute
+  document.querySelectorAll('.team-member').forEach((member, index) => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
+  });
+}
+
+function attachTeamMemberListeners() {
+  console.log('🔧 SURGICAL: attachTeamMemberListeners called');
+  
+  // Add event listeners to team members
+  document.querySelectorAll('.team-member').forEach(member => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Attaching listener to team member: ${employeeId}`);
+    
+    member.addEventListener('click', () => {
+      console.log('🚨 SURGICAL CLICK: Team member clicked');
+      console.log('🚨 SURGICAL CLICK: data-employee-id:', member.dataset.employeeId);
+      console.log('🚨 SURGICAL CLICK: Available employees:', Object.keys(employees));
+      console.log('🚨 SURGICAL CLICK: Employee exists?', !!employees[employeeId]);
+      
+      if (employeeId && employees[employeeId]) {
+        console.log('🚨 SURGICAL CLICK: Calling selectEmployee with:', employeeId);
+        selectEmployee(employeeId);
+      } else {
+        console.error('🚨 SURGICAL ERROR: Employee not found:', employeeId);
+      }
+    });
+  });
+}
+
+function renderMainContent() {
+  renderTeamMembers();
+  attachTeamMemberListeners();
+  renderMainContent();
+}
+
+function selectEmployee(employeeId) {
+  console.log('🎯 SURGICAL SELECT: selectEmployee called with:', employeeId);
+  console.log('🎯 SURGICAL SELECT: Current employee:', currentEmployee);
+  console.log('🎯 SURGICAL SELECT: Employee exists?', !!employees[employeeId]);
+  
+  if (!employees[employeeId]) {
+    console.error('🚨 SURGICAL ERROR: Employee not found in selectEmployee:', employeeId);
+    console.error('🚨 SURGICAL ERROR: Available employees:', Object.keys(employees));
+    return;
+  }
+  
+  const selectedEmployee = employees[employeeId];
+  console.log('🎯 SURGICAL SELECT: Selected employee object:', selectedEmployee);
+
+  // Save current conversation before switching
+  if (currentEmployee && currentConversation) {
+    conversationHistory[currentEmployee] = currentConversation;
+  }
+
+  // Update current employee
+  console.log('🔄 CRITICAL: Setting currentEmployee from', currentEmployee, 'to', employeeId);
+  currentEmployee = employeeId;
+  console.log('🔄 CRITICAL: currentEmployee is now:', currentEmployee);
+
+  // Load or create conversation for new employee
+  loadConversationForEmployee(employeeId);
+
+  // Update active team member visual state
+  document.querySelectorAll('.team-member').forEach(member => {
+    member.classList.remove('active');
+    const memberEmployeeId = member.dataset.employeeId;
+    if (memberEmployeeId === employeeId) {
+      member.classList.add('active');
+      console.log('🎯 VISUAL UPDATE: Set active class for', employeeId);
+    }
+  });
+
+  // Update chat header with employee details
+  updateChatHeader(selectedEmployee);
+  updateQuickActions(selectedEmployee.quickActions || []);
+  updateChatTabs(selectedEmployee);
+  updateChatContent(selectedEmployee);
+
+  console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
+  console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
+  console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
+}
+
+async function sendMessage(message) {
+  if (!message.trim()) return;
+
+  // CRITICAL FIX: Verify currentEmployee before sending
+  console.log('🚨 SEND MESSAGE DEBUG: About to send message');
+  console.log('🚨 SEND MESSAGE DEBUG: currentEmployee:', currentEmployee);
+  console.log('🚨 SEND MESSAGE DEBUG: message:', message);
+  console.log('🚨 SEND MESSAGE DEBUG: currentConversation:', currentConversation);
+  
+  if (!currentEmployee) {
+    console.error('🚨 CRITICAL ERROR: No currentEmployee set! Defaulting to brenden');
+    currentEmployee = 'brenden';
+  }
+  
+  addMessageToUI(message, 'user');
+  
+  const messageInput = document.getElementById('messageInput');
+  const sendButton = document.querySelector('.send-button');
+  
+  messageInput.value = '';
+  sendButton.disabled = true;
+  
+  try {
+    showTypingIndicator();
+    
+    console.log('📡 API REQUEST DEBUG: Sending to employee:', currentEmployee);
+    console.log('📡 API REQUEST DEBUG: Request payload:', {
+      message: message,
+      employee: currentEmployee,
+      thread_id: currentConversation.thread_id
+    });
+    
+    const response = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message,
+        employee: currentEmployee,
+        thread_id: currentConversation.thread_id
+      })
+    });
+
+    const data = await response.json();
+    console.log('📡 API RESPONSE DEBUG: Received response:', data);
+    console.log('📡 API RESPONSE DEBUG: Response employee:', data.employee?.name);
+    
+    hideTypingIndicator();
+    
+    if (data.message) {
+      addMessageToUI(data.message, 'assistant');
+    }
+    
+    if (data.thread_id) {
+      currentConversation.thread_id = data.thread_id;
+    }
+    
+  } catch (error) {
+    console.error('Error sending message:', error);
+    hideTypingIndicator();
+    addMessageToUI('Sorry, there was an error processing your message.', 'assistant');
+  } finally {
+    sendButton.disabled = false;
+  }
 }
 
 // Load saved color scheme on page load
