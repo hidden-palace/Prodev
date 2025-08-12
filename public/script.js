@@ -43,10 +43,6 @@ const employees = {
   Rey: {
     name: 'AI Rey',
     role: 'Strategic Analyst',
-  },
-  Xavier: {
-    name: 'AI Xavier', 
-    role: 'UGC Expert'
     specialty: 'Lead Generation Plan Strategist',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects.',
