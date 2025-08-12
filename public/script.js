@@ -69,6 +69,8 @@ const employees = {
   }
 }; 
 
+const validEmployees = ['brenden', 'van', 'Rey', 'Xavier'];
+
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount, employeeList;
 
