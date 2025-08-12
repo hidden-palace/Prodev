@@ -1115,12 +1115,14 @@ async function pollForCompletion(threadId, runId, maxAttempts = 60) {
           );
           
           // Auto-refresh leads page if user is currently viewing it
-          const leadsSection = document.getElementById('leads-section');
-                employee: currentEmployee,
-                assistantId: currentConfig.assistantId
-            console.log('📊 Auto-refreshing leads page...');
-            await loadLeadsData();
-          }
+const leadsSection = document.getElementById('leads-section');
+if (leadsSection && leadsSection.classList.contains('active')) {
+  console.log('📊 Auto-refreshing leads page...');
+  await loadLeadsData({
+    employee: currentEmployee,
+    assistantId: currentConfig.assistantId
+  });
+}
           
           // Update dashboard metrics
           await loadDashboardMetrics();
