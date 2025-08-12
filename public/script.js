@@ -1882,10 +1882,14 @@ async function sendMessage(message) {
       employeeId: data.employee?.name || 'UNKNOWN',
       messagePreview: data.message?.substring(0, 100) + '...'
     });
+    
+    // Hide typing indicator as soon as we get a response
+    hideTypingIndicator();
 
     // Store the thread ID for this employee
     if (data.thread_id) {
       conversationThreads[activeEmployeeId] = data.thread_id;
+      console.log(`💾 Stored thread ID for ${activeEmployeeId}:`, data.thread_id);
     }
 
     // Add assistant response to chat
@@ -1897,15 +1901,20 @@ async function sendMessage(message) {
     appendMessage(data.message, 'assistant', employeeName);
 
     if (data.status === 'requires_action') {
-      // Handle tool calls if needed
-      console.log('🔧 Tool calls required, handling...');
+      console.log('⚠️ Assistant requires additional actions');
     }
 
   } catch (error) {
     console.error('❌ Error sending message:', error);
+    
+    // Always hide typing indicator on error
+    hideTypingIndicator();
+    
     appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
   } finally {
-    isMessagePending = false;
+    // Clear pending status for THIS employee only
+    pendingMessages[activeEmployeeId] = false;
+    updateSendButtonState();
   }
 }
 
