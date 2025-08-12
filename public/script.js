@@ -5,6 +5,11 @@ let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
+// Global state management
+let activeEmployeeId = 'brenden';
+let conversationThreads = {}; // Store separate thread IDs for each employee
+let isMessagePending = false; // Prevent double-clicks during processing
+
 // Employee configurations
 const employees = {
   brenden: {
@@ -65,7 +70,7 @@ const employees = {
 }; 
 
 // DOM elements
-let chatMessages, messageInput, sendButton, charCount;
+let chatMessages, messageInput, sendButton, charCount, employeeList;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -91,6 +96,7 @@ function initializeElements() {
   messageInput = document.getElementById('messageInput');
   sendButton = document.getElementById('sendButton');
   charCount = document.getElementById('charCount');
+  employeeList = document.querySelector('.team-members');
 }
 
 function initializeNavigation() {
@@ -137,6 +143,124 @@ function initializeEmployeeSelection() {
       member.classList.add('active');
     });
   });
+}
+
+function setupEmployeeProfiles() {
+  console.log('🔧 Setting up employee profiles...');
+  
+  const employees = [
+    { 
+      id: 'brenden', 
+      name: 'AI Brenden', 
+      role: 'Lead Research Specialist', 
+      specialty: 'Lead Generation & Data Research',
+      avatar: '/brenden-avatar.jpg',
+      description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
+      status: 'online'
+    },
+    { 
+      id: 'Rey', 
+      name: 'AI Rey', 
+      role: 'Lead Generation Plan Strategist', 
+      specialty: 'Voice Outreach & Campaign Management',
+      avatar: '/rey-avatar.jpg', 
+      description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+      status: 'online'
+    }
+  ];
+
+  // Clear existing employee list and ensure fresh state
+  employeeList.innerHTML = '';
+  
+  console.log('🔧 CRITICAL: Creating employee elements with data attributes');
+
+  employees.forEach((employee, index) => {
+    const employeeEl = document.createElement('div');
+    employeeEl.className = `team-member ${employee.id === activeEmployeeId ? 'active' : ''}`;
+    // CRITICAL: Store employee ID in data attribute for foolproof identification
+    employeeEl.setAttribute('data-employee-id', employee.id);
+    employeeEl.setAttribute('data-employee-name', employee.name);
+    employeeEl.innerHTML = `
+      <div class="member-avatar">
+        <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="${employee.name}">
+        <div class="status-indicator ${employee.status}"></div>
+      </div>
+      <div class="member-info">
+        <div class="member-name">${employee.name}</div>
+        <div class="member-role">${employee.role}</div>
+        <div class="member-specialty">${employee.specialty}</div>
+      </div>
+    `;
+
+    // CRITICAL: Add click handler using data attribute, not array index
+    employeeEl.addEventListener('click', function() {
+      const clickedEmployeeId = this.getAttribute('data-employee-id');
+      const clickedEmployeeName = this.getAttribute('data-employee-name');
+      
+      console.log('🎯 EMERGENCY FIX: Employee clicked!');
+      console.log('🎯 EMERGENCY FIX: Clicked element data-employee-id:', clickedEmployeeId);
+      console.log('🎯 EMERGENCY FIX: Clicked element data-employee-name:', clickedEmployeeName);
+      console.log('🎯 EMERGENCY FIX: Previous activeEmployeeId:', activeEmployeeId);
+      
+      if (!clickedEmployeeId) {
+        console.error('🚨 CRITICAL ERROR: No employee ID found on clicked element!');
+        return;
+      }
+      
+      // Prevent processing if message is pending
+      if (isMessagePending) {
+        console.warn('⚠️ Message pending, ignoring click');
+        return;
+      }
+      
+      // Update active employee with absolute certainty
+      activeEmployeeId = clickedEmployeeId;
+      
+      console.log('🎯 EMERGENCY FIX: NEW activeEmployeeId set to:', activeEmployeeId);
+      
+      // Update visual selection
+      document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Find employee data
+      const selectedEmployee = employees.find(emp => emp.id === clickedEmployeeId);
+      if (!selectedEmployee) {
+        console.error('🚨 CRITICAL ERROR: Employee not found in array!');
+        return;
+      }
+      
+      console.log('🎯 EMERGENCY FIX: Selected employee object:', selectedEmployee);
+      
+      // Handle employee selection
+      handleEmployeeClick(selectedEmployee);
+    });
+
+    employeeList.appendChild(employeeEl);
+    
+    console.log(`🔧 Employee ${employee.name} (${employee.id}) added to DOM with data attribute`);
+  });
+
+  console.log('✅ Employee profiles setup complete');
+  console.log('✅ CRITICAL: activeEmployeeId is:', activeEmployeeId);
+}
+
+function handleEmployeeClick(employee) {
+  console.log('👤 Employee selected:', employee.name, '(ID:', employee.id, ')');
+  console.log('👤 CRITICAL VERIFICATION: activeEmployeeId is now:', activeEmployeeId);
+  console.log('👤 CRITICAL VERIFICATION: employee.id is:', employee.id);
+  console.log('👤 CRITICAL VERIFICATION: Do they match?', activeEmployeeId === employee.id);
+
+  // Update active employee visual state
+  document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-employee-id="${employee.id}"]`)?.classList.add('active');
+
+  // Update chat header
+  updateChatHeader(employee);
+
+  // Load conversation for this employee
+  loadConversationForEmployee(employee.id);
+
+  console.log(`✅ Successfully switched to ${employee.name}`);
 }
 
 function initializeChatInterface() {
@@ -1700,69 +1824,88 @@ function selectEmployee(employeeId) {
 }
 
 async function sendMessage(message) {
-  if (!message.trim()) return;
-
-  // CRITICAL FIX: Verify currentEmployee before sending
-  console.log('🚨 SEND MESSAGE DEBUG: About to send message');
-  console.log('🚨 SEND MESSAGE DEBUG: currentEmployee:', currentEmployee);
-  console.log('🚨 SEND MESSAGE DEBUG: message:', message);
-  console.log('🚨 SEND MESSAGE DEBUG: currentConversation:', currentConversation);
+  console.log('📤 Sending message...');
+  console.log('📤 CRITICAL: About to send message with activeEmployeeId:', activeEmployeeId);
+  console.log('📤 CRITICAL: Message content:', message);
+  console.log('📤 CRITICAL: Thread ID for this employee:', conversationThreads[activeEmployeeId]);
   
-  if (!currentEmployee) {
-    console.error('🚨 CRITICAL ERROR: No currentEmployee set! Defaulting to brenden');
-    currentEmployee = 'brenden';
+  if (isMessagePending) {
+    console.warn('⚠️ Message already pending, skipping');
+    return;
   }
   
-  addMessageToUI(message, 'user');
-  
+  isMessagePending = true;
+
+  if (!message.trim()) {
+    isMessagePending = false;
+    return;
+  }
+
+  // Clear input and disable send button
   const messageInput = document.getElementById('messageInput');
   const sendButton = document.querySelector('.send-button');
   
-  messageInput.value = '';
-  sendButton.disabled = true;
-  
+  if (messageInput) messageInput.value = '';
+  if (sendButton) sendButton.disabled = true;
+
   try {
-    showTypingIndicator();
+    // Add user message to chat immediately
+    appendMessage(message, 'user', 'You');
+
+    console.log('🚀 CRITICAL: Making API request with employee:', activeEmployeeId);
     
-    console.log('📡 API REQUEST DEBUG: Sending to employee:', currentEmployee);
-    console.log('📡 API REQUEST DEBUG: Request payload:', {
+    // Prepare message data with current employee context
+    const messageData = {
       message: message,
-      employee: currentEmployee,
-      thread_id: currentConversation.thread_id
-    });
+      employee: activeEmployeeId,
+      thread_id: conversationThreads[activeEmployeeId] || null
+    };
     
+    console.log('🚀 CRITICAL: Full API payload:', messageData);
+
+    // Send to backend
     const response = await fetch('/api/ask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        message: message,
-        employee: currentEmployee,
-        thread_id: currentConversation.thread_id
-      })
+      body: JSON.stringify(messageData)
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
-    console.log('📡 API RESPONSE DEBUG: Received response:', data);
-    console.log('📡 API RESPONSE DEBUG: Response employee:', data.employee?.name);
-    
-    hideTypingIndicator();
-    
-    if (data.message) {
-      addMessageToUI(data.message, 'assistant');
-    }
-    
+    console.log('📥 CRITICAL: API response received:', {
+      status: data.status,
+      employeeId: data.employee?.name || 'UNKNOWN',
+      messagePreview: data.message?.substring(0, 100) + '...'
+    });
+
+    // Store the thread ID for this employee
     if (data.thread_id) {
-      currentConversation.thread_id = data.thread_id;
+      conversationThreads[activeEmployeeId] = data.thread_id;
     }
+
+    // Add assistant response to chat
+    const employeeName = data.employee?.name || `AI ${activeEmployeeId}`;
     
+    console.log('💬 CRITICAL: Adding response from:', employeeName);
+    console.log('💬 CRITICAL: Expected employee was:', `AI ${activeEmployeeId}`);
+    
+    appendMessage(data.message, 'assistant', employeeName);
+
+    if (data.status === 'requires_action') {
+      // Handle tool calls if needed
+      console.log('🔧 Tool calls required, handling...');
+    }
+
   } catch (error) {
-    console.error('Error sending message:', error);
-    hideTypingIndicator();
-    addMessageToUI('Sorry, there was an error processing your message.', 'assistant');
+    console.error('❌ Error sending message:', error);
+    appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
   } finally {
-    sendButton.disabled = false;
+    isMessagePending = false;
   }
 }
 
