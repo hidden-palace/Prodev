@@ -2204,7 +2204,7 @@ function updateEmployeeHeader(employeeId) {
   const employeeNames = {
     'brenden': 'AI Brenden',
     'Rey': 'AI Rey',
-    'Xavier': 'AI Xavier'
+    'xavier': 'AI xavier'
   };
   
   const employeeRoles = {
