@@ -3,101 +3,941 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Employee Management System</title>
+    <title>AI Command Center Powered By ProDev </title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="error-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
     <div class="app-container">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="company-logo">
-                    <div class="logo-icon" id="fallback-logo" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)); border-radius: 12px; color: white; font-weight: 700; font-size: 18px; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.2);">
-                        OR
+                    <img id="company-logo-img" src="https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753381915405.png" alt="Company Logo">
+                    <div class="logo-icon">
+                        <img id="sidebarCompanyLogo" alt="Company Logo" style="display: none;">
+                        <span id="sidebarLogoFallback">ProDev</span>
+                        <img id="company-logo-img" src="" alt="Company Logo" style="display: none;">
                     </div>
-                    <img id="company-logo-img" src="" alt="Company Logo" style="width: 48px; height: 48px; max-width: 500px; max-height: 500px; object-fit: contain; border-radius: 8px; background: rgba(255, 255, 255, 0.1); display: none; transition: all 0.3s ease;">
                     <div class="company-info">
-                        <h3>Orchid Republic</h3>
-                        <p>AI Employee Management</p>
-                        <span class="tagline">Your Digital Workforce</span>
-                        <small>Multi-Agent AI Platform</small>
+                        <h3>AI Command Center</h3>
+                        <p>Powered By ProDev </p>
+                        <span class="tagline">AI-Powered Business Operations</span>
+                        <small>Command Center v2.0</small>
                     </div>
-                </div>
-            </div>
-            
-            <div class="sidebar-nav">
-                <div class="nav-item active" onclick="showSection('employees')">
-                    <span>👥</span>
-                    <span>AI Employees</span>
                 </div>
             </div>
 
-            <div class="team-section">
-                <h3>Your AI Team</h3>
-                <div class="team-members" id="team-members-container">
-                    <!-- Employee profiles will be dynamically inserted here -->
-                    <div class="loading-employees">
-                        <span>Loading AI employees...</span>
-                    </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-section="dashboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
                 </div>
-            </div>
+                <div class="nav-item" data-section="employees">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    AI Employees
+                </div>
+                <div class="nav-item" data-section="leads">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    Lead Generation
+                </div>
+                <div class="nav-item" data-section="calls">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    Voice Calls
+                </div>
+                <div class="nav-item" data-section="campaigns">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Campaigns
+                </div>
+                <div class="nav-item" data-section="landing-pages">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    Landing Pages
+                </div>
+                <div class="nav-item" data-section="branding">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5l-4.24 4.24M7.76 16.24l-4.24 4.24m12.73 0l-4.24-4.24M7.76 7.76L3.52 3.52"></path>
+                    </svg>
+                    Branding
+                </div>
+                <div class="nav-item" data-section="status">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"></path>
+                        <circle cx="12" cy="12" r="9"></circle>
+                    </svg>
+                    System Status
+                </div>
+            </nav>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Welcome Screen -->
-            <div id="welcomeScreen" class="welcome-screen">
-                <div class="welcome-content-large">
-                    <h2>Welcome to Your AI Employee Management System</h2>
-                    <p>Manage multiple AI agents simultaneously, each specialized for different business tasks.</p>
-                    <p>Click on any AI employee in the sidebar to start a conversation!</p>
-                    
-                    <div class="quick-start-actions">
-                        <div class="quick-start-btn" onclick="startChatWith('brenden')">
-                            <span>🎯</span>
-                            <div>
-                                <strong>Start with AI Brenden</strong>
-                                <small>Lead Research Specialist</small>
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="dashboard-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p>Monitor your AI employees and business operations in real-time</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn secondary" id="configureBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5l-4.24 4.24M7.76 16.24l-4.24 4.24m12.73 0l-4.24-4.24M7.76 7.76L3.52 3.52"></path>
+                            </svg>
+                            Configure
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>AI Employee Status</h3>
+                            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="employee-status-list">
+                            <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <span>AI Brenden - Lead Research</span>
+                            </div>
+                            <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <span>AI Van - Content Design</span>
+                            </div>
+                            <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <span>AI Rey - Lead Generation Strategist</span>
+                            </div>
+                          <div class="employee-status-item">
+                                <div class="status-dot online"></div>
+                                <span>AI Xavier - Content Generation AI</span>
                             </div>
                         </div>
-                        <div class="quick-start-btn" onclick="startChatWith('van')">
-                            <span>🎨</span>
-                            <div>
-                                <strong>Start with AI Van</strong>
-                                <small>Digital Marketing Designer</small>
-                            </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Today's Metrics</h3>
+                            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
                         </div>
-                        <div class="quick-start-btn" onclick="startChatWith('Rey')">
-                            <span>📋</span>
-                            <div>
-                                <strong>Start with AI Rey</strong>
-                                <small>Lead Generation Plan Strategist</small>
-                            </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Leads Generated</span>
+                            <span class="metric-value" id="leads-generated">0</span>
                         </div>
-                        <div class="quick-start-btn" onclick="startChatWith('Xavier')">
-                            <span>📱</span>
-                            <div>
-                                <strong>Start with AI Xavier</strong>
-                                <small>UGC Expert</small>
+                        <div class="metric-row">
+                            <span class="metric-label">Leads Validated</span>
+                            <span class="metric-value" id="leads-validated">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Leads Contacted</span>
+                            <span class="metric-value" id="leads-contacted">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Leads Converted</span>
+                            <span class="metric-value" id="leads-converted">0</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card wide">
+                        <div class="card-header">
+                            <h3>Recent Activity</h3>
+                            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12,6 12,12 16,14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-time">2 min ago</div>
+                                <div class="activity-description">AI Van created a professional services landing page for ProDev Consulting</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">15 min ago</div>
+                                <div class="activity-description">AI Brenden found 23 new consulting leads in the technology sector</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-time">1 hour ago</div>
+                                <div class="activity-description">System health check completed - all services operational</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Multi-Chat Interface -->
-            <div id="multiChatInterface" class="multi-chat-interface">
-                <!-- Multiple chat containers will be added here dynamically -->
+            <!-- AI Employees Section -->
+            <div class="content-section" id="employees-section">
+                <div class="employees-layout">
+                    <!-- Team Panel -->
+                    <div class="team-panel">
+                        <div class="panel-header">
+                            <h2>AI Team</h2>
+                            <p>Select an AI employee to start working</p>
+                            <button class="add-employee-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Employee
+                            </button>
+                        </div>
+
+                        <div class="team-section">
+                            <h3>Active Employees</h3>
+                            <div class="team-members">
+                                <div class="team-member active" data-employee="brenden">
+                                    <div class="member-avatar">
+                                        <img src="https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/brenden.jpeg" alt="AI Brenda">
+                                        <div class="status-indicator online"></div>
+                                    </div>
+                                    <div class="member-info">
+                                        <div class="member-name">AI Brenda</div>
+                                        <div class="member-role">Lead Research Specialist</div>
+                                        <div class="member-tags">
+                                            <span class="tag specialist">Data Expert</span>
+                                        </div>
+                                    </div>
+                                    <div class="member-stats">
+                                        <div class="notification-badge">3</div>
+                                    </div>
+                                </div>
+
+                                <div class="team-member" data-employee="van">
+                                    <div class="member-avatar">
+                                        <img src="https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg" alt="AI Van">
+                                        <div class="status-indicator online"></div>
+                                    </div>
+                                    <div class="member-info">
+                                        <div class="member-name">AI Van</div>
+                                        <div class="member-role">Digital Marketing Designer</div>
+                                        <div class="member-tags">
+                                            <span class="tag marketing">Creative</span>
+                                        </div>
+                                    </div>
+                                    <div class="member-stats">
+                                        <div class="notification-badge">1</div>
+                                    </div>
+                                </div>
+
+                                <div class="team-member" data-employee="Rey">
+                                    <div class="member-avatar">
+                                        <img src="https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg" alt="AI Rey">
+                                        <div class="status-indicator online"></div>
+                                    </div>
+                                    <div class="member-info">
+                                        <div class="member-name">AI Rey</div>
+                                        <div class="member-role">Lead Generation Plan Strategist</div>
+                                        <div class="member-tags">
+                                            <span class="tag voice">AI Strategist</span>
+                                        </div>
+                                    </div>
+                                    <div class="member-stats">
+                                        <div class="notification-badge">0</div>
+                                    </div>
+                                </div>
+                              <div class="team-member active" data-employee="Xavier">
+    <div class="member-avatar">
+        <img src="https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png" alt="AI Xavier">
+        <div class="status-indicator online"></div>
+    </div>
+    <div class="member-info">
+        <div class="member-name">AI Xavier</div>
+        <div class="member-role">Content Generation AI</div>
+        <div class="member-tags">
+            <span class="tag specialist">UGC Expert</span>
+        </div>
+    </div>
+    <div class="member-stats">
+        <div class="notification-badge">4</div>
+    </div>
+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Chat Interface Container -->
+                    <div class="multi-chat-interface" id="multiChatInterface">
+                        <!-- Default Welcome Screen -->
+                        <div class="welcome-screen" id="welcomeScreen">
+                            <div class="welcome-content-large">
+                                <h2>🤖 Welcome to Your AI Employee Dashboard!</h2>
+                                <p>Your AI team is ready to help with lead generation, marketing, and business growth.</p>
+                                <p><strong>Click on any employee in the sidebar to start a conversation.</strong></p>
+                                <p>You can chat with multiple employees simultaneously!</p>
+                                
+                                <div class="quick-start-actions">
+                                    <button onclick="startChatWith('brenden')" class="quick-start-btn">
+                                        <span>🔍</span> Start with Lead Research (Brenden)
+                                    </button>
+                                    <button onclick="startChatWith('van')" class="quick-start-btn">
+                                        <span>🎨</span> Start with Marketing Design (Van)
+                                    </button>
+                                    <button onclick="startChatWith('Rey')" class="quick-start-btn">
+                                        <span>📋</span> Start with Strategy Planning (Rey)
+                                    </button>
+                                    <button onclick="startChatWith('Xavier')" class="quick-start-btn">
+                                        <span>📱</span> Start with Content Creation (Xavier)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads Section -->
+            <div class="content-section" id="leads-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Lead Generation</h1>
+                        <p>Manage and track your lead generation campaigns with AI Brenden</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="export-actions">
+                            <button class="btn primary download-leads-btn" id="downloadLeadsBtn">
+                                <span class="btn-text">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download Leads
+                                </span>
+                                <span class="btn-loading" style="display: none;">
+                                    <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+                                    </svg>
+                                    Exporting...
+                                </span>
+                            </button>
+                            <div class="export-dropdown" id="exportDropdown" style="display: none;">
+                                <div class="dropdown-content">
+                                    <button class="dropdown-item" data-format="csv">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14,2 14,8 20,8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10,9 9,9 8,9"></polyline>
+                                        </svg>
+                                        <div>
+                                            <div>Export as CSV</div>
+                                            <div class="format-desc">Excel compatible</div>
+                                        </div>
+                                    </button>
+                                    <button class="dropdown-item" data-format="xml">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14,2 14,8 20,8"></polyline>
+                                            <line x1="9.5" y1="12.5" x2="14.5" y2="17.5"></line>
+                                            <line x1="14.5" y1="12.5" x2="9.5" y2="17.5"></line>
+                                        </svg>
+                                        <div>
+                                            <div>Export as XML</div>
+                                            <div class="format-desc">Structured data</div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leads-filters">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select class="filter-select" data-filter="status">
+                            <option>All Leads</option>
+                            <option>New</option>
+                            <option>Contacted</option>
+                            <option>Qualified</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Industry</label>
+                        <select class="filter-select" data-filter="industry">
+                            <option>All Industries</option>
+                            <option>Technology</option>
+                            <option>Consulting</option>
+                            <option>Healthcare</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Location</label>
+                        <input type="text" class="filter-input" data-filter="location" placeholder="Enter city or region">
+                    </div>
+                </div>
+
+
+                <div class="leads-table-container">
+                    <table class="leads-table">
+                        <thead>
+                            <tr>
+                                <th>Business</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sample leads data -->
+                            <tr>
+                                <td>
+                                    <div class="business-info">
+                                        <strong>TechFlow Solutions</strong>
+                                        <small>Technology Consulting</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <strong>Sarah Johnson</strong>
+                                        <small>sarah@techflow.com<br>(555) 123-4567</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="location-info">
+                                        <strong>Los Angeles, CA</strong>
+                                        <small>1234 Tech Blvd</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="score high">4.2</span>
+                                </td>
+                                <td>
+                                    <span class="status new">New</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn secondary">View</button>
+                                        <button class="btn secondary">Contact</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="business-info">
+                                        <strong>Digital Dynamics</strong>
+                                        <small>Digital Marketing</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="contact-info">
+                                        <strong>Mike Chen</strong>
+                                        <small>mike@digitaldynamics.com<br>(555) 987-6543</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="location-info">
+                                        <strong>San Francisco, CA</strong>
+                                        <small>567 Market St</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="score high">3.8</span>
+                                </td>
+                                <td>
+                                    <span class="status contacted">Contacted</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn secondary">View</button>
+                                        <button class="btn secondary">Follow Up</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="leads-pagination">
+                    <div class="pagination-info">Showing 1-2 of 2 leads</div>
+                    <div class="pagination-controls">
+                        <div class="page-numbers">
+                            <button class="page-btn active">1</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Calls Section -->
+            <div class="content-section" id="calls-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Voice Calls</h1>
+                        <p>Generate Lead generation plans for your outreach campaign</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                            Start Campaign
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calls-dashboard">
+                    <div class="call-stats">
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Calls Today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0%</div>
+                            <div class="stat-label">Connect Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Appointments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">0 min</div>
+                            <div class="stat-label">Talk Time</div>
+                        </div>
+                    </div>
+
+                    <div class="call-campaigns">
+                        <h3>Call Campaigns</h3>
+                        <div class="campaign-list">
+                            <div class="campaign-item">
+                                <div class="campaign-info">
+                                    <h4>AI Angel Setup Required</h4>
+                                    <p>Voice calling capabilities are currently being configured. AI Angel will be available soon for outbound calling campaigns.</p>
+                                </div>
+                                <div class="campaign-stats">
+                                    <span>Status: Pending Setup</span>
+                                </div>
+                                <div class="campaign-actions">
+                                    <button class="btn secondary" disabled>Configure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaigns Section -->
+            <div class="content-section" id="campaigns-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Marketing Campaigns</h1>
+                        <p>Create and manage marketing campaigns across all channels</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            New Campaign
+                        </button>
+                    </div>
+                </div>
+
+                <div class="campaigns-grid">
+                    <div class="campaign-card">
+                        <div class="campaign-header">
+                            <h3>Q1 2025 Lead Generation</h3>
+                            <span class="campaign-status active">Active</span>
+                        </div>
+                        <div class="campaign-content">
+                            <p>Comprehensive lead generation campaign targeting technology companies and consulting firms in major metropolitan areas.</p>
+                            <div class="campaign-metrics">
+                                <div class="metric">
+                                    <span class="metric-value">1,247</span>
+                                    <span class="metric-label">Impressions</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">89</span>
+                                    <span class="metric-label">Clicks</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">12</span>
+                                    <span class="metric-label">Conversions</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn secondary">Edit</button>
+                            <button class="btn secondary">Analytics</button>
+                        </div>
+                    </div>
+
+                    <div class="campaign-card">
+                        <div class="campaign-header">
+                            <h3>Professional Services Outreach</h3>
+                            <span class="campaign-status draft">Draft</span>
+                        </div>
+                        <div class="campaign-content">
+                            <p>Targeted outreach campaign for professional services firms looking to improve their digital presence and operational efficiency.</p>
+                            <div class="campaign-metrics">
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Impressions</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Clicks</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">0</span>
+                                    <span class="metric-label">Conversions</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="campaign-actions">
+                            <button class="btn primary">Launch</button>
+                            <button class="btn secondary">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Landing Pages Section -->
+            <div class="content-section" id="landing-pages-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Landing Pages</h1>
+                        <p>Design and deploy landing pages with AI Van</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Create Page
+                        </button>
+                    </div>
+                </div>
+
+                <div class="landing-pages-grid">
+                    <div class="page-card create-new">
+                        <div class="create-content">
+                            <div class="create-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </div>
+                            <h3>Create New Page</h3>
+                            <p>Ask AI Van to design a custom landing page for your campaign</p>
+                        </div>
+                    </div>
+
+                    <div class="page-card">
+                        <div class="page-preview">
+                            <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop" alt="Professional Services Landing Page">
+                        </div>
+                        <div class="page-info">
+                            <h3>Professional Services</h3>
+                            <p>Landing page showcasing ProDev Consulting's professional development and business consulting services.</p>
+                            <div class="page-stats">
+                                <span>234 views</span>
+                                <span>18 conversions</span>
+                                <span>7.7% CVR</span>
+                            </div>
+                            <div class="page-actions">
+                                <button class="btn primary">View Live</button>
+                                <button class="btn secondary">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="page-card">
+                        <div class="page-preview">
+                            <img src="https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop" alt="Technology Solutions">
+                        </div>
+                        <div class="page-info">
+                            <h3>Technology Solutions</h3>
+                            <p>Landing page for technology consulting services and digital transformation solutions.</p>
+                            <div class="page-stats">
+                                <span>156 views</span>
+                                <span>12 conversions</span>
+                                <span>7.7% CVR</span>
+                            </div>
+                            <div class="page-actions">
+                                <button class="btn primary">View Live</button>
+                                <button class="btn secondary">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branding Section -->
+            <div class="content-section" id="branding-section">
+                <div class="page-header">
+                    <div>
+                        <h1>Brand Management</h1>
+                        <p>Customize your brand colors and styling</p>
+                    </div>
+                </div>
+
+                <div class="branding-content">
+                    <div class="brand-section">
+                        <h3>Color Palette</h3>
+                        <div class="color-palette">
+                            <div class="color-group">
+                                <label>Primary Color</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="primaryPicker" value="#3b82f6">
+                                    <input type="text" id="primaryInput" value="#3B82F6">
+                                </div>
+                            </div>
+                            <div class="color-group">
+                                <label>Secondary Color</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="secondaryPicker" value="#64748b">
+                                    <input type="text" id="secondaryInput" value="#64748B">
+                                </div>
+                            </div>
+                            <div class="color-group">
+                                <label>Accent Color</label>
+                                <div class="color-input-group">
+                                    <input type="color" id="accentPicker" value="#f97316">
+                                    <input type="text" id="accentInput" value="#F97316">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn primary" id="saveColorsBtn">Save Color Scheme</button>
+                    </div>
+
+                    
+                    <div class="brand-section">
+                        <h3>Logo & Assets</h3>
+                        <div class="asset-upload">
+                            <div class="upload-area">
+                                <div class="upload-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7,10 12,15 17,10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </div>
+                                <h4>Upload Logo</h4>
+                                <p>Drag and drop your logo file here or click to browse</p>
+                                <input type="file" id="logoUpload" accept="image/*" style="display: none;">
+                                <button class="btn secondary" onclick="document.getElementById('logoUpload').click()">Choose File</button>
+                            <input type="file" id="logoUpload" name="logo" accept=".png,.jpg,.jpeg,.svg" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status Section -->
+            <div class="content-section" id="status-section">
+                <div class="page-header">
+                    <div>
+                        <h1>System Status</h1>
+                        <p>Monitor system health and performance</p>
+                    </div>
+                </div>
+
+                <div class="status-grid">
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>AI Employees</h3>
+                            <div class="status-indicator online"></div>
+                        </div>
+                        <div class="status-content">
+                            <div class="status-item">
+                                <span>AI Brenden</span>
+                                <span class="status-badge online">Online</span>
+                            </div>
+                            <div class="status-item">
+                                <span>AI Van</span>
+                                <span class="status-badge online">Online</span>
+                            </div>
+                            <div class="status-item">
+                                <span>AI Rey</span>
+                                <span class="status-badge online">Online</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>System Health</h3>
+                            <div class="status-indicator online"></div>
+                        </div>
+                        <div class="status-content">
+                            <div class="status-item">
+                                <span>API Status</span>
+                                <span class="status-badge online">Operational</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Database</span>
+                                <span class="status-badge online">Connected</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Webhooks</span>
+                                <span class="status-badge online">Active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>Performance Metrics</h3>
+                            <div class="status-indicator online"></div>
+                        </div>
+                        <div class="status-content">
+                            <div class="performance-metric">
+                                <div class="metric-info">
+                                    <span>CPU Usage</span>
+                                    <span>23%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 23%"></div>
+                                </div>
+                            </div>
+                            <div class="performance-metric">
+                                <div class="metric-info">
+                                    <span>Memory Usage</span>
+                                    <span>45%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="performance-metric">
+                                <div class="metric-info">
+                                    <span>Response Time</span>
+                                    <span>120ms</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 15%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>System Logs</h3>
+                            <div class="status-indicator online"></div>
+                        </div>
+                        <div class="status-content">
+                            <div class="log-entries">
+                                <div class="log-entry">
+                                    <span class="log-time">14:32:15</span>
+                                    <span class="log-level info">INFO</span>
+                                    <span class="log-message">AI Brenden completed lead research task</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span class="log-time">14:30:42</span>
+                                    <span class="log-level success">SUCCESS</span>
+                                    <span class="log-message">Database connection established</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span class="log-time">14:28:19</span>
+                                    <span class="log-level info">INFO</span>
+                                    <span class="log-message">System health check completed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="client-api.js"></script>
-    <script src="client-error-handler.js"></script>
-    <script src="client-logo-handler.js"></script>
-    <script src="error-integration.js"></script>
+    <!-- Configuration Modal -->
+    <div class="modal" id="configModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Assistant Configuration</h2>
+                <button class="close-button" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="configContent">
+                <div class="loading">Loading configuration...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Typing Indicator Template -->
+    <div class="message assistant" id="typingTemplate" style="display: none;">
+        <div class="message-content">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+
+  <!-- Load Client API before other scripts -->
+  <script src="client-api.js"></script>
+  
+  <script>
+        // Load and display company logo
+        async function loadCompanyLogo() {
+            try {
+                console.log('🎨 Loading company logo...');
+                const branding = await window.clientAPI.get('/api/branding');
+                const logoImg = document.getElementById('company-logo-img');
+                
+                if (branding && branding.logo_url) {
+                    console.log('✅ Logo URL found:', branding.logo_url);
+                    logoImg.src = branding.logo_url;
+                } else {
+                    console.log('⚠️ No logo URL found, keeping placeholder');
+                    // Keep the placeholder image (already set in HTML)
+                }
+            } catch (error) {
+                console.error('❌ Failed to load company logo:', error);
+                // Keep placeholder on error
+            }
+        }
+        
+        // Load logo when page loads
+        document.addEventListener('DOMContentLoaded', loadCompanyLogo);
+  </script>
+</script>
 </body>
 </html>
