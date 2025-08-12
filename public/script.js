@@ -1727,11 +1727,6 @@ function renderTeamMembers() {
   // SURGICAL FIX: Build team members dynamically from employees object
   let teamHTML = '';
   
-    // Create chat interfaces for all employees
-    employees.forEach(employee => {
-      createChatInterface(employee);
-    });
-
   Object.entries(employees).forEach(([employeeId, employee]) => {
     const isActive = employeeId === 'brenden' ? 'active' : '';
     const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
@@ -1740,7 +1735,7 @@ function renderTeamMembers() {
       <div class="team-member ${isActive}" data-employee-id="${employeeId}">
         <div class="member-avatar">
           <img src="${employee.avatar}" alt="${employee.name}">
-    const messagesContainer = document.getElementById(`messages-${currentEmployee?.id}`);
+          <div class="status-indicator online"></div>
         </div>
         <div class="member-info">
           <div class="member-name">${employee.name}</div>
@@ -1766,6 +1761,12 @@ function renderTeamMembers() {
     const employeeId = member.dataset.employeeId;
     console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
   });
+  
+  // Create chat interfaces for all employees
+  employees.forEach(employee => {
+    createChatInterface(employee);
+  });
+
   // Create chat interface for an employee
   function createChatInterface(employee) {
     const chatInterface = document.querySelector('.chat-interface');
@@ -1828,6 +1829,49 @@ function renderTeamMembers() {
 
     // Setup event listeners for this employee's chat
     setupChatEventListeners(employee);
+  }
+
+  // Setup chat interface for the active employee;
+  function setupChatInterface() {
+    const messageInput = document.getElementById('messageInput');
+    const chatForm = document.getElementById('chatForm');
+    const sendButton = document.getElementById('sendButton');
+
+    if (!messageInput || !chatForm || !sendButton) {
+      console.error('Chat interface elements not found');
+      return;
+    }
+
+    // Character count and validation
+    messageInput.addEventListener('input', () => {
+      const length = messageInput.value.length;
+      const charCount = document.getElementById('charCount');
+      if (charCount) {
+        charCount.textContent = `${length}/4000`;
+        charCount.classList.toggle('warning', length > 3500);
+        charCount.classList.toggle('error', length > 4000);
+      }
+      sendButton.disabled = length === 0 || length > 4000;
+    });
+
+    // Handle send button click;
+    document.getElementById('sendButton').addEventListener('click', (e) => {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (message && currentEmployee) {
+        sendMessage(message);
+        messageInput.value = '';
+        sendButton.disabled = true;
+      }
+    });
+
+    // Handle Enter key
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendButton.click();
+      }
+    });
   }
 
   // Setup event listeners for a specific employee's chat
@@ -2079,7 +2123,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (secondaryInput) secondaryInput.value = colors.secondary;
       if (secondaryPicker) secondaryPicker.value = colors.secondary;
       if (accentInput) accentInput.value = colors.accent;
-    const typingIndicator = document.querySelector(`#messages-${currentEmployee?.id} .typing-indicator-message`);
+      if (accentPicker) accentPicker.value = colors.accent;
     } catch (error) {
       console.error('Failed to load saved colors:', error);
     }
