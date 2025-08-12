@@ -12,6 +12,7 @@ let pendingMessages = {}; // Track pending messages per employee
 
 // Employee configurations
 const employees = {
+  brenden: {
     id: 'brenden', 
     name: 'AI Brenden',
     role: 'lead scraper',
@@ -27,19 +28,20 @@ const employees = {
     tags: ['Specialist', 'Marketing']
   },
   van: {
+    id: 'van',
     name: 'AI Van',
     role: 'page operator',
     specialty: 'Digital Marketing Designer',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
-    id: 'van',
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
     ],
     tags: ['Marketing', 'Design']
   },
+  Rey: {
     id: 'Rey',
     name: 'AI Rey',
     role: 'Strategic Analyst',
@@ -54,6 +56,7 @@ const employees = {
     ],
     tags: ['Strategy', 'Analytics']
   },
+  Xavier: {
     id: 'Xavier',
     name: 'AI Xavier',
     role: 'Content Specialist',
@@ -68,13 +71,6 @@ const employees = {
     ]
   }
 }; 
-
-const welcomeMessages = {
-  brenden: "👋 Hi! I'm AI Brenden, your Lead Research Specialist. I excel at finding and qualifying high-quality business leads. I can help you discover potential customers, research companies, and build targeted prospect lists. What kind of leads are you looking for today?",
-  van: "👋 Hello! I'm AI Van, your Digital Marketing Designer. I specialize in creating high-converting landing pages and marketing automation workflows. I can help you design compelling pages, set up marketing funnels, and optimize your digital presence. What marketing project can I help you with?",
-  Rey: "👋 Hey there! I'm AI Rey, your Lead Generation Plan Strategist. I focus on voice outreach strategies and competitor analysis to help you understand your market better. I can help you develop outreach campaigns, analyze competitors, and create strategic plans. What's your lead generation goal?",
-  Xavier: "👋 Hi! I'm AI Xavier, your UGC Expert. I specialize in user-generated content strategies and content creation that resonates with your audience. I can help you develop content plans, create engaging copy, and build authentic brand connections. Ready to create some amazing content?"
-};
 
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount, employeeList;
@@ -1776,7 +1772,7 @@ function renderTeamMembers() {
   });
   
   // Create chat interfaces for all employees
-  employees.forEach(employee => {
+  Object.values(employees).forEach(employee => {
     createChatInterface(employee);
   });
 
@@ -1965,7 +1961,6 @@ function attachTeamMemberListeners() {
 function renderMainContent() {
   renderTeamMembers();
   attachTeamMemberListeners();
-  renderMainContent();
 }
 
 function selectEmployee(employeeId) {
@@ -2020,16 +2015,17 @@ function switchToEmployeeChat(employeeId) {
     console.log(`🔄 Attempting to switch to employee: ${employeeId}`);
     
     // Debug: Check if employee exists in our array
-    const employee = employees.find(emp => emp.id === employeeId);
+    const employee = Object.values(employees).find(emp => emp.id === employeeId);
     if (!employee) {
         console.error(`❌ Employee not found in employees array: ${employeeId}`);
-        console.log('Available employees:', employees.map(emp => emp.id));
+        console.log('Available employees:', Object.keys(employees));
         return;
     }
     
     console.log(`✅ Found employee:`, employee);
     
     // Validate employee ID
+    const validEmployees = Object.keys(employees);
     if (!validEmployees.includes(employeeId)) {
         console.error(`❌ Invalid employee ID: ${employeeId}`);
         console.log('Valid employees:', validEmployees);
