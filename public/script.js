@@ -1827,21 +1827,15 @@ function renderTeamMembers() {
       chatInterface.appendChild(chatContainer);
     }
 
-    // Check if this specific employee is loading
-    if (employeeLoadingStates.get(employeeId)) {
-        console.log(`${employeeId} is already processing a message, please wait`);
+    // Setup event listeners for this employee's chat
+    setupChatEventListeners(employee);
   }
 
   // Setup chat interface for the active employee;
+  function setupChatInterface() {
+    const messageInput = document.getElementById('messageInput');
     const chatForm = document.getElementById('chatForm');
-    const messagesContainer = document.getElementById(`messages-${employeeId}`);
-    const messageInput = document.getElementById(`input-${employeeId}`);
-    const sendButton = document.getElementById(`send-${employeeId}`);
-    
-    if (!messagesContainer || !messageInput || !sendButton) {
-        console.error(`Chat elements not found for employee ${employeeId}`);
-        return;
-    }
+    const sendButton = document.getElementById('sendButton');
 
     if (!messageInput || !chatForm || !sendButton) {
       console.error('Chat interface elements not found');
@@ -2111,8 +2105,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const savedColors = localStorage.getItem('orchid-colors');
   if (savedColors) {
     try {
-        // Set loading state for this specific employee
-        employeeLoadingStates.set(employeeId, true);
+      const colors = JSON.parse(savedColors);
       document.documentElement.style.setProperty('--primary-color', colors.primary);
       document.documentElement.style.setProperty('--secondary-color', colors.secondary);
       document.documentElement.style.setProperty('--accent-color', colors.accent);
