@@ -933,6 +933,7 @@ function startNewChat() {
   if (messageInput) {
     messageInput.value = '';
     messageInput.focus();
+    updateSendButton(); // Initialize button state
     updateCharacterCount();
   }
   
@@ -1829,22 +1830,22 @@ async function sendMessage(message) {
   console.log('📤 CRITICAL: Message content:', message);
   console.log('📤 CRITICAL: Thread ID for this employee:', conversationThreads[activeEmployeeId]);
   
-  if (pendingMessages[activeEmployeeId]) {
-    console.warn('⚠️ Message already pending for', activeEmployeeId, ', skipping');
+  if (isMessagePending) {
+    console.warn('⚠️ Message already pending, skipping');
     return;
   }
   
-  const currentEmployeeId = activeEmployeeId; // Store at start to avoid race conditions
-  pendingMessages[currentEmployeeId] = true;
+  isMessagePending = true;
 
   if (!message.trim()) {
-    pendingMessages[currentEmployeeId] = false;
+    isMessagePending = false;
     return;
   }
 
   // Clear input and disable send button
   const messageInput = document.getElementById('messageInput');
-  updateSendButton();
+  const sendButton = document.querySelector('.send-button');
+  
   if (messageInput) messageInput.value = '';
   if (sendButton) sendButton.disabled = true;
 
@@ -1857,8 +1858,8 @@ async function sendMessage(message) {
     // Prepare message data with current employee context
     const messageData = {
       message: message,
-      employee: currentEmployeeId,
-      thread_id: conversationThreads[currentEmployeeId] || null
+      employee: activeEmployeeId,
+      thread_id: conversationThreads[activeEmployeeId] || null
     };
     
     console.log('🚀 CRITICAL: Full API payload:', messageData);
@@ -1890,13 +1891,13 @@ async function sendMessage(message) {
     if (data.thread_id) {
       conversationThreads[activeEmployeeId] = data.thread_id;
       console.log(`💾 Stored thread ID for ${activeEmployeeId}:`, data.thread_id);
-    if (data.thread_id && currentEmployeeId === activeEmployeeId) {
-      conversationThreads[currentEmployeeId] = data.thread_id;
-      console.log(`🧵 Thread ID stored for ${currentEmployeeId}:`, data.thread_id);
-    const employeeName = data.employee?.name || `AI ${currentEmployeeId}`;
+    }
+
+    // Add assistant response to chat
+    const employeeName = data.employee?.name || `AI ${activeEmployeeId}`;
     
     console.log('💬 CRITICAL: Adding response from:', employeeName);
-    console.log('💬 CRITICAL: Expected employee was:', `AI ${currentEmployeeId}`);
+    console.log('💬 CRITICAL: Expected employee was:', `AI ${activeEmployeeId}`);
     
     appendMessage(data.message, 'assistant', employeeName);
 
@@ -1906,15 +1907,16 @@ async function sendMessage(message) {
 
   } catch (error) {
     console.error('❌ Error sending message:', error);
-    hideTypingIndicator();
     
     // Always hide typing indicator on error
     hideTypingIndicator();
     
     appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
   } finally {
-    pendingMessages[currentEmployeeId] = false;
-    updateSendButton();
+    // Clear pending status for THIS employee only
+    pendingMessages[activeEmployeeId] = false;
+    updateSendButtonState();
+  }
 }
 
 // Load saved color scheme on page load
@@ -1945,25 +1947,4 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('Failed to load saved colors:', error);
     }
   }
-}
-
-function updateSendButton() {
-  const isPending = pendingMessages[activeEmployeeId];
-  sendButton.disabled = isPending;
-  sendButton.textContent = isPending ? 'Sending...' : 'Send';
-  
-  // Update placeholder to show current employee
-  const currentEmployee = getCurrentEmployeeName();
-  messageInput.placeholder = isPending ? 
-    `Waiting for ${currentEmployee}...` : 
-    `Message ${currentEmployee}...`;
-}
-
-function getCurrentEmployeeName() {
-  const names = {
-    'brenden': 'AI Brenden',
-    'Rey': 'AI Rey',
-    'van': 'AI Van'
-  };
-  return names[activeEmployeeId] || `AI ${activeEmployeeId}`;
 });
