@@ -1,7 +1,9 @@
-// Global state
+// Global state - Support for multiple simultaneous chats
 let currentEmployee = 'brenden';
-let currentThreadId = null;
-let isProcessing = false;
+let employeeLoadingStates = new Map(); // Per-employee loading states
+let conversationThreads = {};
+let activeEmployeeChats = new Set(); // Track which employee chats are open
+let employeeChatContainers = new Map(); // Store chat containers
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
