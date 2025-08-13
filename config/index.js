@@ -67,6 +67,17 @@ const config = {
       }
       // chainsTo: null // Example: Van does not chain further
     }
+    angel: {
+      assistantId: 'asst_w2t643MjToTPg3ywB7pYdIuX',
+      name: 'AI Angel',
+      role: 'Blog Post generation AI',
+      specialty: 'Blog Post Writer',
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/29eabaa8-2d9a-401a-99e6-1b35afacbb8f',
+        // Add other tools for Van here
+      }
+      // chainsTo: null // Example: Van does not chain further
+    }
     // EASILY ADD MORE EMPLOYEES HERE:
     // sarah: {
     //   assistantId: 'asst_sarah_id',
