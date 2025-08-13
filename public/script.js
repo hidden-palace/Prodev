@@ -49,10 +49,10 @@ const employees = {
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
     quickActions: [
-      { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
-      { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
-      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
-    ],
+  { icon: "✍️", text: "Flower care guides", action: "Write detailed blog posts on caring for orchids and luxury blooms" },
+  { icon: "🌸", text: "Floral trends insights", action: "Create engaging articles on seasonal and design trends in floral arrangements" },
+  { icon: "📈", text: "SEO-driven content", action: "Develop SEO-optimized blog posts to boost brand visibility and drive traffic" }
+],
     tags: ['Marketing', 'Design']
   },
   rey: {
