@@ -41,7 +41,7 @@ const employees = {
     ],
     tags: ['Marketing', 'Design']
   },
-  van: {
+  sara: {
     id: 'sara',
     name: 'AI Sara',
     role: 'Blog Post Writer',
