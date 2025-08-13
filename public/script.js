@@ -61,7 +61,7 @@ const employees = {
   name: 'AI Xavier',
   role: 'Content Specialist',
   specialty: 'Content Generation AI',
-  avatar: '/api/branding/employee-avatars/xavier.jpg',
+  avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
   description: 'I create compelling content across all formats – from engaging social media videos and UGC campaigns to persuasive email sequences and landing page copy. I understand audience psychology and craft messages that convert.',
   quickActions: [
     { icon: '🎥', text: 'Generate TikTok Video Concept', action: 'Generate TikTok Video Concept' },
