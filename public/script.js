@@ -2177,7 +2177,7 @@ async function sendMessage(message) {
       console.error('Failed to load saved colors:', error);
     }
   }
-});
+};
 
 function updateSendButton() {
   const isPending = pendingMessages[activeEmployeeId];
