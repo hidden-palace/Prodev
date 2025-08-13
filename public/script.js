@@ -1266,7 +1266,7 @@ function getEmployeeName(employeeId) {
     'brenden': 'AI Brenden',
     'van': 'AI Van', 
     'Rey': 'AI Rey',
-    'sara': 'AI Sara'
+    'sara': 'AI Sara',
     'xavier': 'AI Xavier'
   };
   return names[employeeId] || 'AI Assistant';
