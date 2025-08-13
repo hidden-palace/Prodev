@@ -53,7 +53,7 @@ const employees = {
   { icon: "🌸", text: "Floral trends insights", action: "Create engaging articles on seasonal and design trends in floral arrangements" },
   { icon: "📈", text: "SEO-driven content", action: "Develop SEO-optimized blog posts to boost brand visibility and drive traffic" }
 ],
-    tags: ['Marketing', 'Design']
+    tags: ['Blog Posts', 'Content Generation']
   },
   rey: {
     id: 'rey',
