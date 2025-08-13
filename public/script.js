@@ -46,7 +46,7 @@ const employees = {
     name: 'AI Sara',
     role: 'Blog Post Writer',
     specialty: 'Blog Post Expert',
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
     description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
     quickActions: [
   { icon: "✍️", text: "Flower care guides", action: "Write detailed blog posts on caring for orchids and luxury blooms" },
