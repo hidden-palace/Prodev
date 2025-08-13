@@ -1,7 +1,7 @@
 // Global state
 let currentEmployee = 'brenden';
 let currentThreadId = null;
-let isProcessing = false;
+let isProcessing = {}; // { brenden: false, van: false, rey: false, xavier: false }
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
@@ -851,6 +851,11 @@ function switchEmployee(employeeId) {
     saveCurrentConversation();
     console.log(`🔄 Switching from ${employees[currentEmployee]?.name} to ${employees[employeeId]?.name}`);
   }
+    // Initialize processing flag for new employee if not exists
+    if (!(employeeId in isProcessing)) {
+        isProcessing[employeeId] = false;
+    }
+    
   
   // Update current employee
   const previousEmployee = currentEmployee;
@@ -2031,7 +2036,7 @@ function switchToEmployeeChat(employeeId) {
     // Debug: Check if employee exists in our array
     const employee = Object.values(employees).find(emp => emp.id === employeeId);
     if (!employee) {
-        console.error(`❌ Employee not found in employees array: ${employeeId}`);
+    if (isProcessing[currentEmployee]) {
         console.log('Available employees:', Object.keys(employees));
         return;
     }
@@ -2042,8 +2047,8 @@ function switchToEmployeeChat(employeeId) {
     const validEmployees = Object.keys(employees);
     if (!validEmployees.includes(employeeId)) {
         console.error(`❌ Invalid employee ID: ${employeeId}`);
-        console.log('Valid employees:', validEmployees);
-        return;
+        isProcessing[currentEmployee] = false;
+        sendButton.style.opacity = disabled || isProcessing[currentEmployee] ? '0.5' : '1';
     }
 }
 
@@ -2145,7 +2150,7 @@ async function sendMessage(message) {
 }
 
 // Load saved color scheme on page load
-document.addEventListener('DOMContentLoaded', function() {
+    isProcessing[currentEmployee] = true;
   const savedColors = localStorage.getItem('orchid-colors');
   if (savedColors) {
     try {
