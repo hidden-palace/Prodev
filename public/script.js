@@ -9,6 +9,7 @@ let isExportDropdownOpen = false; // Track export dropdown state
 let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
 let pendingMessages = {}; // Track pending messages per employee
+let sidebarCollapsed = false;
 
 // Employee configurations
 const employees = {
@@ -107,6 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeBranding();
   initializeMobileMenu();
   initializeExportDropdown();
+  setupSidebarToggle();
+  setupCollapsibleSections();
   
   // Load initial employee
   switchEmployee('brenden');
@@ -621,6 +624,93 @@ function initializeExportDropdown() {
       }
     });
   });
+}
+
+/**
+ * Setup sidebar toggle functionality
+ */
+function setupSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.querySelector('.sidebar-toggle');
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', () => {
+            sidebarCollapsed = !sidebarCollapsed;
+            sidebar.classList.toggle('collapsed', sidebarCollapsed);
+            
+            // Update toggle button icon
+            toggleBtn.innerHTML = sidebarCollapsed ? '→' : '←';
+            
+            // Save preference
+            localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+        });
+    }
+    
+    if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !mobileToggle.contains(e.target) &&
+                sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+    }
+    
+    // Restore sidebar state
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true' && sidebar && toggleBtn) {
+        sidebarCollapsed = true;
+        sidebar.classList.add('collapsed');
+        toggleBtn.innerHTML = '→';
+    }
+    
+    // Add tooltips to nav items for collapsed state
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const text = item.querySelector('.nav-item-text');
+        if (text) {
+            item.setAttribute('data-tooltip', text.textContent.trim());
+        }
+    });
+}
+
+/**
+ * Setup collapsible sections
+ */
+function setupCollapsibleSections() {
+    const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+    
+    collapsibleHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.closest('.collapsible-content');
+            if (content) {
+                content.classList.toggle('collapsed');
+                
+                // Save state
+                const sectionId = content.id;
+                if (sectionId) {
+                    localStorage.setItem(`collapsed-${sectionId}`, 
+                        content.classList.contains('collapsed'));
+                }
+            }
+        });
+    });
+    
+    // Restore collapsed states
+    document.querySelectorAll('.collapsible-content[id]').forEach(content => {
+        const sectionId = content.id;
+        const savedState = localStorage.getItem(`collapsed-${sectionId}`);
+        if (savedState === 'true') {
+            content.classList.add('collapsed');
+        }
+    });
 }
 
 /**
