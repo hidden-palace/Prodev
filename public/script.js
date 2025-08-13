@@ -88,6 +88,12 @@ let chatMessages, messageInput, sendButton, charCount, employeeList;
 document.addEventListener('DOMContentLoaded', function() {
   initializeElements();
   initializeNavigation();
+    // Initialize processing states for all employees
+    const employeeIds = ['brenden', 'van', 'rey', 'xavier'];
+    employeeIds.forEach(id => {
+        isProcessing[id] = false;
+    });
+    
   initializeEmployeeSelection();
   initializeChatInterface();
   initializeBranding();
