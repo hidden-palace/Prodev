@@ -1,3 +1,44 @@
+/* Root CSS Variables for Brand Colors */
+:root {
+  --primary-color: #ec4899; /* Default from config/index.js */
+  --secondary-color: #64748b; /* Default from config/index.js */
+  --accent-color: #f97316; /* Default from config/index.js */
+}
+
+/* Sidebar Styling for Retractable Behavior */
+.sidebar {
+  width: 60px; /* Default collapsed width */
+  transition: width 0.3s ease-in-out;
+  overflow: hidden; /* Hide overflowing content (text) */
+  position: fixed; /* Assuming your sidebar is fixed */
+  height: 100vh; /* Full viewport height */
+  background-color: #ffffff; /* Example background, adjust as needed */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Subtle shadow */
+  padding-top: 20px; /* Space for logo/header */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.sidebar:hover {
+  width: 200px; /* Expanded width on hover */
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li a {
+  display: flex; /* Use flexbox for icon and text alignment */
+  align-items: center;
+  padding: 10px 15px; /* Consistent padding for nav items */
+  text-decoration: none;
+  color: #333; /* Default text color */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Ensure text is hidden when collapsed */
+}
+
+/* Existing styles for notifications and errors (kept for context) */
 /* Brand Color Variables */
 :root {
   --primary-color: #ec4899;
@@ -2764,4 +2805,28 @@
     .pagination-controls {
         justify-content: center;
     }
+}
+
+/* Targeted Brand Color Application for Logo Container */
+.company-logo {
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease-in-out;
+}
+
+.company-logo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.logo-icon {
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
