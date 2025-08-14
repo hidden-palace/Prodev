@@ -1,3 +1,12 @@
+/* Brand Color Variables */
+:root {
+  --primary-color: #ec4899;
+  --secondary-color: #64748b;
+  --accent-color: #f97316;
+  --primary-hover: #db2777;
+  --accent-hover: #ea580c;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -62,9 +71,9 @@
     position: relative;
     padding: 8px;
     border-radius: 16px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(236, 72, 153, 0.05));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(236, 72, 153, 0.2);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -72,13 +81,13 @@
 .company-logo:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(236, 72, 153, 0.3);
 }
 
 .logo-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
     border-radius: 12px;
     display: none; /* Hide text logo when image logo is available */
     align-items: center;
@@ -94,7 +103,7 @@
 
 .logo-icon:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
 }
 
 #company-logo-img {
