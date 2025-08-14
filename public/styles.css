@@ -1645,7 +1645,7 @@
 .employee-chat-header .employee-role {
   font-size: 12px;
   color: var(--text-secondary);
-}
+  background: var(--primary-color);
 
 .close-chat-btn {
   background: none;
@@ -1880,49 +1880,49 @@
     color: var(--text-secondary);
 }
 
-.quick-action:hover {
+  background: color-mix(in srgb, var(--primary-color) 85%, black);
     border-color: var(--primary-color);
     color: var(--text-primary);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
-
+  background: var(--secondary-color);
 .quick-action svg {
     color: var(--primary-color);
     flex-shrink: 0;
 }
-
+  background: color-mix(in srgb, var(--secondary-color) 85%, black);
 /* Chat Messages */
 .chat-messages {
     flex: 1;
-    overflow-y: auto;
+  background: var(--accent-color);
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
-}
+  background: color-mix(in srgb, var(--accent-color) 85%, black);
 
 /* Message Styling */
 .message {
   display: flex;
-  flex-direction: column;
-  max-width: 85%;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
   animation: fadeIn 0.3s ease-out;
 }
 
-/* User messages align to the right */
+  background: var(--primary-color);
 .message.user {
   align-self: flex-end;
   align-items: flex-end;
 }
 
-/* Assistant messages align to the left */
+  color: var(--primary-color);
 .message.assistant {
   align-self: flex-start;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Assistant message styling */
+  color: color-mix(in srgb, var(--primary-color) 85%, black);
 .message.assistant .message-header {
   justify-content: flex-start;
 }
@@ -1935,9 +1935,9 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
 }
-
+  border-color: var(--primary-color);
 /* Message content formatting */
-.message-content {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
   line-height: 1.5;
   word-wrap: break-word;
 }
@@ -2317,19 +2317,19 @@
     cursor: pointer;
     color: var(--text-secondary);
     padding: 0;
-    width: 30px;
+  color: var(--text-primary);
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     transition: background 0.2s ease;
-}
+  border-bottom: 1px solid var(--border-color);
 
 .close-button:hover {
     background: #f1f5f9;
 }
-
+  color: var(--text-secondary);
 .modal-body {
     padding: 24px;
     overflow-y: auto;
@@ -2338,14 +2338,14 @@
 
 .loading {
     text-align: center;
-    color: var(--text-secondary);
-    padding: 40px;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
 }
 
 /* Mobile Menu */
 .mobile-menu-toggle {
     display: none;
-    position: fixed;
+  border: 1px solid var(--border-color);
     top: 20px;
     left: 20px;
     z-index: 1001;
@@ -2354,11 +2354,11 @@
     border: none;
     border-radius: 8px;
     width: 44px;
-    height: 44px;
+  border-color: color-mix(in srgb, var(--border-color) 70%, var(--primary-color));
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--border-light);
 }
 
 /* Notifications */
@@ -2366,7 +2366,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    background: var(--surface-color);
+  color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 16px;
@@ -2383,37 +2383,37 @@
 
 .notification.notification-error {
     border-color: var(--error-color);
-    background: #fef2f2;
-}
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  color: var(--primary-color);
 
 .notification.notification-warning {
     border-color: var(--warning-color);
-    background: #fffbeb;
-}
+  background: color-mix(in srgb, var(--success-color) 10%, transparent);
+  color: var(--success-color);
 
 .notification.notification-info {
     border-color: var(--primary-color);
-    background: #eff6ff;
-}
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--accent-color);
 
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
+  background: color-mix(in srgb, var(--error-color) 10%, transparent);
+  color: var(--error-color);
 
 .notification-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-}
+  background: var(--surface-light);
 
 .notification-close {
     background: none;
     border: none;
     font-size: 18px;
     cursor: pointer;
-    color: var(--text-secondary);
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
     padding: 0;
     width: 24px;
     height: 24px;
@@ -2422,11 +2422,11 @@
     justify-content: center;
     border-radius: 50%;
     transition: background 0.2s ease;
-}
+  border-right: 1px solid var(--border-color);
 
 .notification-close:hover {
     background: rgba(0, 0, 0, 0.1);
-}
+  color: var(--text-secondary);
 
 /* Scrollbar styling */
 .chat-messages::-webkit-scrollbar,
@@ -2436,36 +2436,36 @@
 .guidelines-content::-webkit-scrollbar,
 .performance-content::-webkit-scrollbar,
 .dashboard-grid::-webkit-scrollbar,
-.leads-table-container::-webkit-scrollbar,
-.calls-dashboard::-webkit-scrollbar,
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  color: var(--primary-color);
 .campaigns-grid::-webkit-scrollbar,
 .landing-pages-grid::-webkit-scrollbar,
 .branding-content::-webkit-scrollbar,
 .status-grid::-webkit-scrollbar,
 .log-entries::-webkit-scrollbar {
     width: 6px;
-}
+  border: 1px solid var(--border-color);
 
 .chat-messages::-webkit-scrollbar-track,
 .modal-body::-webkit-scrollbar-track,
 .team-section::-webkit-scrollbar-track,
 .tasks-content::-webkit-scrollbar-track,
-.guidelines-content::-webkit-scrollbar-track,
-.performance-content::-webkit-scrollbar-track,
+  background: var(--surface-light);
+  color: var(--text-primary);
 .dashboard-grid::-webkit-scrollbar-track,
 .leads-table-container::-webkit-scrollbar-track,
 .calls-dashboard::-webkit-scrollbar-track,
-.campaigns-grid::-webkit-scrollbar-track,
+  border-bottom: 1px solid var(--border-color);
 .landing-pages-grid::-webkit-scrollbar-track,
 .branding-content::-webkit-scrollbar-track,
 .status-grid::-webkit-scrollbar-track,
 .log-entries::-webkit-scrollbar-track {
-    background: transparent;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .chat-messages::-webkit-scrollbar-thumb,
 .modal-body::-webkit-scrollbar-thumb,
-.team-section::-webkit-scrollbar-thumb,
+  background: var(--surface-light);
 .tasks-content::-webkit-scrollbar-thumb,
 .guidelines-content::-webkit-scrollbar-thumb,
 .performance-content::-webkit-scrollbar-thumb,
@@ -2477,48 +2477,48 @@
 .branding-content::-webkit-scrollbar-thumb,
 .status-grid::-webkit-scrollbar-thumb,
 .log-entries::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
-}
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  border-color: var(--primary-color);
+  color: color-mix(in srgb, var(--primary-color) 80%, black);
 
 .chat-messages::-webkit-scrollbar-thumb:hover,
 .modal-body::-webkit-scrollbar-thumb:hover,
-.team-section::-webkit-scrollbar-thumb:hover,
-.tasks-content::-webkit-scrollbar-thumb:hover,
-.guidelines-content::-webkit-scrollbar-thumb:hover,
+  background: color-mix(in srgb, var(--success-color) 10%, transparent);
+  border-color: var(--success-color);
+  color: color-mix(in srgb, var(--success-color) 80%, black);
 .performance-content::-webkit-scrollbar-thumb:hover,
 .dashboard-grid::-webkit-scrollbar-thumb:hover,
 .leads-table-container::-webkit-scrollbar-thumb:hover,
-.calls-dashboard::-webkit-scrollbar-thumb:hover,
-.campaigns-grid::-webkit-scrollbar-thumb:hover,
-.landing-pages-grid::-webkit-scrollbar-thumb:hover,
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  border-color: var(--accent-color);
+  color: color-mix(in srgb, var(--accent-color) 80%, black);
 .branding-content::-webkit-scrollbar-thumb:hover,
 .status-grid::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
+  background: color-mix(in srgb, var(--error-color) 10%, transparent);
+  border-color: var(--error-color);
+  color: color-mix(in srgb, var(--error-color) 80%, black);
 /* Mobile responsiveness */
 @media (max-width: 1024px) {
     .sidebar {
         width: 420px;
     }
-    
-    .team-panel {
-        width: 420px;
+    color-mix(in srgb, var(--primary-color) 5%, transparent) 0%, 
+    color-mix(in srgb, var(--accent-color) 5%, transparent) 100%);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 10%, transparent);
     }
     
     .quick-actions {
-        grid-template-columns: 1fr;
+  border-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
     }
     
-    .dashboard-grid {
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 5%, transparent);
         grid-template-columns: 1fr;
         padding: 20px;
     }
     
-    .dashboard-card.wide {
-        grid-column: span 1;
+    var(--primary-color) 0%, 
+    var(--accent-color) 100%);
     }
 }
 
