@@ -1,3 +1,146 @@
+/* Define brand colors as CSS variables */
+:root {
+  --primary-color: #ec4899; /* Default primary color from config/index.js */
+  --secondary-color: #64748b; /* Default secondary color from config/index.js */
+  --accent-color: #f97316; /* Default accent color from config/index.js */
+}
+
+/* General Body Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+  color: #1e293b;
+  line-height: 1.6;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Company Logo Container */
+.company-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 0;
+  margin-bottom: 20px;
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px; /* Slightly rounded corners for the logo area */
+  overflow: hidden; /* Ensures content stays within bounds */
+}
+
+.company-logo.loading {
+  opacity: 0.7;
+}
+
+.company-logo.loaded #company-logo-img {
+  opacity: 1;
+}
+
+/* Company Logo Image */
+#company-logo-img {
+  max-width: 80%;
+  max-height: 40px; /* Adjust as needed */
+  object-fit: contain;
+  display: block;
+  opacity: 0; /* Start hidden for smooth load */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Fallback Logo Icon (for text-based logo) */
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  border-radius: 8px;
+  display: none; /* Hidden by default, shown if image fails */
+}
+
+/* Sidebar container */
+.sidebar {
+  position: fixed; /* Make it overlay */
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 250px; /* Default: Expanded width */
+  background-color: var(--sidebar-bg-color, #f0f2f5); /* Example background */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  padding-top: 20px; /* Adjust as needed */
+  transition: width 0.3s ease-in-out; /* Smooth transition for width */
+  overflow-x: hidden; /* Hide horizontal scrollbar during transition */
+  z-index: 1000; /* Ensure it overlays other content */
+}
+
+/* When sidebar is hovered, it retracts */
+.sidebar:hover {
+  width: 60px; /* Collapsed width */
+}
+
+/* Navigation items within the sidebar */
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li a {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: var(--text-primary);
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflowing text during collapse */
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-nav li a:hover {
+  background-color: var(--primary-color-light, rgba(0, 123, 255, 0.1));
+}
+
+/* Icon part of the navigation item */
+.nav-icon {
+  font-size: 24px; /* Adjust icon size */
+  min-width: 30px; /* Ensure icon has space */
+  text-align: center;
+  margin-right: 15px; /* Space between icon and text when expanded */
+  transition: margin-right 0.3s ease-in-out; /* Smooth transition for margin */
+}
+
+/* Text part of the navigation item */
+.nav-text {
+  opacity: 1; /* Default: Visible */
+  max-width: 200px; /* Allow text to take space */
+  transition: opacity 0.3s ease-in-out, max-width 0.3s ease-in-out; /* Smooth transition for text */
+}
+
+/* When sidebar is hovered, hide the text */
+.sidebar:hover .nav-text {
+  opacity: 0;
+  max-width: 0; /* Collapse text width */
+}
+
+/* Adjust icon margin when sidebar is collapsed (on hover) */
+.sidebar:hover .nav-icon {
+  margin-right: 0; /* Remove margin when text is hidden */
+}
+
+/* IMPORTANT: You need to add this CSS to your main content wrapper */
+/* For example, if your main content is in a div with class 'main-content' */
+/* .main-content {
+  margin-left: 250px; /* Should match the expanded sidebar width */
+  transition: margin-left 0.3s ease-in-out; /* Optional: smooth transition if content also shifts */
+} */
+
 /* Root CSS Variables for Brand Colors */
 :root {
   --primary-color: #ec4899; /* Default from config/index.js */
