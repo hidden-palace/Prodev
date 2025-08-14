@@ -4,6 +4,13 @@
     box-sizing: border-box;
 }
 
+/* Brand Colors */
+:root {
+  --primary-color: #ec4899; /* Default primary color from config/index.js */
+  --secondary-color: #64748b; /* Default secondary color from config/index.js */
+  --accent-color: #f97316; /* Default accent color from config/index.js */
+}
+
 :root {
     --primary-color: #3b82f6;
     --secondary-color: #64748b;
