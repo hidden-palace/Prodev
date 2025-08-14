@@ -189,6 +189,10 @@ body {
   --accent-color: #f97316;
   --primary-hover: #db2777;
   --accent-hover: #ea580c;
+  
+  /* Sidebar dimensions */
+  --sidebar-collapsed-width: 70px;
+  --sidebar-expanded-width: 250px;
 }
 
 * {
@@ -218,6 +222,16 @@ body {
     --border-color: #e2e8f0;
 }
 
+/* Reset and base styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  overflow-x: hidden; /* Prevent horizontal scrollbar during transitions */
+}
+
 .header-actions {
     display: flex;
     gap: 12px;
@@ -232,15 +246,182 @@ body {
     overflow: hidden;
 }
 
-/* Sidebar Styles */
+/* Enhanced Logo Container with Brand Colors */
+.company-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.company-logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Retractable Sidebar Styles */
 .sidebar {
-    width: 420px;
-    background: var(--primary-color);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    z-index: 1000;
+  width: var(--sidebar-collapsed-width);
+  height: 100vh;
+  background: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  padding: 20px 0;
+  transition: width 0.3s ease-in-out;
+  overflow: hidden;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar:hover {
+  width: var(--sidebar-expanded-width);
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  margin-top: 20px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin: 0;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border-radius: 0;
+  margin: 2px 8px;
+}
+
+.sidebar-nav a:hover {
+  background: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  transform: translateX(4px);
+}
+
+/* Navigation Icons */
+.nav-icon {
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 15px;
+}
+
+/* Navigation Text Labels */
+.nav-text {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.sidebar:hover .nav-text {
+  opacity: 1;
+  max-width: 200px;
+}
+
+/* Main Content Adjustment */
+.main-content,
+.main-content-wrapper,
+.content-wrapper,
+main {
+  margin-left: var(--sidebar-collapsed-width);
+  transition: margin-left 0.3s ease-in-out;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: var(--sidebar-collapsed-width);
+  }
+  
+  .sidebar:hover {
+    width: var(--sidebar-expanded-width);
+  }
+  
+  .main-content,
+  .main-content-wrapper,
+  .content-wrapper,
+  main {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+}
+
+/* Logo adjustments for collapsed sidebar */
+.sidebar .company-logo {
+  margin: 0 10px 20px 10px;
+  padding: 10px;
+}
+
+.sidebar .company-logo img,
+.sidebar .logo-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.sidebar:hover .company-logo img,
+.sidebar:hover .logo-icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* Active/Current Page Indicator */
+.sidebar-nav a.active {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  border-radius: 8px;
+}
+
+.sidebar-nav a.active .nav-icon {
+  transform: scale(1.1);
 }
 
 .sidebar-header {
