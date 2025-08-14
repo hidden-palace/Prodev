@@ -9,6 +9,8 @@ class LogoHandler {
   constructor() {
     this.logoElement = null;
     this.fallbackElement = null;
+    this.logoContainer = null;
+    this.skeletonElement = null;
     this.retryCount = 0;
     this.maxRetries = 3;
     
@@ -40,10 +42,12 @@ class LogoHandler {
       // Find logo elements in the DOM
       this.logoElement = document.getElementById('company-logo-img');
       this.fallbackElement = document.querySelector('.logo-icon');
+      this.logoContainer = document.querySelector('.company-logo');
       
       console.log('🎨 Logo Handler: Elements found:', {
         logoElement: !!this.logoElement,
         fallbackElement: !!this.fallbackElement,
+        logoContainer: !!this.logoContainer,
         logoElementSrc: this.logoElement?.src || 'none'
       });
       
@@ -53,6 +57,9 @@ class LogoHandler {
           Array.from(document.querySelectorAll('[id*="logo"]')).map(el => el.id));
         return;
       }
+
+      // Create skeleton loader element
+      this.createSkeletonLoader();
 
       // Fetch and display logo
       console.log('🎨 Logo Handler: Fetching logo data...');
@@ -68,10 +75,65 @@ class LogoHandler {
   }
 
   /**
+   * Create skeleton loader element
+   */
+  createSkeletonLoader() {
+    if (!this.logoContainer) return;
+    
+    this.skeletonElement = document.createElement('div');
+    this.skeletonElement.className = 'logo-skeleton';
+    this.skeletonElement.style.display = 'none';
+    this.logoContainer.appendChild(this.skeletonElement);
+    
+    console.log('🎨 Logo Handler: Skeleton loader created');
+  }
+
+  /**
+   * Show loading state with skeleton effect
+   */
+  showLoadingState() {
+    console.log('🎨 Logo Handler: Showing loading state...');
+    
+    if (this.logoElement) {
+      this.logoElement.classList.add('loading');
+      this.logoElement.classList.remove('loaded');
+    }
+    
+    if (this.logoContainer) {
+      this.logoContainer.classList.add('loading');
+    }
+    
+    if (this.skeletonElement) {
+      this.skeletonElement.style.display = 'block';
+    }
+  }
+
+  /**
+   * Hide loading state
+   */
+  hideLoadingState() {
+    console.log('🎨 Logo Handler: Hiding loading state...');
+    
+    if (this.logoElement) {
+      this.logoElement.classList.remove('loading');
+      this.logoElement.classList.add('loaded');
+    }
+    
+    if (this.logoContainer) {
+      this.logoContainer.classList.remove('loading');
+    }
+    
+    if (this.skeletonElement) {
+      this.skeletonElement.style.display = 'none';
+    }
+  }
+  /**
    * Fetch logo data from company_branding table via API
    */
   async fetchAndDisplayLogo() {
     try {
+      this.showLoadingState();
+      
       console.log('🎨 Logo Handler: Making API request to /api/branding...');
       const brandingData = await window.clientAPI.getBranding();
 
@@ -86,11 +148,13 @@ class LogoHandler {
         await this.displayLogo(brandingData.logo_url);
       } else {
         console.log('🎨 Logo Handler: No logo URL found in branding data, showing fallback');
+        this.hideLoadingState();
         this.showFallbackLogo();
       }
 
     } catch (error) {
       console.error('🎨 Logo Handler: Error fetching logo:', error);
+      this.hideLoadingState();
       
       // Retry logic for transient failures
       if (this.retryCount < this.maxRetries) {
@@ -115,6 +179,7 @@ class LogoHandler {
     return new Promise((resolve, reject) => {
       if (!this.logoElement) {
         console.error('🎨 Logo Handler: Logo element not available for display');
+        this.hideLoadingState();
         reject(new Error('Logo element not available'));
         return;
       }
@@ -124,10 +189,16 @@ class LogoHandler {
       
       testImage.onload = () => {
         console.log('🎨 Logo Handler: Logo image loaded successfully, updating DOM...');
+        
+        // Add a small delay for smooth transition
+        setTimeout(() => {
         // Image loaded successfully, update the main logo element
         this.logoElement.src = logoUrl;
         this.logoElement.alt = 'Company Logo';
         this.logoElement.style.display = 'block';
+          
+          // Hide loading state and show loaded state
+          this.hideLoadingState();
         
         // Hide fallback logo
         if (this.fallbackElement) {
@@ -137,10 +208,12 @@ class LogoHandler {
         
         console.log('🎨 Logo Handler: Logo displayed successfully:', logoUrl);
         resolve();
+        }, 150); // Small delay for smooth transition
       };
       
       testImage.onerror = () => {
         console.error('🎨 Logo Handler: Failed to load logo image:', logoUrl);
+        this.hideLoadingState();
         this.showFallbackLogo();
         reject(new Error('Logo image failed to load'));
       };
@@ -156,8 +229,11 @@ class LogoHandler {
    */
   showFallbackLogo() {
     console.log('🎨 Logo Handler: Showing fallback logo');
+    this.hideLoadingState();
+    
     if (this.logoElement) {
       this.logoElement.style.display = 'none';
+      this.logoElement.classList.remove('loading', 'loaded');
       console.log('🎨 Logo Handler: Image logo hidden');
     }
     
@@ -176,6 +252,7 @@ class LogoHandler {
     if (this.logoElement) {
       this.logoElement.addEventListener('error', () => {
         console.error('🎨 Logo Handler: Logo image failed to load, showing fallback');
+        this.hideLoadingState();
         this.showFallbackLogo();
       });
       console.log('🎨 Logo Handler: Error handling set up for logo image');
@@ -198,7 +275,8 @@ class LogoHandler {
     const status = {
       hasImageLogo: this.logoElement && this.logoElement.style.display !== 'none' && this.logoElement.src,
       logoUrl: this.logoElement ? this.logoElement.src : null,
-      isUsingFallback: this.fallbackElement && this.fallbackElement.style.display !== 'none'
+      isUsingFallback: this.fallbackElement && this.fallbackElement.style.display !== 'none',
+      isLoading: this.logoContainer && this.logoContainer.classList.contains('loading')
     };
     console.log('🎨 Logo Handler: Current status:', status);
     return status;
