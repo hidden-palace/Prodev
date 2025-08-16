@@ -59,7 +59,7 @@ const employees = {
   sara: {
     id: 'sara',
     name: 'AI Sara',
-    role: 'Blog Post Writer',
+    role: 'Blog Content Creator',
     specialty: 'Blog Post Expert',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
     description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
