@@ -47,7 +47,7 @@ const employees = {
       role: 'Email Occasion Reminder',
       specialty: 'Occasion Remminder AI',
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
-    description: 'Send email reminders on occasions to your customers to motivate them for keep coming again!.',
+    description: 'Send personalized email reminders on occasions to your customers to motivate them for keep coming again!.',
     quickActions: [
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
