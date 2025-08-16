@@ -41,7 +41,6 @@ const employees = {
     ],
     tags: ['Marketing', 'Design']
   },
-    angel: {
       angel: {
       assistantId: 'asst_eVAiDpRTPgcfvlhxPQCnH91c',
       name: 'AI angel',
