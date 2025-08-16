@@ -1595,4 +1595,69 @@ function displayLeadsTable(leads) {
             </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-              <p style="margin: 0; font-size: 14px;">
+              <p style="margin: 0; font-size: 14px;">Start by asking your AI employees to generate leads for you.</p>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  } else {
+    // Show download button when leads exist
+    if (downloadBtn) {
+      downloadBtn.style.display = 'inline-flex';
+    }
+    
+    leads.forEach(lead => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${escapeHtml(lead.source_platform || 'Unknown')}</td>
+        <td>
+          <div style="font-weight: 500;">${escapeHtml(lead.business_name || 'Unknown Business')}</div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.industry || 'Unknown Industry')}</div>
+        </td>
+        <td>
+          <div>${escapeHtml(lead.contact_name || 'No contact')}</div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.email || 'No email')}</div>
+        </td>
+        <td>${escapeHtml(lead.city || 'Unknown')}, ${escapeHtml(lead.state || 'Unknown')}</td>
+        <td>
+          <span class="score-badge score-${getScoreClass(lead.score || 0)}">${lead.score || 0}</span>
+        </td>
+        <td>
+          <span class="status-badge status-${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+  
+  leadsTable.appendChild(tableBody);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function getScoreClass(score) {
+  if (score >= 4) return 'high';
+  if (score >= 3) return 'medium';
+  return 'low';
+}
+
+function getLeadStatus(lead) {
+  if (lead.converted) return 'converted';
+  if (lead.response_received) return 'responded';
+  if (lead.outreach_sent) return 'contacted';
+  if (lead.validated) return 'qualified';
+  return 'new';
+}
+
+function getLeadStatusText(lead) {
+  if (lead.converted) return 'Converted';
+  if (lead.response_received) return 'Responded';
+  if (lead.outreach_sent) return 'Contacted';
+  if (lead.validated) return 'Qualified';
+  return 'New';
+}
