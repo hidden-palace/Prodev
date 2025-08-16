@@ -2110,7 +2110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     leads.forEach(lead => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${escapeHtml(lead.source_platform || 'Unknown')</td>
+        <td>$escapeHtml(lead.source_platform || 'Unknown')</td>
         <td>
           <div style="font-weight: 500;">${escapeHtml(lead.business_name || 'Unknown Business')}</div>
           <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.industry || 'Unknown Industry')}</div>
