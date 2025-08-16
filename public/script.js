@@ -1576,29 +1576,23 @@ function displayLeadsTable(leads) {
   leadsTable.appendChild(thead);
   
   // Create table body
-const tableBody = document.createElement('tbody');
-
-if (leads.length === 0) {
-  // Hide download button when no leads
-  if (downloadBtn) {
-    downloadBtn.style.display = 'none';
-  }
-
-  tableBody.innerHTML = `
-    <tr>
-      <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          </svg>
-          <div>
-            <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-            <p style="margin: 0; font-size: 14px;">Please check back later.</p>
-          </div>
-        </div>
-      </td>
-    </tr>
-  `;
-}
+  const tableBody = document.createElement('tbody');
+  
+  if (leads.length === 0) {
+    // Hide download button when no leads
+    if (downloadBtn) {
+      downloadBtn.style.display = 'none';
+    }
+    
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            </svg>
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
+              <p style="margin: 0; font-size: 14px;">
