@@ -1,7 +1,7 @@
 // Global state
 let currentEmployee = 'brenden';
 let currentThreadId = null;
-let isProcessing = false;
+let isProcessing = {}; // Per-employee processing states
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
@@ -40,6 +40,35 @@ const employees = {
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
     ],
     tags: ['Marketing', 'Design']
+  },
+     
+  eden: {
+      assistantId: 'asst_Lr3o67bwsM4LzhDef8bbsbCy',
+      name: 'AI Eden',
+      role: 'Email Occasion Reminder',
+      specialty: 'Occasion Remminder AI',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
+    description: 'Send personalized email reminders on occasions to your customers to motivate them for keep coming again!.',
+    quickActions: [
+      { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
+      { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
+      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
+    ],
+    tags: ['Email Reminder', 'Email Expert']
+  },
+  sara: {
+    id: 'sara',
+    name: 'AI Sara',
+    role: 'Blog Post Writer',
+    specialty: 'Blog Post Expert',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
+    description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
+    quickActions: [
+  { icon: "✍️", text: "Flower care guides", action: "Write detailed blog posts on caring for orchids and luxury blooms" },
+  { icon: "🌸", text: "Floral trends insights", action: "Create engaging articles on seasonal and design trends in floral arrangements" },
+  { icon: "📈", text: "SEO-driven content", action: "Develop SEO-optimized blog posts to boost brand visibility and drive traffic" }
+],
+    tags: ['Blog Posts', 'Content Generation']
   },
   rey: {
     id: 'rey',
@@ -179,11 +208,14 @@ function setupEmployeeProfiles() {
       description: 'Expert at creating comprehensive engaging landing pages that convert.',
       status: 'online'
     },
-    {
-      id: 'Xavier',
-      name: 'AI Xavier',
-      role: 'UGC Expert', 
-      avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+    { 
+      id: 'sara', 
+      name: 'AI Sara', 
+      role: 'Blog Post Writer', 
+      specialty: 'Blog Post Expert',
+      avatar: '/sara-avatar.jpg', 
+      description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
+      status: 'online'
     },
     { 
       id: 'Rey', 
@@ -1249,7 +1281,8 @@ function getEmployeeName(employeeId) {
     'brenden': 'AI Brenden',
     'van': 'AI Van', 
     'Rey': 'AI Rey',
-    'angel': 'AI Angel'
+    'sara': 'AI Sara',
+    'xavier': 'AI Xavier'
   };
   return names[employeeId] || 'AI Assistant';
 }
@@ -1472,43 +1505,316 @@ function showNotification(message, type = 'info') {
   console.log(`📢 Notification shown: ${type} - ${message}`);
 }
 
+function updateLeadsPagination(data) {
+  const paginationContainer = document.querySelector('.pagination-container');
+  
+  if (!paginationContainer) return;
+  
+  const { page = 1, totalPages = 1, total = 0, limit = 50 } = data;
+  
+  // Clear existing pagination
+  paginationContainer.innerHTML = '';
+  
+  if (totalPages <= 1) {
+    // Hide pagination if only one page or no data
+    paginationContainer.style.display = 'none';
+    return;
+  }
+  
+  paginationContainer.style.display = 'flex';
+  
+  // Create pagination info
+  const paginationInfo = document.createElement('div');
+  paginationInfo.className = 'pagination-info';
+  const startItem = ((page - 1) * limit) + 1;
+  const endItem = Math.min(page * limit, total);
+  paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${total} leads`;
+  
+  // Create pagination controls
+  const paginationControls = document.createElement('div');
+  paginationControls.className = 'pagination-controls';
+  
+  // Previous button
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Previous';
+  prevBtn.disabled = page <= 1;
+  prevBtn.onclick = () => {
+    if (page > 1) {
+      loadLeadsData(page - 1);
+    }
+  };
+  
+  // Next button
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = page >= totalPages;
+  nextBtn.onclick = () => {
+    if (page < totalPages) {
+      loadLeadsData(page + 1);
+    }
+  };
+  
+  // Page numbers (show current and nearby pages)
+  const pageNumbers = document.createElement('div');
+  pageNumbers.className = 'page-numbers';
+  
+  const startPage = Math.max(1, page - 2);
+  const endPage = Math.min(totalPages, page + 2);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.textContent = i;
+    pageBtn.className = i === page ? 'active' : '';
+    pageBtn.onclick = () => {
+      if (i !== page) {
+        loadLeadsData(i);
+      }
+    };
+    pageNumbers.appendChild(pageBtn);
+  }
+  
+  paginationControls.appendChild(prevBtn);
+  paginationControls.appendChild(pageNumbers);
+  paginationControls.appendChild(nextBtn);
+  
+  paginationContainer.appendChild(paginationInfo);
+  paginationContainer.appendChild(paginationControls);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize functions on page load
+  loadDashboardMetrics();
+  loadLeadsData();
+  setupEventListeners();
+});
+
+function setupEventListeners() {
+  // Example: Event listener for a download button
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      // Assuming a default CSV export, you can add format selection later
+      window.location.href = '/api/leads/export?format=csv';
+      showNotification('Downloading leads data...', 'info');
+    });
+  }
+
+  // Event listener for the "Ask AI" form
+  const askForm = document.getElementById('ask-ai-form');
+  if (askForm) {
+    askForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const messageInput = document.getElementById('ai-message-input');
+      const employeeSelect = document.getElementById('ai-employee-select');
+      const message = messageInput.value;
+      const employee = employeeSelect.value;
+
+      if (!message || !employee) {
+        showNotification('Please enter a message and select an AI employee.', 'warning');
+        return;
+      }
+
+      showNotification(`Sending message to ${employee}...`, 'info');
+      messageInput.value = ''; // Clear input
+
+      try {
+        const response = await fetch('/api/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message, employee }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (result.status === 'completed') {
+            showNotification(`AI Response from ${result.employee.name}: ${result.message}`, 'success');
+          } else if (result.status === 'requires_action') {
+            showNotification(`AI Response from ${result.employee.name}: ${result.message}. Waiting for tool execution...`, 'warning');
+            // You might want to poll for run status here or rely on webhook response
+          }
+        } else {
+          showNotification(`Error from AI: ${result.error || 'Unknown error'}`, 'error');
+          console.error('AI Ask Error:', result);
+        }
+      } catch (error) {
+        showNotification('Failed to communicate with AI service.', 'error');
+        console.error('AI Ask Fetch Error:', error);
+      }
+    });
+  }
+
+  // Event listener for the "Upload Logo" form
+  const logoUploadForm = document.getElementById('logo-upload-form');
+  if (logoUploadForm) {
+    logoUploadForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const logoInput = document.getElementById('logo-file-input');
+      const file = logoInput.files[0];
+
+      if (!file) {
+        showNotification('Please select a logo file to upload.', 'warning');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      showNotification('Uploading logo...', 'info');
+
+      try {
+        const response = await fetch('/api/storage/logo', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showNotification('Logo uploaded successfully!', 'success');
+          // Optionally update the logo displayed on the page
+          const companyLogoImg = document.getElementById('company-logo-img');
+          if (companyLogoImg) {
+            companyLogoImg.src = result.logo_url;
+          }
+        } else {
+          showNotification(`Logo upload failed: ${result.details || result.error || 'Unknown error'}`, 'error');
+          console.error('Logo Upload Error:', result);
+        }
+      } catch (error) {
+        showNotification('Failed to upload logo.', 'error');
+        console.error('Logo Upload Fetch Error:', error);
+      }
+    });
+  }
+
+  // Event listener for the "Upload Employee Avatar" form
+  const avatarUploadForm = document.getElementById('avatar-upload-form');
+  if (avatarUploadForm) {
+    avatarUploadForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const avatarInput = document.getElementById('avatar-file-input');
+      const employeeIdInput = document.getElementById('avatar-employee-id');
+      const file = avatarInput.files[0];
+      const employeeId = employeeIdInput.value;
+
+      if (!file || !employeeId) {
+        showNotification('Please select an avatar file and enter an employee ID.', 'warning');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('employee_id', employeeId);
+
+      showNotification(`Uploading avatar for ${employeeId}...`, 'info');
+
+      try {
+        const response = await fetch('/api/storage/employee-avatar', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showNotification(`Avatar uploaded successfully for ${employeeId}!`, 'success');
+          // Optionally update the avatar displayed on the page
+          // You might need to refresh a specific employee profile section
+        } else {
+          showNotification(`Avatar upload failed: ${result.details || result.error || 'Unknown error'}`, 'error');
+          console.error('Avatar Upload Error:', result);
+        }
+      } catch (error) {
+        showNotification('Failed to upload avatar.', 'error');
+        console.error('Avatar Upload Fetch Error:', error);
+      }
+    });
+  }
+}
+
+/**
+ * Displays a notification message to the user.
+ * @param {string} message - The message to display.
+ * @param {'success'|'error'|'info'|'warning'} type - The type of notification.
+ */
+function showNotification(message, type = 'info') {
+  const notificationContainer = document.getElementById('notification-container');
+  if (!notificationContainer) {
+    console.warn('Notification container not found. Message:', message);
+    return;
+  }
+
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <div class="notification-message">${message}</div>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+
+  notificationContainer.appendChild(notification);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.remove();
+    }
+  }, 5000);
+
+  console.log(`📢 Notification shown: ${type} - ${message}`);
+}
+
+/**
+ * Loads and displays dashboard metrics from the API.
+ */
 async function loadDashboardMetrics() {
   try {
     console.log('📈 Loading dashboard metrics...');
     const response = await fetch('/api/leads/statistics');
     const stats = await response.json();
-    
+
     if (response.ok) {
       // Update dashboard metrics
       const leadsGenerated = document.getElementById('leads-generated');
       const leadsValidated = document.getElementById('leads-validated');
       const leadsContacted = document.getElementById('leads-contacted');
       const leadsConverted = document.getElementById('leads-converted');
-      
+
       if (leadsGenerated) leadsGenerated.textContent = stats.total || 0;
       if (leadsValidated) leadsValidated.textContent = stats.validated || 0;
       if (leadsContacted) leadsContacted.textContent = stats.outreach_sent || 0;
       if (leadsConverted) leadsConverted.textContent = stats.converted || 0;
-      
+
       console.log(`✅ Updated dashboard metrics: ${stats.total || 0} total leads`);
     } else {
       console.error('Failed to load dashboard metrics:', stats);
+      showNotification('Failed to load dashboard metrics', 'error');
     }
   } catch (error) {
     console.error('Failed to load dashboard metrics:', error);
+    showNotification('Error loading dashboard metrics', 'error');
   }
 }
 
-async function loadLeadsData() {
+/**
+ * Loads leads data from the API and updates the table and pagination.
+ * @param {number} page - The page number to load.
+ * @param {number} limit - The number of items per page.
+ */
+async function loadLeadsData(page = 1, limit = 10) {
   try {
-    console.log('📊 Loading leads data...');
-    const response = await fetch('/api/leads?limit=100');
+    console.log(`📊 Loading leads data for page ${page} with limit ${limit}...`);
+    const response = await fetch(`/api/leads?page=${page}&limit=${limit}`);
     const data = await response.json();
-    
+
     if (response.ok) {
       displayLeadsTable(data.leads || []);
       updateLeadsPagination(data);
-      console.log(`✅ Loaded ${data.leads?.length || 0} leads`);
+      console.log(`✅ Loaded ${data.leads?.length || 0} leads for page ${data.page}`);
     } else {
       console.error('Failed to load leads:', data);
       showNotification('Failed to load leads data', 'error');
@@ -1519,15 +1825,19 @@ async function loadLeadsData() {
   }
 }
 
+/**
+ * Displays leads in the table.
+ * @param {Array} leads - An array of lead objects.
+ */
 function displayLeadsTable(leads) {
   const leadsTable = document.querySelector('.leads-table');
   const downloadBtn = document.getElementById('downloadLeadsBtn');
-  
+
   if (!leadsTable) return;
-  
+
   // Clear existing table content
   leadsTable.innerHTML = '';
-  
+
   // Create table header
   const thead = document.createElement('thead');
   thead.innerHTML = `
@@ -1538,22 +1848,23 @@ function displayLeadsTable(leads) {
       <th>Location</th>
       <th>Score</th>
       <th>Status</th>
+      <th>Actions</th>
     </tr>
   `;
   leadsTable.appendChild(thead);
-  
+
   // Create table body
   const tableBody = document.createElement('tbody');
-  
+
   if (leads.length === 0) {
     // Hide download button when no leads
     if (downloadBtn) {
       downloadBtn.style.display = 'none';
     }
-    
+
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+        <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
           <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -1562,121 +1873,279 @@ function displayLeadsTable(leads) {
             </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-              <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
-              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
-            </div>
-            <div class="team-member" data-employee-id="xavier">
-                <div class="member-avatar">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="AI Xavier">
-                    <div class="status-indicator online"></div>
-                </div>
-                <div class="member-info">
-                    <div class="member-name">AI Xavier</div>
-                    <div class="member-role">Content Specialist</div>
-                    <div class="member-tags">
-                        <span class="tag content">Content</span>
-                        <span class="tag marketing">Marketing</span>
-                    </div>
-                </div>
-                <div class="member-stats">
-                    <span class="notification-badge">2</span>
-                </div>
+              <p style="margin: 0; font-size: 14px;">Leads generated by AI employees will appear here.</p>
             </div>
           </div>
         </td>
       </tr>
     `;
-    
-    // SURGICAL FIX: Ensure Xavier's team member has correct data attribute
-    const xavierMember = document.querySelector('.team-member[data-employee-id="xavier"]');
-    if (!xavierMember) {
-      console.error('🚨 SURGICAL ERROR: Xavier team member not found with data-employee-id="xavier"');
-      // Find Xavier by content and fix the attribute
-      const allMembers = document.querySelectorAll('.team-member');
-      allMembers.forEach(member => {
-        if (member.textContent.includes('AI Xavier')) {
-          console.log('🔧 SURGICAL FIX: Adding data-employee-id to Xavier element');
-          member.setAttribute('data-employee-id', 'xavier');
-        }
-      });
+  } else {
+    if (downloadBtn) {
+      downloadBtn.style.display = 'inline-flex'; // Show button if leads exist
     }
-    
-    // Add event listeners to team members
-    document.querySelectorAll('.team-member').forEach(member => {
-      member.addEventListener('click', () => {
-        console.log('🔍 SURGICAL DEBUG: Team member clicked:', member);
-        console.log('🔍 SURGICAL DEBUG: data-employee-id:', member.dataset.employeeId);
-        const employeeId = member.dataset.employeeId;
-        console.log('🔍 SURGICAL DEBUG: Extracted employeeId:', employeeId);
-        console.log('🔍 SURGICAL DEBUG: Available employees:', Object.keys(employees));
-        if (employeeId && employees[employeeId]) {
-          selectEmployee(employeeId);
-        }
-      });
+
+    leads.forEach(lead => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${lead.source_platform || 'N/A'}</td>
+        <td>${lead.business_name || 'N/A'}</td>
+        <td>${lead.contact_name || 'N/A'}</td>
+        <td>${lead.city || 'N/A'}, ${lead.state || 'N/A'}</td>
+        <td>${(lead.average_score || 0).toFixed(1)}</td>
+        <td><span class="status-badge status-${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span></td>
+        <td>
+          <button class="action-btn view-btn" data-lead-id="${lead.id}">View</button>
+          <button class="action-btn delete-btn" data-lead-id="${lead.id}">Delete</button>
+        </td>
+      `;
+      tableBody.appendChild(row);
     });
-    
-    leadsTable.appendChild(tableBody);
+  }
+
+  leadsTable.appendChild(tableBody);
+
+  // Add event listeners for action buttons
+  tableBody.querySelectorAll('.view-btn').forEach(button => {
+    button.addEventListener('click', (event) => {
+      const leadId = event.target.dataset.leadId;
+      showNotification(`Viewing lead: ${leadId}`, 'info');
+      // Implement detailed view logic here
+    });
+  });
+
+  tableBody.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', async (event) => {
+      const leadId = event.target.dataset.leadId;
+      if (confirm(`Are you sure you want to delete lead ${leadId}?`)) {
+        try {
+          const response = await fetch(`/api/leads/${leadId}`, {
+            method: 'DELETE',
+          });
+          if (response.ok) {
+            showNotification(`Lead ${leadId} deleted successfully!`, 'success');
+            loadLeadsData(); // Refresh the table
+          } else {
+            const errorData = await response.json();
+            showNotification(`Failed to delete lead: ${errorData.details || errorData.error}`, 'error');
+          }
+        } catch (error) {
+          showNotification('Error deleting lead.', 'error');
+          console.error('Delete Lead Error:', error);
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Helper function to determine lead status.
+ * @param {object} lead - The lead object.
+ * @returns {string} - The status string (e.g., 'new', 'qualified', 'contacted', 'responded', 'converted').
+ */
+function getLeadStatus(lead) {
+  if (lead.converted) return 'converted';
+  if (lead.response_received) return 'responded';
+  if (lead.outreach_sent) return 'contacted';
+  if (lead.validated) return 'qualified';
+  return 'new';
+}
+
+/**
+ * Helper function to get human-readable lead status text.
+ * @param {object} lead - The lead object.
+ * @returns {string} - The human-readable status text.
+ */
+function getLeadStatusText(lead) {
+  if (lead.converted) return 'Converted';
+  if (lead.response_received) return 'Responded';
+  if (lead.outreach_sent) return 'Contacted';
+  if (lead.validated) return 'Qualified';
+  return 'New';
+}
+
+/**
+ * Updates the pagination controls based on the leads data.
+ * @param {object} data - The pagination data from the API.
+ */
+function updateLeadsPagination(data) {
+  const paginationContainer = document.getElementById('leads-pagination');
+  if (!paginationContainer) return;
+
+  const { page, totalPages, total, limit } = data;
+
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    paginationContainer.style.display = 'none';
     return;
   }
-  
-  // Show download button when leads exist
-  if (downloadBtn) {
-    downloadBtn.style.display = 'flex';
+
+  paginationContainer.style.display = 'flex';
+  paginationContainer.innerHTML = ''; // Clear previous pagination
+
+  // Pagination info (e.g., "Showing 1-10 of 100 leads")
+  const startItem = (page - 1) * limit + 1;
+  const endItem = Math.min(page * limit, total);
+  const infoSpan = document.createElement('span');
+  infoSpan.className = 'pagination-info';
+  infoSpan.textContent = `Showing ${startItem}-${endItem} of ${total} leads`;
+  paginationContainer.appendChild(infoSpan);
+
+  const navDiv = document.createElement('div');
+  navDiv.className = 'pagination-controls';
+
+  // Previous button
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Previous';
+  prevBtn.disabled = page === 1;
+  prevBtn.addEventListener('click', () => loadLeadsData(page - 1, limit));
+  navDiv.appendChild(prevBtn);
+
+  // Page numbers
+  const maxPageButtons = 5; // Max number of page buttons to show
+  let startPage = Math.max(1, page - Math.floor(maxPageButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+  if (endPage - startPage + 1 < maxPageButtons) {
+    startPage = Math.max(1, endPage - maxPageButtons + 1);
   }
-  
-  console.log(`📋 Displaying ${leads.length} leads in table`);
-  
-  leads.forEach(lead => {
-    const row = document.createElement('tr');
-    
-    // Add a subtle animation for new leads
-    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
-    if (isRecent) {
-      row.style.animation = 'fadeInHighlight 2s ease-out';
-      row.classList.add('new-lead-row');
+
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.textContent = i;
+    pageBtn.className = i === page ? 'active' : '';
+    pageBtn.addEventListener('click', () => loadLeadsData(i, limit));
+    navDiv.appendChild(pageBtn);
+  }
+
+  // Next button
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = page === totalPages;
+  nextBtn.addEventListener('click', () => loadLeadsData(page + 1, limit));
+  navDiv.appendChild(nextBtn);
+
+  paginationContainer.appendChild(navDiv);
+}
+
+// Function to load company logo
+async function loadCompanyLogo() {
+  try {
+    const response = await fetch('/api/branding');
+    const brandingData = await response.json();
+    const companyLogoImg = document.getElementById('company-logo-img');
+    const logoIcon = document.querySelector('.logo-icon');
+
+    if (companyLogoImg && logoIcon) {
+      if (brandingData.logo_url) {
+        companyLogoImg.src = brandingData.logo_url;
+        companyLogoImg.style.display = 'block';
+        logoIcon.style.display = 'none'; // Hide fallback
+      } else {
+        companyLogoImg.style.display = 'none';
+        logoIcon.style.display = 'flex'; // Show fallback
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load company logo:', error);
+    const companyLogoImg = document.getElementById('company-logo-img');
+    const logoIcon = document.querySelector('.logo-icon');
+    if (companyLogoImg) companyLogoImg.style.display = 'none';
+    if (logoIcon) logoIcon.style.display = 'flex'; // Ensure fallback is shown on error
+  }
+}
+
+// Call loadCompanyLogo on page load
+document.addEventListener('DOMContentLoaded', loadCompanyLogo);
+
+// Function to load AI employee profiles for the dropdown
+async function loadAIEmployees() {
+  try {
+    const response = await fetch('/api/branding/employee-profiles');
+    const employees = await response.json();
+    const employeeSelect = document.getElementById('ai-employee-select');
+
+    if (employeeSelect) {
+      employeeSelect.innerHTML = '<option value="">Select an AI Employee</option>'; // Default option
+      employees.forEach(employee => {
+        const option = document.createElement('option');
+        option.value = employee.employee_id;
+        option.textContent = employee.employee_id; // Or employee.name if available
+        employeeSelect.appendChild(option);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to load AI employees:', error);
+    showNotification('Failed to load AI employee list.', 'error');
+  }
+}
+
+// Call loadAIEmployees on page load
+document.addEventListener('DOMContentLoaded', loadAIEmployees);
+
+// Sidebar toggle functionality (if needed, based on your HTML structure)
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.querySelector('.sidebar');
+  const mainContent = document.querySelector('.main-content-wrapper');
+
+  if (sidebar && mainContent) {
+    // Initial state (retracted) is handled by CSS
+    // No JS needed for hover effect if purely CSS based
+
+    // If you need a click-to-toggle functionality instead of hover,
+    // you would add an event listener here to toggle a class on the sidebar.
+    // For now, assuming CSS handles the hover expansion.
+  }
+});
+
+// Example of how to use the showNotification function from other parts of your app
+// showNotification('Welcome to Orchid Republic!', 'info');
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  } else {
+    // Show download button when leads exist
+    if (downloadBtn) {
+      downloadBtn.style.display = 'inline-flex';
     }
     
-    row.innerHTML = `
-      <td>
-        <div class="source-info">
-          <strong>${lead.source_platform || 'Unknown'}</strong>
-        </div>
-      </td>
-      <td>
-        <div class="business-info">
-          <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
-        </div>
-      </td>
-      <td>
-        <div class="contact-info">
-          <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.email || 'No Email'}</small>
-          <small>${lead.phone || 'No Phone'}</small>
-        </div>
-      </td>
-      <td>
-        <div class="location-info">
-          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
-          <small>${lead.address || ''}</small>
-        </div>
-      </td>
-      <td>
-        <span class="score ${getScoreClass(lead.score)}">${(lead.score || 0).toFixed(1)}</span>
-      </td>
-      <td>
-        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
+    leads.forEach(lead => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${escapeHtml(lead.source_platform || 'Unknown')}</td>
+        <td>
+          <div style="font-weight: 500;">${escapeHtml(lead.business_name || 'Unknown Business')}</div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.industry || 'Unknown Industry')}</div>
+        </td>
+        <td>
+          <div>${escapeHtml(lead.contact_name || 'No contact')}</div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.email || 'No email')}</div>
+        </td>
+        <td>${escapeHtml(lead.city || 'Unknown')}, ${escapeHtml(lead.state || 'Unknown')}</td>
+        <td>
+          <span class="score-badge score-${getScoreClass(lead.score || 0)}">${lead.score || 0}</span>
+        </td>
+        <td>
+          <span class="status-badge status-${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
   
   leadsTable.appendChild(tableBody);
 }
 
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function getScoreClass(score) {
   if (score >= 4) return 'high';
-  if (score >= 2.5) return 'medium';
+  if (score >= 3) return 'medium';
   return 'low';
 }
 
@@ -1694,538 +2163,4 @@ function getLeadStatusText(lead) {
   if (lead.outreach_sent) return 'Contacted';
   if (lead.validated) return 'Qualified';
   return 'New';
-}
-
-function updateLeadsPagination(data) {
-  const paginationInfo = document.querySelector('.pagination-info');
-  const pageNumbers = document.querySelector('.page-numbers');
-  
-  if (paginationInfo) {
-    const start = ((data.page || 1) - 1) * (data.limit || 50) + 1;
-    const end = Math.min(start + (data.leads?.length || 0) - 1, data.total || 0);
-    paginationInfo.textContent = `Showing ${start}-${end} of ${data.total || 0} leads`;
-  }
-  
-  if (pageNumbers) {
-    pageNumbers.innerHTML = '';
-    const totalPages = data.totalPages || 1;
-    const currentPage = data.page || 1;
-    
-    for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-      pageBtn.textContent = i;
-      pageBtn.onclick = () => loadLeadsPage(i);
-      pageNumbers.appendChild(pageBtn);
-    }
-  }
-}
-
-async function loadLeadsPage(page) {
-  try {
-    const response = await fetch(`/api/leads?page=${page}&limit=50`);
-    const data = await response.json();
-    
-    if (response.ok) {
-      displayLeadsTable(data.leads || []);
-      updateLeadsPagination(data);
-    }
-  } catch (error) {
-    console.error('Failed to load leads page:', error);
-  }
-}
-
-function viewLead(leadId) {
-  // TODO: Implement lead detail view
-  console.log('View lead:', leadId);
-}
-
-function editLead(leadId) {
-  // TODO: Implement lead editing
-  console.log('Edit lead:', leadId);
-}
-
-function renderTeamMembers() {
-  console.log('🔧 SURGICAL: renderTeamMembers called');
-  console.log('🔧 SURGICAL: Available employees:', Object.keys(employees));
-  
-  const teamSection = document.querySelector('.team-members');
-  if (!teamSection) return;
-  
-  // SURGICAL FIX: Build team members dynamically from employees object
-  let teamHTML = '';
-  
-  Object.entries(employees).forEach(([employeeId, employee]) => {
-    const isActive = employeeId === 'brenden' ? 'active' : '';
-    const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
-    
-    teamHTML += `
-      <div class="team-member ${isActive}" data-employee-id="${employeeId}">
-        <div class="member-avatar">
-          <img src="${employee.avatar}" alt="${employee.name}">
-          <div class="status-indicator online"></div>
-        </div>
-        <div class="member-info">
-          <div class="member-name">${employee.name}</div>
-          <div class="member-role">${employee.role}</div>
-          <div class="member-tags">
-            ${employee.tags.map(tag => `<span class="tag ${tag.toLowerCase()}">${tag}</span>`).join('')}
-          </div>
-        </div>
-        <div class="member-stats">
-          <div class="notification-badge">${badgeCount}</div>
-        </div>
-      </div>
-    `;
-  });
-  
-  teamSection.innerHTML = teamHTML;
-  
-  console.log('🔧 SURGICAL: Team members HTML generated');
-  console.log('🔧 SURGICAL: Found team member elements:', document.querySelectorAll('.team-member').length);
-  
-  // SURGICAL VERIFICATION: Check each team member's data attribute
-  document.querySelectorAll('.team-member').forEach((member, index) => {
-    const employeeId = member.dataset.employeeId;
-    console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
-  });
-  
-  // Create chat interfaces for all employees
-  Object.values(employees).forEach(employee => {
-    createChatInterface(employee);
-  });
-
-  // Create chat interface for an employee
-  function createChatInterface(employee) {
-    const chatInterface = document.querySelector('.chat-interface');
-    if (!chatInterface) {
-      console.error('Chat interface container not found');
-      return;
-    }
-
-    // Check if chat container already exists for this employee
-    let chatContainer = document.getElementById(`chat-${employee.id}`);
-    if (chatContainer) {
-      return; // Already exists
-    }
-
-    // Create chat container for this employee
-    chatContainer = document.createElement('div');
-    chatContainer.id = `chat-${employee.id}`;
-    chatContainer.className = 'employee-chat-container';
-    chatContainer.style.display = 'none';
-    
-    chatContainer.innerHTML = `
-      <div class="chat-messages" id="messages-${employee.id}">
-        <div class="welcome-message">
-          <div class="welcome-avatar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="welcome-content">
-            <h4>Welcome to ${employee.name}</h4>
-            <p>${employee.description}</p>
-          </div>
-        </div>
-      </div>
-      <div class="chat-input-container">
-        <form class="chat-form" id="chat-form-${employee.id}">
-          <div class="input-wrapper">
-            <textarea id="messageInput-${employee.id}" placeholder="Ask ${employee.name} anything..." rows="1"></textarea>
-            <button type="submit" class="send-button" id="send-button-${employee.id}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          <div class="character-count" id="char-count-${employee.id}">0/4000</div>
-        </form>
-      </div>
-    `;
-
-    // Find the chat-content container and append
-    const chatContent = chatInterface.querySelector('.chat-content');
-    if (chatContent) {
-      chatContent.appendChild(chatContainer);
-    } else {
-      chatInterface.appendChild(chatContainer);
-    }
-
-    // Setup event listeners for this employee's chat
-    setupChatEventListeners(employee);
-  }
-
-  // Setup chat interface for the active employee;
-  function setupChatInterface() {
-    const messageInput = document.getElementById('messageInput');
-    const chatForm = document.getElementById('chatForm');
-    const sendButton = document.getElementById('sendButton');
-
-    if (!messageInput || !chatForm || !sendButton) {
-      console.error('Chat interface elements not found');
-      return;
-    }
-
-    // Character count and validation
-    messageInput.addEventListener('input', () => {
-      const length = messageInput.value.length;
-      const charCount = document.getElementById('charCount');
-      if (charCount) {
-        charCount.textContent = `${length}/4000`;
-        charCount.classList.toggle('warning', length > 3500);
-        charCount.classList.toggle('error', length > 4000);
-      }
-      sendButton.disabled = length === 0 || length > 4000;
-    });
-
-    // Handle send button click;
-    document.getElementById('sendButton').addEventListener('click', (e) => {
-      e.preventDefault();
-      const message = messageInput.value.trim();
-      if (message && currentEmployee) {
-        sendMessage(message);
-        messageInput.value = '';
-        sendButton.disabled = true;
-      }
-    });
-
-    // Handle Enter key
-    messageInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendButton.click();
-      }
-    });
-  }
-
-  // Setup event listeners for a specific employee's chat
-  function setupChatEventListeners(employee) {
-    const form = document.getElementById(`chat-form-${employee.id}`);
-    const input = document.getElementById(`messageInput-${employee.id}`);
-    const charCount = document.getElementById(`char-count-${employee.id}`);
-    const sendButton = document.getElementById(`send-button-${employee.id}`);
-
-    if (!form || !input || !charCount || !sendButton) {
-      console.error(`Failed to find chat elements for ${employee.id}`);
-      return;
-    }
-
-    // Character count
-    input.addEventListener('input', () => {
-      const length = input.value.length;
-      charCount.textContent = `${length}/4000`;
-      charCount.classList.toggle('warning', length > 3500);
-      charCount.classList.toggle('error', length > 4000);
-      sendButton.disabled = length === 0 || length > 4000;
-    });
-
-    // Auto-resize textarea
-    input.addEventListener('input', () => {
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-    });
-
-    // Form submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const message = input.value.trim();
-      if (!message || currentEmployee?.id !== employee.id) return;
-      
-      await sendMessage(message);
-      input.value = '';
-      input.style.height = 'auto';
-      charCount.textContent = '0/4000';
-      sendButton.disabled = true;
-    });
-
-    // Enter key handling
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        form.dispatchEvent(new Event('submit'));
-      }
-    });
-  }
-}
-
-function attachTeamMemberListeners() {
-  console.log('🔧 SURGICAL: attachTeamMemberListeners called');
-  
-  // Add event listeners to team members
-  document.querySelectorAll('.team-member').forEach(member => {
-    const employeeId = member.dataset.employeeId;
-    console.log(`🔧 SURGICAL: Attaching listener to team member: ${employeeId}`);
-    
-    member.addEventListener('click', () => {
-      console.log('🚨 SURGICAL CLICK: Team member clicked');
-      console.log('🚨 SURGICAL CLICK: data-employee-id:', member.dataset.employeeId);
-      console.log('🚨 SURGICAL CLICK: Available employees:', Object.keys(employees));
-      console.log('🚨 SURGICAL CLICK: Employee exists?', !!employees[employeeId]);
-      
-      if (employeeId && employees[employeeId]) {
-        console.log('🚨 SURGICAL CLICK: Calling selectEmployee with:', employeeId);
-        selectEmployee(employeeId);
-      } else {
-        console.error('🚨 SURGICAL ERROR: Employee not found:', employeeId);
-      }
-    });
-  });
-}
-
-function renderMainContent() {
-  renderTeamMembers();
-  attachTeamMemberListeners();
-}
-
-function selectEmployee(employeeId) {
-  console.log('🎯 SURGICAL SELECT: selectEmployee called with:', employeeId);
-  console.log('🎯 SURGICAL SELECT: Current employee:', currentEmployee);
-  console.log('🎯 SURGICAL SELECT: Employee exists?', !!employees[employeeId]);
-  
-  if (!employees[employeeId]) {
-    console.error('🚨 SURGICAL ERROR: Employee not found in selectEmployee:', employeeId);
-    console.error('🚨 SURGICAL ERROR: Available employees:', Object.keys(employees));
-    return;
-  }
-  
-  const selectedEmployee = employees[employeeId];
-  console.log('🎯 SURGICAL SELECT: Selected employee object:', selectedEmployee);
-
-  // Save current conversation before switching
-  if (currentEmployee && currentConversation) {
-    conversationHistory[currentEmployee] = currentConversation;
-  }
-
-  // Update current employee
-  console.log('🔄 CRITICAL: Setting currentEmployee from', currentEmployee, 'to', employeeId);
-  currentEmployee = employeeId;
-  console.log('🔄 CRITICAL: currentEmployee is now:', currentEmployee);
-
-  // Load or create conversation for new employee
-  loadConversationForEmployee(employeeId);
-
-  // Update active team member visual state
-  document.querySelectorAll('.team-member').forEach(member => {
-    member.classList.remove('active');
-    const memberEmployeeId = member.dataset.employeeId;
-    if (memberEmployeeId === employeeId) {
-      member.classList.add('active');
-      console.log('🎯 VISUAL UPDATE: Set active class for', employeeId);
-    }
-  });
-
-  // Update chat header with employee details
-  updateChatHeader(selectedEmployee);
-  updateQuickActions(selectedEmployee.quickActions || []);
-  updateChatTabs(selectedEmployee);
-  updateChatContent(selectedEmployee);
-
-  console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
-  console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
-  console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
-}
-
-function switchToEmployeeChat(employeeId) {
-    console.log(`🔄 Attempting to switch to employee: ${employeeId}`);
-    
-    // Debug: Check if employee exists in our array
-    const employee = Object.values(employees).find(emp => emp.id === employeeId);
-    if (!employee) {
-        console.error(`❌ Employee not found in employees array: ${employeeId}`);
-        console.log('Available employees:', Object.keys(employees));
-        return;
-    }
-    
-    console.log(`✅ Found employee:`, employee);
-    
-    // Validate employee ID
-    const validEmployees = Object.keys(employees);
-    if (!validEmployees.includes(employeeId)) {
-        console.error(`❌ Invalid employee ID: ${employeeId}`);
-        console.log('Valid employees:', validEmployees);
-        return;
-    }
-}
-
-async function sendMessage(message) {
-  console.log('📤 Sending message...');
-  console.log('📤 CRITICAL: About to send message with activeEmployeeId:', activeEmployeeId);
-  console.log('📤 CRITICAL: Message content:', message);
-  console.log('📤 CRITICAL: Thread ID for this employee:', conversationThreads[activeEmployeeId]);
-  
-  if (pendingMessages[activeEmployeeId]) {
-    console.warn('⚠️ Message already pending for', activeEmployeeId, ', skipping');
-    return;
-  }
-  
-  const currentEmployeeId = activeEmployeeId; // Store at start to avoid race conditions
-  pendingMessages[currentEmployeeId] = true;
-
-  if (!message.trim()) {
-    pendingMessages[currentEmployeeId] = false;
-    return;
-  }
-
-  // Clear input and disable send button
-  const messageInput = document.getElementById('messageInput');
-  updateSendButton();
-  if (messageInput) messageInput.value = '';
-  if (sendButton) sendButton.disabled = true;
-
-  try {
-    // Add user message to chat immediately
-    appendMessage(message, 'user', 'You');
-
-    console.log('🚀 CRITICAL: Making API request with employee:', activeEmployeeId);
-    
-    // Prepare message data with current employee context
-    const messageData = {
-      message: message,
-      employee: currentEmployeeId,
-      thread_id: conversationThreads[currentEmployeeId] || null
-    };
-    
-    console.log('🚀 CRITICAL: Full API payload:', messageData);
-
-    // Send to backend
-    const response = await fetch('/api/ask', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(messageData)
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('📥 CRITICAL: API response received:', {
-      status: data.status,
-      employeeId: data.employee?.name || 'UNKNOWN',
-      messagePreview: data.message?.substring(0, 100) + '...'
-    });
-    
-    // Hide typing indicator as soon as we get a response
-    hideTypingIndicator();
-
-    // Store the thread ID for this employee
-    if (data.thread_id) {
-      conversationThreads[activeEmployeeId] = data.thread_id;
-      console.log(`💾 Stored thread ID for ${activeEmployeeId}:`, data.thread_id);
-    }
-    if (data.thread_id && currentEmployeeId === activeEmployeeId) {
-      conversationThreads[currentEmployeeId] = data.thread_id;
-      console.log(`🧵 Thread ID stored for ${currentEmployeeId}:`, data.thread_id);
-    }
-    const employeeName = data.employee?.name || `AI ${currentEmployeeId}`;
-    
-    console.log('💬 CRITICAL: Adding response from:', employeeName);
-    console.log('💬 CRITICAL: Expected employee was:', `AI ${currentEmployeeId}`);
-    
-    appendMessage(data.message, 'assistant', employeeName);
-
-    if (data.status === 'requires_action') {
-      console.log('⚠️ Assistant requires additional actions');
-    }
-
-  } catch (error) {
-    console.error('❌ Error sending message:', error);
-    hideTypingIndicator();
-    
-    // Always hide typing indicator on error
-    hideTypingIndicator();
-    
-    appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
-  } finally {
-    pendingMessages[currentEmployeeId] = false;
-    updateSendButton();
-  }
-}
-
-// Load saved color scheme on page load
-document.addEventListener('DOMContentLoaded', function() {
-  const savedColors = localStorage.getItem('orchid-colors');
-  if (savedColors) {
-    try {
-      const colors = JSON.parse(savedColors);
-      document.documentElement.style.setProperty('--primary-color', colors.primary);
-      document.documentElement.style.setProperty('--secondary-color', colors.secondary);
-      document.documentElement.style.setProperty('--accent-color', colors.accent);
-      
-      // Update form inputs
-      const primaryInput = document.getElementById('primaryInput');
-      const primaryPicker = document.getElementById('primaryPicker');
-      const secondaryInput = document.getElementById('secondaryInput');
-      const secondaryPicker = document.getElementById('secondaryPicker');
-      const accentInput = document.getElementById('accentInput');
-      const accentPicker = document.getElementById('accentPicker');
-      
-      if (primaryInput) primaryInput.value = colors.primary;
-      if (primaryPicker) primaryPicker.value = colors.primary;
-      if (secondaryInput) secondaryInput.value = colors.secondary;
-      if (secondaryPicker) secondaryPicker.value = colors.secondary;
-      if (accentInput) accentInput.value = colors.accent;
-      if (accentPicker) accentPicker.value = colors.accent;
-    } catch (error) {
-      console.error('Failed to load saved colors:', error);
-    }
-  }
-});
-
-function updateSendButton() {
-  const isPending = pendingMessages[activeEmployeeId];
-  sendButton.disabled = isPending;
-  sendButton.textContent = isPending ? 'Sending...' : 'Send';
-  
-  // Update placeholder to show current employee
-  const currentEmployee = getCurrentEmployeeName();
-  messageInput.placeholder = isPending ? 
-    `Waiting for ${currentEmployee}...` : 
-    `Message ${currentEmployee}...`;
-}
-
-function getCurrentEmployeeName() {
-  const names = {
-    'brenden': 'AI Brenden',
-    'Rey': 'AI Rey',
-    'van': 'AI Van'
-  };
-  return names[activeEmployeeId] || `AI ${activeEmployeeId}`;
-}
-
-function updateEmployeeHeader(employeeId) {
-  const employeeNames = {
-    'brenden': 'AI Brenden',
-    'Rey': 'AI Rey',
-    'Xavier': 'AI Xavier'
-  };
-  
-  const employeeRoles = {
-    'brenden': 'Lead Research Specialist',
-    'Rey': 'Voice Outreach Manager',
-    'Xavier': 'UGC Expert'
-  };
-  
-  const employeeAvatars = {
-    'brenden': 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    'Rey': 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    'Xavier': 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-  };
-  
-  const nameElement = document.querySelector('.employee-details h3');
-  const roleElement = document.querySelector('.role-tag');
-  const avatarElement = document.querySelector('.employee-avatar img');
-  
-  if (nameElement) nameElement.textContent = employeeNames[employeeId] || 'Unknown Employee';
-  if (roleElement) roleElement.textContent = employeeRoles[employeeId] || 'Unknown Role';
-  if (avatarElement) avatarElement.src = employeeAvatars[employeeId] || '';
-  
-  console.log('Employee header updated for:', employeeId);
 }
