@@ -41,6 +41,21 @@ const employees = {
     ],
     tags: ['Marketing', 'Design']
   },
+    angel: {
+      angel: {
+      assistantId: 'asst_eVAiDpRTPgcfvlhxPQCnH91c',
+      name: 'AI angel',
+      role: 'AI Customer Support',
+      specialty: 'Customer Support AI Agent',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
+    description: 'Send personalized email reminders on occasions to your customers to motivate them for keep coming again!.',
+    quickActions: [
+      { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
+      { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
+      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
+    ],
+    tags: ['Customer Support AI', 'Voice AI']
+  },
   eden: {
       assistantId: 'asst_Lr3o67bwsM4LzhDef8bbsbCy',
       name: 'AI Eden',
