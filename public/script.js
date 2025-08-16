@@ -2098,7 +2098,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Example of how to use the showNotification function from other parts of your app
-// showNotification('Welcome to Orchid Republic!', 'info'
+// showNotification('Welcome to Orchid Republic!', 'info');
+            </div>
+          </div>
+        </td>
     `;
   } else {
     // Show download button when leads exist
@@ -2118,7 +2121,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div>${escapeHtml(lead.contact_name || 'No contact')}</div>
           <div style="font-size: 12px; color: #64748b;">${escapeHtml(lead.email || 'No email')}</div>
         </td>
-        <td>${escapeHtml(lead.city || 'Unknown')}, ${escapeHtml(lead.state || 'Unknown')}</td>
+        <td>${escapeHtml(lead.city || 'Unknown')}, ${escapeHtml(lead.state || 'Unknown')</td>
         <td>
           <span class="score-badge score-${getScoreClass(lead.score || 0)}">${lead.score || 0}</span>
         </td>
