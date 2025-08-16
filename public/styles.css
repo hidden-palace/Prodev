@@ -150,19 +150,223 @@ body {
 
 /* Sidebar Styling for Retractable Behavior */
 .sidebar {
-  width: 60px; /* Default collapsed width */
-  transition: width 0.3s ease-in-out;
-  overflow: hidden; /* Hide overflowing content (text) */
-  position: fixed; /* Assuming your sidebar is fixed */
-  height: 100vh; /* Full viewport height */
-  background-color: #ffffff; /* Example background, adjust as needed */
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Subtle shadow */
-  padding-top: 20px; /* Space for logo/header */
-  z-index: 1000; /* Ensure it's above other content */
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 .sidebar:hover {
-  width: 200px; /* Expanded width on hover */
+  width: 280px;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo Section */
+.logo-section {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+}
+
+.company-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#company-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  display: none;
+}
+
+.company-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.1s;
+}
+
+.sidebar:hover .company-name {
+  opacity: 1;
+}
+
+/* Navigation */
+.nav-section {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-left-color: white;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.nav-text {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.1s;
+}
+
+.sidebar:hover .nav-text {
+  opacity: 1;
+}
+
+/* Employee Section */
+.employee-section {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.employee-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.1s;
+}
+
+.sidebar:hover .employee-title {
+  opacity: 1;
+}
+
+.employee-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 2px 0;
+}
+
+.employee-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.employee-item.active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.employee-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.employee-info {
+  flex: 1;
+  min-width: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.1s;
+}
+
+.sidebar:hover .employee-info {
+  opacity: 1;
+}
+
+.employee-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.employee-role {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 80px;
+  min-height: 100vh;
+  background: #f8fafc;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar:hover + .main-content {
+  margin-left: 280px;
 }
 
 .sidebar-nav ul {
