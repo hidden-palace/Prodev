@@ -1505,6 +1505,83 @@ function showNotification(message, type = 'info') {
   console.log(`📢 Notification shown: ${type} - ${message}`);
 }
 
+function updateLeadsPagination(data) {
+  const paginationContainer = document.querySelector('.pagination-container');
+  
+  if (!paginationContainer) return;
+  
+  const { page = 1, totalPages = 1, total = 0, limit = 50 } = data;
+  
+  // Clear existing pagination
+  paginationContainer.innerHTML = '';
+  
+  if (totalPages <= 1) {
+    // Hide pagination if only one page or no data
+    paginationContainer.style.display = 'none';
+    return;
+  }
+  
+  paginationContainer.style.display = 'flex';
+  
+  // Create pagination info
+  const paginationInfo = document.createElement('div');
+  paginationInfo.className = 'pagination-info';
+  const startItem = ((page - 1) * limit) + 1;
+  const endItem = Math.min(page * limit, total);
+  paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${total} leads`;
+  
+  // Create pagination controls
+  const paginationControls = document.createElement('div');
+  paginationControls.className = 'pagination-controls';
+  
+  // Previous button
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Previous';
+  prevBtn.disabled = page <= 1;
+  prevBtn.onclick = () => {
+    if (page > 1) {
+      loadLeadsData(page - 1);
+    }
+  };
+  
+  // Next button
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = page >= totalPages;
+  nextBtn.onclick = () => {
+    if (page < totalPages) {
+      loadLeadsData(page + 1);
+    }
+  };
+  
+  // Page numbers (show current and nearby pages)
+  const pageNumbers = document.createElement('div');
+  pageNumbers.className = 'page-numbers';
+  
+  const startPage = Math.max(1, page - 2);
+  const endPage = Math.min(totalPages, page + 2);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = document.createElement('button');
+    pageBtn.textContent = i;
+    pageBtn.className = i === page ? 'active' : '';
+    pageBtn.onclick = () => {
+      if (i !== page) {
+        loadLeadsData(i);
+      }
+    };
+    pageNumbers.appendChild(pageBtn);
+  }
+  
+  // Assemble pagination
+  paginationControls.appendChild(prevBtn);
+  paginationControls.appendChild(pageNumbers);
+  paginationControls.appendChild(nextBtn);
+  
+  paginationContainer.appendChild(paginationInfo);
+  paginationContainer.appendChild(paginationControls);
+}
+
 async function loadDashboardMetrics() {
   try {
     console.log('📈 Loading dashboard metrics...');
