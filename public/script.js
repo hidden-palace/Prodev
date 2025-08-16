@@ -1595,4 +1595,4 @@ function displayLeadsTable(leads) {
             </svg>
             <div>
               <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-              <p style="margin: 0; font-size: 14px;" /p>
+              <p style="margin: 0; font-size: 14px;"</p>
