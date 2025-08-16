@@ -289,7 +289,7 @@ body {
 .sidebar {
   width: var(--sidebar-collapsed-width);
   height: 100vh;
-  background: var(--surface-color);
+  background: black;
   border-right: 1px solid var(--border-color);
   position: fixed;
   left: 0;
