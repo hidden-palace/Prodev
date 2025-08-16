@@ -2099,9 +2099,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Example of how to use the showNotification function from other parts of your app
 // showNotification('Welcome to Orchid Republic!', 'info');
-            </div>
-          </div>
-        </td>
+    
     `;
   } else {
     // Show download button when leads exist
