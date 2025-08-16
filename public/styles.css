@@ -71,7 +71,7 @@ body {
   top: 0;
   left: 0;
   height: 100%;
-  width: 200px; /* Default: Expanded width */
+  width: 50px; /* Default: Expanded width */
   background-color: var(--sidebar-bg-color, #f0f2f5); /* Example background */
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   padding-top: 20px; /* Adjust as needed */
