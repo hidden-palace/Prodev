@@ -83,6 +83,7 @@ body {
 /* When sidebar is hovered, it retracts */
 .sidebar:hover {
   width: 60px; /* Collapsed width */
+  sidebar-header : hidden
 }
 
 /* Navigation items within the sidebar */
