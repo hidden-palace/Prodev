@@ -45,17 +45,6 @@ const config = {
       }
       // chainsTo: null // Example: Van does not chain further
     }, 
-    eden: {
-      assistantId: 'asst_Lr3o67bwsM4LzhDef8bbsbCy',
-      name: 'AI Eden',
-      role: 'Email Occasion Reminder',
-      specialty: 'Occasion Remminder AI',
-      toolWebhooks: { // Use toolWebhooks object for multiple tools
-       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9',
-        // Add other tools for Van here
-      }
-      // chainsTo: null // Example: Van does not chain further
-    }, 
     sara: {
       assistantId: 'asst_w2t643MjToTPg3ywB7pYdIuX',
       name: 'AI Sara',
