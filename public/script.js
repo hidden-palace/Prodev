@@ -6,6 +6,9 @@ let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 let employeeInfoPanel; // Panel for showing employee details
 
+// Base URL for employee avatars stored in Supabase
+const SUPABASE_LOGO_URL = 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos';
+
 // Global state management
 let activeEmployeeId = 'brenden';
 let conversationThreads = {}; // Store separate thread IDs for each employee
@@ -92,6 +95,7 @@ const employees = {
     name: 'AI Rhea',
     role: 'Reputation AI',
     specialty: 'Review Assistant',
+    avatar: `${SUPABASE_LOGO_URL}/rhea.jpeg`,
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/rhea.jpeg',
     description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
     quickActions: [
@@ -105,6 +109,7 @@ const employees = {
     name: 'AI Miles',
     role: 'Campaign AI Builder',
     specialty: 'Marketing Campaign Designer',
+    avatar: `${SUPABASE_LOGO_URL}/miles.jpeg`,
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/miles.jpeg',
     description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
     quickActions: [
@@ -118,6 +123,7 @@ const employees = {
     name: 'AI Eden',
     role: 'Email Occasion Reminder AI',
     specialty: 'Customer Engagement Emails',
+    avatar: `${SUPABASE_LOGO_URL}/eden.jpeg`,
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/eden.jpeg',
     description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
     quickActions: [
@@ -131,6 +137,7 @@ const employees = {
     name: 'AI Angel',
     role: 'Customer Support AI',
     specialty: 'Handles Customer Queries & Phone Inquiries',
+    avatar: `${SUPABASE_LOGO_URL}/angel.jpeg`,
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
     quickActions: [
@@ -163,8 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeMobileMenu();
   initializeExportDropdown();
   initializeEmployeeInfoPanel();
+  renderEmployeeStatus();
   renderEmployeeStatusList();
-
   // Load initial employee
   switchEmployee('brenden');
   
@@ -1910,6 +1917,27 @@ function viewLead(leadId) {
 function editLead(leadId) {
   // TODO: Implement lead editing
   console.log('Edit lead:', leadId);
+}
+
+function renderEmployeeStatus() {
+  const statusContainer = document.getElementById('employee-status-list');
+  if (!statusContainer) return;
+
+  statusContainer.innerHTML = '';
+
+  Object.values(employees).forEach(employee => {
+    const card = document.createElement('div');
+    card.className = 'employee-card';
+    card.innerHTML = `
+      <img src="${employee.avatar}" alt="${employee.name}" class="employee-thumb" />
+      <div class="employee-info">
+        <div class="employee-name">${employee.name}</div>
+        <div class="employee-role">${employee.role}</div>
+      </div>
+      <span class="status-badge online">Online</span>
+    `;
+    statusContainer.appendChild(card);
+  });
 }
 
 function renderTeamMembers() {
