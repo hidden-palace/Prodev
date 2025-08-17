@@ -80,7 +80,7 @@
             <!-- Test logo elements -->
             <div class="company-logo">
                 <div class="logo-icon" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #3b82f6; color: white; border-radius: 8px;">OR</div>
-                <img id="company-logo-img" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;" alt="Company Logo">
+                <img id="company-logo" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;" alt="Company Logo">
             </div>
         </div>
     </div>
@@ -152,7 +152,7 @@
         function checkDOMElements() {
             log('Checking DOM elements...', 'info');
             
-            const logoImg = document.getElementById('company-logo-img');
+            const logoImg = document.getElementById('company-logo');
             const logoIcon = document.querySelector('.logo-icon');
             
             log(`Logo image element: ${logoImg ? '✅ Found' : '❌ Not found'}`, logoImg ? 'success' : 'error');

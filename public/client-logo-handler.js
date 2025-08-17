@@ -40,7 +40,7 @@ class LogoHandler {
     try {
       console.log('🎨 Logo Handler: Setting up logo elements...');
       // Find logo elements in the DOM
-      this.logoElement = document.getElementById('company-logo-img');
+      this.logoElement = document.getElementById('company-logo');
       this.fallbackElement = document.querySelector('.logo-icon');
       this.logoContainer = document.querySelector('.company-logo');
       
@@ -52,7 +52,7 @@ class LogoHandler {
       });
       
       if (!this.logoElement) {
-        console.error('🎨 Logo Handler: Logo image element (#company-logo-img) not found in DOM');
+        console.error('🎨 Logo Handler: Logo image element (#company-logo) not found in DOM');
         console.log('🎨 Logo Handler: Available elements with "logo" in ID:', 
           Array.from(document.querySelectorAll('[id*="logo"]')).map(el => el.id));
         return;
