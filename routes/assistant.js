@@ -498,6 +498,44 @@ router.post('/webhook-response', validateWebhookResponse, async (req, res, next)
 });
 
 /**
+ * GET /dashboard-metrics - Basic metrics for dashboard display
+ */
+router.get('/dashboard-metrics', async (req, res) => {
+  try {
+    const pendingCalls = webhookHandler ? webhookHandler.getPendingCalls() : [];
+
+    // Get lead statistics if available
+    let leadStats = { total: 0, validated: 0, outreach_sent: 0, converted: 0 };
+    if (leadProcessor) {
+      try {
+        const stats = await leadProcessor.getStatistics();
+        leadStats = { ...leadStats, ...stats };
+      } catch (error) {
+        leadStats.error = error.message;
+      }
+    }
+
+    const activities = pendingCalls.map(call => ({
+      time: call.createdAt || call.created_at || new Date().toISOString(),
+      description:
+        `${call.employeeName || call.employee_id || 'Employee'} pending ${call.toolName || call.type || 'tool call'}`
+    }));
+
+    res.json({
+      leads: leadStats,
+      pending_calls: pendingCalls.length,
+      activities
+    });
+  } catch (error) {
+    console.error('Error in dashboard metrics endpoint:', error);
+    res.status(500).json({
+      error: 'Failed to load dashboard metrics',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /status - Get server status with isolation information
  */
 router.get('/status', async (req, res) => {
