@@ -224,6 +224,7 @@ body {
   cursor: pointer;
 }
 
+/* Metric value states */
 .metric-value.loading {
   opacity: 0.6;
 }
