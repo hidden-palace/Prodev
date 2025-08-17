@@ -49,10 +49,10 @@ const employees = {
     avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
     description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
     quickActions: [
-  { icon: "✍️", text: "Flower care guides", action: "Write detailed blog posts on caring for orchids and luxury blooms" },
-  { icon: "🌸", text: "Floral trends insights", action: "Create engaging articles on seasonal and design trends in floral arrangements" },
-  { icon: "📈", text: "SEO-driven content", action: "Develop SEO-optimized blog posts to boost brand visibility and drive traffic" }
-],
+      { icon: '✍️', text: 'Flower care guides', action: 'Write detailed blog posts on caring for orchids and luxury blooms' },
+      { icon: '🌸', text: 'Floral trends insights', action: 'Create engaging articles on seasonal and design trends in floral arrangements' },
+      { icon: '📈', text: 'SEO-driven content', action: 'Develop SEO-optimized blog posts to boost brand visibility and drive traffic' }
+    ],
     tags: ['Blog Posts', 'Content Generation']
   },
   rey: {
@@ -71,20 +71,73 @@ const employees = {
     tags: ['Strategy', 'Analytics']
   },
   xavier: {
-  id: 'xavier',
-  name: 'AI Xavier',
-  role: 'Content Specialist',
-  specialty: 'Content Generation AI',
-  avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
-  description: 'I create compelling content across all formats – from engaging social media videos and UGC campaigns to persuasive email sequences and landing page copy. I understand audience psychology and craft messages that convert.',
-  quickActions: [
-    { icon: '🎥', text: 'Generate TikTok Video Concept', action: 'Generate TikTok Video Concept' },
-    { icon: '📹', text: 'Create Instagram Reel Script', action: 'Create Instagram Reel Script' },
-    { icon: '📝', text: 'Write UGC Video Caption', action: 'Write UGC Video Caption' },
-    { icon: '💡', text: 'Suggest 5 UGC Ideas', action: 'Suggest 5 UGC Ideas for brand' }
-  ],
-  tags: ['Content', 'Marketing']
-}
+    id: 'xavier',
+    name: 'AI Xavier',
+    role: 'Content Specialist',
+    specialty: 'Content Generation AI',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
+    description: 'I create compelling content across all formats – from engaging social media videos and UGC campaigns to persuasive email sequences and landing page copy. I understand audience psychology and craft messages that convert.',
+    quickActions: [
+      { icon: '🎥', text: 'Generate TikTok Video Concept', action: 'Generate TikTok Video Concept' },
+      { icon: '📹', text: 'Create Instagram Reel Script', action: 'Create Instagram Reel Script' },
+      { icon: '📝', text: 'Write UGC Video Caption', action: 'Write UGC Video Caption' },
+      { icon: '💡', text: 'Suggest 5 UGC Ideas', action: 'Suggest 5 UGC Ideas for brand' }
+    ],
+    tags: ['Content', 'Marketing']
+  },
+  // --- New Employees ---
+  rhea: {
+    id: 'rhea',
+    name: 'AI Rhea',
+    role: 'Reputation AI',
+    specialty: 'Review Assistant',
+    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
+    quickActions: [
+      { icon: '⭐', text: 'Analyze reviews', action: 'Analyze recent customer reviews' },
+      { icon: '💬', text: 'Draft response', action: 'Draft a professional response to a negative review' }
+    ],
+    tags: ['Reputation', 'Support']
+  },
+  miles: {
+    id: 'miles',
+    name: 'AI Miles',
+    role: 'Campaign AI Builder',
+    specialty: 'Marketing Campaign Designer',
+    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
+    quickActions: [
+      { icon: '📢', text: 'Create ad campaign', action: 'Draft a new Facebook Ads campaign' },
+      { icon: '📈', text: 'Campaign performance plan', action: 'Generate a campaign optimization plan' }
+    ],
+    tags: ['Campaigns', 'Marketing']
+  },
+  eden: {
+    id: 'eden',
+    name: 'AI Eden',
+    role: 'Email Occasion Reminder AI',
+    specialty: 'Customer Engagement Emails',
+    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
+    quickActions: [
+      { icon: '📧', text: 'Birthday email', action: 'Draft a birthday occasion email for a customer' },
+      { icon: '🎉', text: 'Anniversary email', action: 'Draft an anniversary campaign email' }
+    ],
+    tags: ['Email', 'Engagement']
+  },
+  angel: {
+    id: 'angel',
+    name: 'AI Angel',
+    role: 'Customer Support AI',
+    specialty: 'Handles Customer Queries & Phone Inquiries',
+    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
+    quickActions: [
+      { icon: '📞', text: 'Answer inquiry', action: 'Respond to a customer inquiry' },
+      { icon: '📂', text: 'Open support ticket', action: 'Log a customer issue in the support system' }
+    ],
+    tags: ['Support', 'Service']
+  }
 };
 
 // Welcome messages
