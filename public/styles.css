@@ -1,3 +1,129 @@
+body {
+  display: flex; /* Make body a flex container */
+  min-height: 100vh; /* Ensure it takes full viewport height */
+  margin: 0; /* Remove default body margin */
+}
+
+/* Base sidebar styles */
+.sidebar {
+  width: 80px; /* Default: collapsed */
+  height: 100vh; /* Full height */
+  background-color: #2d3748; /* Dark background */
+  color: #e2e8f0; /* Light text */
+  padding: 20px 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  transition: width 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  overflow-x: hidden; /* Hide overflowing content when collapsed */
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+/* Sidebar hover state: expands */
+.sidebar:hover {
+  width: 280px; /* Expanded width */
+  box-shadow: 2px 0 15px rgba(0,0,0,0.2); /* Enhanced shadow when expanded */
+}
+
+/* Logo section */
+.logo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  margin-bottom: 30px;
+  height: 60px; /* Fixed height for logo area */
+  overflow: hidden; /* Hide overflow when collapsed */
+}
+
+.logo-section .logo-icon {
+  font-size: 2em;
+  color: #4299e1; /* Blue accent color */
+  transition: all 0.3s ease-in-out;
+}
+
+.logo-section .logo-text {
+  margin-left: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  opacity: 0; /* Hidden by default */
+  max-width: 0; /* Collapsed by default */
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.3s ease-in-out 0.1s, max-width 0.3s ease-in-out 0.1s;
+}
+
+/* Show logo text on hover */
+.sidebar:hover .logo-section .logo-text {
+  opacity: 1;
+  max-width: 200px; /* Adjust based on your logo text length */
+}
+
+/* Navigation section */
+.nav-section {
+  flex-grow: 1;
+}
+
+.nav-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-section li {
+  margin-bottom: 10px;
+}
+
+.nav-section a {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: #a0aec0; /* Muted text color */
+  text-decoration: none;
+  border-radius: 8px;
+  margin: 0 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-section a:hover {
+  background-color: #4a5568; /* Darker background on hover */
+  color: #ffffff; /* White text on hover */
+}
+
+.nav-section a.active {
+  background-color: #4299e1; /* Blue background for active item */
+  color: #ffffff; /* White text for active item */
+}
+
+.nav-icon {
+  font-size: 1.5em;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-text {
+  margin-left: 15px;
+  font-weight: 500;
+  opacity: 0; /* Hidden by default */
+  max-width: 0; /* Collapsed by default */
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.3s ease-in-out 0.1s, max-width 0.3s ease-in-out 0.1s;
+}
+
+/* Show navigation text on hover */
+.sidebar:hover .nav-text {
+  opacity: 1;
+  max-width: 200px; /* Adjust based on your longest navigation text */
+}
+
+/* Main content wrapper adjustment */
+.main-content-wrapper { /* This element should wrap your main page content */
+  flex-grow: 1; /* Take remaining space */
+  padding: 20px; /* Add some padding to your main content */
+}
+
 /* Base styles for the application */
 :root {
   --primary-color: #3b82f6;
