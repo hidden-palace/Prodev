@@ -919,7 +919,7 @@ body {
 }
 
 .content-section {
-    display: none;
+  
     flex: 1;
     overflow: hidden;
 }
