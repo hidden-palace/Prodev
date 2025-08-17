@@ -227,53 +227,90 @@ function initializeEmployeeSelection() {
 function setupEmployeeProfiles() {
   console.log('🔧 Setting up employee profiles...');
   
-  const employees = [
-    { 
-      id: 'brenden', 
-      name: 'AI Brenden', 
-      role: 'Lead Research Specialist', 
-      specialty: 'Lead Generation & Data Research',
-      avatar: '/brenden-avatar.jpg',
-      description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
-      status: 'online'
-    },
-    { 
-      id: 'Van', 
-      name: 'AI Van', 
-      role: 'Landing Page Generation Expert', 
-      specialty: 'Landing Page Expert',
-      avatar: '/van-avatar.jpg',
-      description: 'Expert at creating comprehensive engaging landing pages that convert.',
-      status: 'online'
-    },
-    { 
-      id: 'sara', 
-      name: 'AI Sara', 
-      role: 'Blog Post Writer', 
-      specialty: 'Blog Post Expert',
-      avatar: '/sara-avatar.jpg', 
-      description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
-      status: 'online'
-    },
-    { 
-      id: 'Rey', 
-      name: 'AI Rey', 
-      role: 'Lead Generation Plan Strategist', 
-      specialty: 'Voice Outreach & Campaign Management',
-      avatar: '/rey-avatar.jpg', 
-      description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
-      status: 'online'
-    },
-    { 
-      id: 'Xavier', 
-      name: 'AI Xavier', 
-      role: 'Content Generation AI', 
-      specialty: 'Expert UGC video generator',
-      avatar: '/van-avatar.jpg',
-      description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
-      status: 'online'
-    }
-  ];
+const employees = [
+  { 
+    id: 'brenden', 
+    name: 'AI Brenden', 
+    role: 'Lead Research Specialist', 
+    specialty: 'Lead Generation & Data Research',
+    avatar: '/brenden-avatar.jpg',
+    description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
+    status: 'online'
+  },
+  { 
+    id: 'van', 
+    name: 'AI Van', 
+    role: 'Landing Page Generation Expert', 
+    specialty: 'Landing Page Expert',
+    avatar: '/van-avatar.jpg',
+    description: 'Expert at creating comprehensive engaging landing pages that convert.',
+    status: 'online'
+  },
+  { 
+    id: 'sara', 
+    name: 'AI Sara', 
+    role: 'Blog Post Writer', 
+    specialty: 'Blog Post Expert',
+    avatar: '/sara-avatar.jpg', 
+    description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
+    status: 'online'
+  },
+  { 
+    id: 'rey', 
+    name: 'AI Rey', 
+    role: 'Lead Generation Plan Strategist', 
+    specialty: 'Voice Outreach & Campaign Management',
+    avatar: '/rey-avatar.jpg', 
+    description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+    status: 'online'
+  },
+  { 
+    id: 'xavier', 
+    name: 'AI Xavier', 
+    role: 'Content Generation AI', 
+    specialty: 'Expert UGC video generator',
+    avatar: '/xavier-avatar.jpg',
+    description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
+    status: 'online'
+  },
+  // --- New Employees ---
+  { 
+    id: 'rhea', 
+    name: 'AI Rhea', 
+    role: 'Reputation AI', 
+    specialty: 'Review Assistant',
+    avatar: '/placeholder-avatar.jpg', // replace with real logo
+    description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
+    status: 'online'
+  },
+  { 
+    id: 'miles', 
+    name: 'AI Miles', 
+    role: 'Campaign AI Builder', 
+    specialty: 'Marketing Campaign Designer',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
+    status: 'online'
+  },
+  { 
+    id: 'eden', 
+    name: 'AI Eden', 
+    role: 'Email Occasion Reminder AI', 
+    specialty: 'Customer Engagement Emails',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
+    status: 'online'
+  },
+  { 
+    id: 'angel', 
+    name: 'AI Angel', 
+    role: 'Customer Support AI', 
+    specialty: 'Handles Customer Queries & Phone Inquiries',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
+    status: 'online'
+  }
+];
 
   // Clear existing employee list and ensure fresh state
   employeeList.innerHTML = '';
