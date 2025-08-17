@@ -150,6 +150,79 @@ body {
   padding: 0.25rem 0;
 }
 
+/* Employee detail panel */
+.employee-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.employee-panel.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.employee-panel .panel-content {
+  background: var(--surface-color);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 420px;
+  position: relative;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.employee-panel.active .panel-content {
+  transform: translateY(0);
+}
+
+.panel-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.panel-metrics {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.panel-metrics .metric {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.panel-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.panel-action-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background: var(--primary-color);
+  color: #fff;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   body {
