@@ -89,7 +89,46 @@ self.addEventListener('fetch', (event) => {
   } else if (url.pathname.startsWith('/api/')) {
     // API requests - network first with cache fallback
     event.respondWith(networkFirstWithCache(request));
-  } else {
+  } else if (request.mode === 'navigate') { // Specifically handle navigation requests
+    event.respondWith(
+      (async () => {
+        try {
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) {
+            return preloadResponse;
+          }
+
+          const networkResponse = await fetch(request);
+          if (networkResponse.ok) {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(request, networkResponse.clone()); // Cache successful navigation responses
+            return networkResponse;
+          }
+        } catch (error) {
+          console.log('SW: Navigation request failed, trying cache or offline page:', error);
+        }
+
+        // If network fails, try to serve from cache
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // Fallback to index.html for SPA routes or a generic offline page
+        const offlinePage = await caches.match('/index.html'); // Assuming index.html is cached or available
+        if (offlinePage) {
+          return offlinePage;
+        }
+
+        // Last resort: return a generic offline response
+        return new Response('<h1>Offline</h1><p>You are offline and this page is not available in cache.</p>', {
+          headers: { 'Content-Type': 'text/html' },
+          status: 503
+        });
+      })()
+    );
+  }
+  else {
     // Other requests - network first
     event.respondWith(networkFirst(request));
   }
