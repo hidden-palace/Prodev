@@ -1,6 +1,29 @@
 const winston = require('winston');
 const StatsD = require('hot-shots');
 
+const SENSITIVE_KEYS = ['password', 'token', 'secret', 'apikey', 'authorization'];
+
+function sanitize(value) {
+  if (value instanceof Error) {
+    return { message: value.message, stack: value.stack };
+  }
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitize);
+  }
+  return Object.keys(value).reduce((acc, key) => {
+    const lower = key.toLowerCase();
+    if (SENSITIVE_KEYS.includes(lower)) {
+      acc[key] = '[REDACTED]';
+    } else {
+      acc[key] = sanitize(value[key]);
+    }
+    return acc;
+  }, {});
+}
+
 // Configure Winston logger to emit structured JSON logs
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -19,7 +42,14 @@ const metrics = new StatsD({ prefix: 'webhook_bridge.' });
   const winstonLevel = level === 'log' ? 'info' : level;
   console[level] = (...args) => {
     const message = args
-      .map((arg) => (typeof arg === 'string' ? arg : JSON.stringify(arg)))
+      .map((arg) => {
+        if (typeof arg === 'string') return arg;
+        try {
+          return JSON.stringify(sanitize(arg));
+        } catch (err) {
+          return '[Unserializable argument]';
+        }
+      })
       .join(' ');
     logger[winstonLevel](message);
     if (level === 'error') {
@@ -42,4 +72,3 @@ module.exports = {
   recordWebhookSuccess,
   recordWebhookFailure
 };
-
