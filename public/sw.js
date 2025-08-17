@@ -106,7 +106,7 @@ self.addEventListener('fetch', (event) => {
           }
         } catch (error) {
           console.log('SW: Navigation request failed, trying cache or offline page:', error);
-        }
+        } 
 
         // If network fails, try to serve from cache
         const cachedResponse = await caches.match(request);
