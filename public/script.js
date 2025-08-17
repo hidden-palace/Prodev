@@ -1591,7 +1591,11 @@ async function loadDashboardMetrics() {
     // Show loading state
     metricIds.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = '...';
+      if (el) {
+        el.textContent = '...';
+        el.classList.add('loading');
+        el.classList.remove('error');
+      }
     });
     if (activityList) {
       activityList.innerHTML = '<div class="activity-item">Loading...</div>';
@@ -1602,11 +1606,20 @@ async function loadDashboardMetrics() {
 
     if (response.ok) {
       const stats = data.leads || {};
-      if (document.getElementById('leads-generated')) document.getElementById('leads-generated').textContent = stats.total || 0;
-      if (document.getElementById('leads-validated')) document.getElementById('leads-validated').textContent = stats.validated || 0;
-      if (document.getElementById('leads-contacted')) document.getElementById('leads-contacted').textContent = stats.outreach_sent || 0;
-      if (document.getElementById('leads-converted')) document.getElementById('leads-converted').textContent = stats.converted || 0;
-      if (document.getElementById('pending-calls')) document.getElementById('pending-calls').textContent = data.pending_calls || 0;
+      const metricMap = {
+        'leads-generated': stats.total || 0,
+        'leads-validated': stats.validated || 0,
+        'leads-contacted': stats.outreach_sent || 0,
+        'leads-converted': stats.converted || 0,
+        'pending-calls': data.pending_calls || 0
+      };
+
+      Object.entries(metricMap).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('loading', 'error');
+        countUp(el, value);
+      });
 
       if (activityList) {
         if (data.activities && data.activities.length > 0) {
@@ -1630,12 +1643,34 @@ async function loadDashboardMetrics() {
     console.error('Failed to load dashboard metrics:', error);
     metricIds.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = '—';
+      if (el) {
+        el.textContent = '—';
+        el.classList.remove('loading');
+        el.classList.add('error');
+      }
     });
     if (activityList) {
       activityList.innerHTML = '<div class="activity-item error">Error loading activity</div>';
     }
   }
+}
+
+function countUp(el, newValue) {
+  const start = parseInt(el.textContent.replace(/[^0-9]/g, ''), 10) || 0;
+  const end = Number(newValue);
+  const duration = 800;
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const progress = Math.min((currentTime - startTime) / duration, 1);
+    const value = Math.floor(start + (end - start) * progress);
+    el.textContent = value;
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+
+  requestAnimationFrame(update);
 }
 
 async function loadLeadsData() {
