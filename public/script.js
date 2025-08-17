@@ -61,7 +61,7 @@ const employees = {
     name: 'AI Rey',
     role: 'Strategic Analyst',
     specialty: 'Lead Generation Plan Strategist',
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/rey.jpeg',
     description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects.',
     quickActions: [
       { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
@@ -92,7 +92,7 @@ const employees = {
     name: 'AI Rhea',
     role: 'Reputation AI',
     specialty: 'Review Assistant',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/rhea.jpeg',
     description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
     quickActions: [
       { icon: '⭐', text: 'Analyze reviews', action: 'Analyze recent customer reviews' },
@@ -105,7 +105,7 @@ const employees = {
     name: 'AI Miles',
     role: 'Campaign AI Builder',
     specialty: 'Marketing Campaign Designer',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/miles.jpeg',
     description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
     quickActions: [
       { icon: '📢', text: 'Create ad campaign', action: 'Draft a new Facebook Ads campaign' },
@@ -118,7 +118,7 @@ const employees = {
     name: 'AI Eden',
     role: 'Email Occasion Reminder AI',
     specialty: 'Customer Engagement Emails',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/eden.jpeg',
     description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
     quickActions: [
       { icon: '📧', text: 'Birthday email', action: 'Draft a birthday occasion email for a customer' },
@@ -131,7 +131,7 @@ const employees = {
     name: 'AI Angel',
     role: 'Customer Support AI',
     specialty: 'Handles Customer Queries & Phone Inquiries',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
     quickActions: [
       { icon: '📞', text: 'Answer inquiry', action: 'Respond to a customer inquiry' },
@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeMobileMenu();
   initializeExportDropdown();
   initializeEmployeeInfoPanel();
+  renderEmployeeStatusList();
 
   // Load initial employee
   switchEmployee('brenden');
@@ -294,6 +295,28 @@ function hideEmployeeInfo() {
   if (employeeInfoPanel) {
     employeeInfoPanel.classList.remove('active');
   }
+}
+
+function renderEmployeeStatusList() {
+  const statusList = document.querySelector('.employee-status-list');
+  if (!statusList) return;
+
+  statusList.innerHTML = '';
+
+  Object.values(employees).forEach(emp => {
+    const status = (emp.status || 'online').toLowerCase();
+    const card = document.createElement('div');
+    card.className = 'employee-card';
+    card.innerHTML = `
+      <img src="${emp.avatar}" alt="${emp.name}" class="employee-thumb" />
+      <div class="employee-info">
+        <div class="employee-name">${emp.name}</div>
+        <div class="employee-role">${emp.role}</div>
+      </div>
+      <span class="status-badge ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+    `;
+    statusList.appendChild(card);
+  });
 }
 
 function setupEmployeeProfiles() {
