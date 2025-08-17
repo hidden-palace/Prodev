@@ -191,7 +191,9 @@ function initializeElements() {
 }
 
 function initializeNavigation() {
-  const navItems = document.querySelectorAll('.nav-item');
+  const nav = document.querySelector('.sidebar-nav');
+  if (!nav) return;
+  const navItems = nav.querySelectorAll('.nav-item');
   const contentSections = document.querySelectorAll('.content-section');
   
   navItems.forEach(item => {
