@@ -211,6 +211,36 @@ body {
   color: #fff;
 }
 
+/* Shared avatar styling for employee and team member images */
+.avatar,
+.employee-thumb,
+.member-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Team member layout */
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
 @media (max-width: 768px) {
   .employee-status-list {
     grid-template-columns: 1fr;
