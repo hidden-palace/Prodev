@@ -105,7 +105,7 @@ employees: {
       placeholder_tool: 'https://your-webhook-url.com/angel'
     }
   }
-};
+}
 
 
 // Validate required configuration
