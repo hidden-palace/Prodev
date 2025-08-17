@@ -56,27 +56,7 @@ body {
   overflow: hidden;
 }
 
-.sidebar {
-  width: 60px; /* Default retracted width */
-  background-color: var(--surface-color);
-  border-right: 1px solid var(--border-color);
-  padding: 20px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow */
-  transition: width 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transitions for width and shadow */
-  position: fixed; /* Keeps sidebar in place during scroll */
-  height: 100vh; /* Full viewport height */
-  z-index: 1000; /* Ensures sidebar is above other content */
-  overflow-y: auto; /* Allows scrolling if content exceeds height */
-  overflow-x: hidden; /* Hides horizontal overflow during retraction */
-}
 
-.sidebar:hover {
-  width: 280px; /* Expanded width on hover */
-  box-shadow: 0 4px 12px var(--shadow-md); /* More prominent shadow for expanded state */
-}
 
 .main-content {
   flex-grow: 1; /* Allows main content to take available space */
