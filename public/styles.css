@@ -66,6 +66,15 @@ body {
   flex-shrink: 0;
 }
 
+/* Shared icon style */
+.icon {
+  width: var(--icon-size, 16px);
+  height: var(--icon-size, 16px);
+  stroke: var(--icon-color, currentColor);
+  stroke-width: var(--icon-stroke-width, 2);
+  fill: none;
+}
+
 .nav-item:hover,
 .nav-item.active {
   background: var(--primary-color);
