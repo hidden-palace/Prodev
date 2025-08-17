@@ -662,17 +662,17 @@ function removeLogo() {
 
 function initializeMobileMenu() {
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-  const sidebar = document.getElementById('sidebar');
-  
-  if (mobileMenuToggle && sidebar) {
+  const navLinks = document.getElementById('navLinks');
+
+  if (mobileMenuToggle && navLinks) {
     mobileMenuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('mobile-open');
+      navLinks.classList.toggle('open');
     });
-    
+
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-        sidebar.classList.remove('mobile-open');
+      if (!navLinks.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        navLinks.classList.remove('open');
       }
     });
   }
