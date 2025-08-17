@@ -9,6 +9,7 @@
   --text-secondary: #475569;
   --border-color: #e2e8f0;
   --success-color: #22c55e;
+  --error-color: #dc2626;
 }
 
 /* Global styles */
@@ -148,6 +149,14 @@ body {
   display: flex;
   justify-content: space-between;
   padding: 0.25rem 0;
+}
+
+.metric-value.loading {
+  opacity: 0.6;
+}
+
+.metric-value.error {
+  color: var(--error-color);
 }
 
 /* Responsive */
