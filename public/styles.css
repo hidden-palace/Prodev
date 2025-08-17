@@ -19,6 +19,12 @@
 }
 
 /* Global styles */
+html,
+body,
+.app-container {
+  height: 100%;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;
@@ -37,7 +43,12 @@ body {
 
 /* Layout */
 .app-container {
-  flex: 1;
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
 }
 
 .top-nav {
@@ -90,6 +101,7 @@ body {
 }
 
 .main-content {
+  flex-grow: 1;
   padding: var(--spacing-xl);
   overflow-y: auto;
 }
