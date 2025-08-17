@@ -166,7 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load dashboard metrics
   loadDashboardMetrics();
-  
+  setInterval(loadDashboardMetrics, 30000);
+
   console.log('🚀 Orchid Republic Command Center initialized');
 });
 
@@ -1581,29 +1582,59 @@ function showNotification(message, type = 'info') {
 }
 
 async function loadDashboardMetrics() {
+  const activityList = document.querySelector('.activity-list');
+  const metricIds = ['leads-generated', 'leads-validated', 'leads-contacted', 'leads-converted', 'pending-calls'];
+
   try {
     console.log('📈 Loading dashboard metrics...');
-    const response = await fetch('/api/leads/statistics');
-    const stats = await response.json();
-    
+
+    // Show loading state
+    metricIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '...';
+    });
+    if (activityList) {
+      activityList.innerHTML = '<div class="activity-item">Loading...</div>';
+    }
+
+    const response = await fetch('/api/dashboard-metrics');
+    const data = await response.json();
+
     if (response.ok) {
-      // Update dashboard metrics
-      const leadsGenerated = document.getElementById('leads-generated');
-      const leadsValidated = document.getElementById('leads-validated');
-      const leadsContacted = document.getElementById('leads-contacted');
-      const leadsConverted = document.getElementById('leads-converted');
-      
-      if (leadsGenerated) leadsGenerated.textContent = stats.total || 0;
-      if (leadsValidated) leadsValidated.textContent = stats.validated || 0;
-      if (leadsContacted) leadsContacted.textContent = stats.outreach_sent || 0;
-      if (leadsConverted) leadsConverted.textContent = stats.converted || 0;
-      
+      const stats = data.leads || {};
+      if (document.getElementById('leads-generated')) document.getElementById('leads-generated').textContent = stats.total || 0;
+      if (document.getElementById('leads-validated')) document.getElementById('leads-validated').textContent = stats.validated || 0;
+      if (document.getElementById('leads-contacted')) document.getElementById('leads-contacted').textContent = stats.outreach_sent || 0;
+      if (document.getElementById('leads-converted')) document.getElementById('leads-converted').textContent = stats.converted || 0;
+      if (document.getElementById('pending-calls')) document.getElementById('pending-calls').textContent = data.pending_calls || 0;
+
+      if (activityList) {
+        if (data.activities && data.activities.length > 0) {
+          activityList.innerHTML = '';
+          data.activities.forEach(act => {
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `<div class="activity-time">${act.time}</div><div class="activity-description">${act.description}</div>`;
+            activityList.appendChild(item);
+          });
+        } else {
+          activityList.innerHTML = '<div class="activity-item">No recent activity</div>';
+        }
+      }
+
       console.log(`✅ Updated dashboard metrics: ${stats.total || 0} total leads`);
     } else {
-      console.error('Failed to load dashboard metrics:', stats);
+      throw new Error(data.error || 'Request failed');
     }
   } catch (error) {
     console.error('Failed to load dashboard metrics:', error);
+    metricIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    if (activityList) {
+      activityList.innerHTML = '<div class="activity-item error">Error loading activity</div>';
+    }
   }
 }
 
