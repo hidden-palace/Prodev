@@ -1,6 +1,7 @@
 const axios = require('axios');
 const config = require('../config');
 const EmployeeIsolationManager = require('./employee-isolation-manager');
+const { recordWebhookSuccess, recordWebhookFailure } = require('./error-handler');
 
 class WebhookHandler {
   constructor() {
@@ -205,7 +206,8 @@ class WebhookHandler {
         toolCallId: payload.tool_call_id,
         correlationKey: payload.correlation_key
       });
-      
+      recordWebhookSuccess();
+
       return {
         toolCallId: payload.tool_call_id,
         employeeId: payload.employee_id,
@@ -220,15 +222,16 @@ class WebhookHandler {
 
     } catch (error) {
       console.error(`❌ Webhook attempt ${attempt}/${maxAttempts} failed for ${employeeConfig.name}:`, error.message);
-      
+
       if (attempt < maxAttempts && !error.message.includes('404')) {
         const delay = Math.min(this.retryDelay * Math.pow(2, attempt - 1), this.maxRetryDelay);
         console.log(`⏳ Retrying ${employeeConfig.name} webhook in ${delay}ms...`);
-        
+
         await new Promise(resolve => setTimeout(resolve, delay));
         return this.sendWebhookWithRetry(payload, webhookUrl, employeeId, attempt + 1);
       } else {
         console.error(`💥 FINAL FAILURE for ${employeeConfig.name} webhook after ${maxAttempts} attempts`);
+        recordWebhookFailure();
         throw new Error(`${employeeConfig.name} webhook failed: ${error.message}`);
       }
     }
