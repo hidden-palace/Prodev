@@ -1,3 +1,288 @@
+/* Base styles for the application */
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
+  --accent-color: #f97316;
+  --background-color: #f8fafc;
+  --surface-color: #ffffff;
+  --text-primary: #1e293b; /* Slate-900 */
+  --text-secondary: #475569; /* Slate-700 */
+  --border-color: #e2e8f0; /* Slate-200 */
+  --error-color: #ef4444; /* Red-500 */
+  --success-color: #22c55e; /* Green-500 */
+  --warning-color: #f59e0b; /* Yellow-500 */
+  --info-color: #0ea5e9; /* Sky-500 */
+  --shadow-color: rgba(0, 0, 0, 0.05); /* For subtle shadows */
+  --shadow-md: rgba(0, 0, 0, 0.1); /* For medium shadows */
+  --shadow-lg: rgba(0, 0, 0, 0.15); /* For large shadows */
+  --shadow-xl: rgba(0, 0, 0, 0.2); /* For extra large shadows */
+}
+
+/* Dark mode variables */
+[data-theme="dark"] {
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
+  --accent-color: #f97316;
+  --background-color: #0f172a; /* Slate-900 */
+  --surface-color: #1e293b; /* Slate-800 */
+  --text-primary: #f1f5f9; /* Slate-100 */
+  --text-secondary: #cbd5e1; /* Slate-300 */
+  --border-color: #334155; /* Slate-700 */
+  --error-color: #ef4444;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --info-color: #0ea5e9;
+  --shadow-color: rgba(255, 255, 255, 0.05);
+  --shadow-md: rgba(255, 255, 255, 0.1);
+  --shadow-lg: rgba(255, 255, 255, 0.15); /* Adjusted for dark mode visibility */
+  --shadow-xl: rgba(255, 255, 255, 0.2); /* Adjusted for dark mode visibility */
+}
+ 
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; /* For smoother font rendering */
+}
+
+/* Main Layout Structure */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 60px; /* Default retracted width */
+  background-color: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow */
+  transition: width 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transitions for width and shadow */
+  position: fixed; /* Keeps sidebar in place during scroll */
+  height: 100vh; /* Full viewport height */
+  z-index: 1000; /* Ensures sidebar is above other content */
+  overflow-y: auto; /* Allows scrolling if content exceeds height */
+  overflow-x: hidden; /* Hides horizontal overflow during retraction */
+}
+
+.sidebar:hover {
+  width: 280px; /* Expanded width on hover */
+  box-shadow: 0 4px 12px var(--shadow-md); /* More prominent shadow for expanded state */
+}
+
+.main-content {
+  flex-grow: 1; /* Allows main content to take available space */
+  padding: 20px; /* Padding around the content */
+  background-color: var(--background-color); /* Background color for the main area */
+  margin-left: 280px; /* Always reserve space for the expanded sidebar */
+  transition: margin-left 0.3s ease-in-out; /* Smooth transition for margin if it were to change */
+}
+
+.company-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px; /* Space below the logo */
+  padding: 0 10px; /* Horizontal padding for logo area */
+  width: 100%; /* Full width of the sidebar */
+  box-sizing: border-box; /* Include padding in width calculation */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow when retracted */
+  transition: all 0.3s ease-in-out; /* Smooth transition for logo elements */
+}
+
+.company-logo img {
+  max-width: 100%; /* Ensure image fits within its container */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Remove extra space below image */
+  opacity: 1; /* Visible by default */
+  transition: opacity 0.3s ease-in-out; /* Smooth fade for image */
+}
+
+.company-logo .company-name { /* Assuming you have a text name next to the logo */
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-left: 10px;
+  opacity: 0; /* Hidden by default */
+  max-width: 0; /* Collapsed by default */
+  overflow: hidden; /* Hide overflow */
+  transition: opacity 0.3s ease-in-out 0.1s, max-width 0.3s ease-in-out 0.1s; /* Smooth transition with delay */
+}
+
+.sidebar:hover .company-logo .company-name {
+  opacity: 1; /* Visible on hover */
+  max-width: 150px; /* Adjust as needed for your company name length */
+}
+
+.company-logo .logo-icon { /* Fallback icon for logo area */
+  display: none; /* Hidden by default, only show if image fails or is not present */
+  font-size: 2em; /* Adjust size as needed */
+  color: var(--primary-color);
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* If you want the image to hide and icon to show when retracted, you'd need JS or a more complex CSS setup.
+   For now, the image is always there, and the text name hides/shows.
+   If the image itself is the "logo-icon" in retracted state, then:
+*/
+.sidebar .company-logo img {
+  width: 40px; /* Smaller size for icon-only mode */
+  height: 40px;
+  object-fit: contain;
+  margin-right: auto; /* Push icon to left */
+  margin-left: auto; /* Center icon */
+}
+
+.sidebar:hover .company-logo img {
+  width: auto; /* Restore original width on hover */
+  height: auto;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.sidebar .company-logo .logo-icon { /* If this is the actual icon for the logo */
+  display: block; /* Always visible */
+  font-size: 2em;
+}
+
+.sidebar-nav {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.sidebar-nav ul { /* List container for navigation items */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li { /* Individual navigation item */
+  margin-bottom: 10px; /* Spacing between items */
+}
+
+.sidebar-nav a { /* Link styling */
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.sidebar-nav a:hover {
+  background-color: var(--primary-color);
+  color: var(--surface-color);
+}
+
+.sidebar-nav a:hover .nav-icon {
+  color: var(--surface-color); /* Icon color on hover */
+}
+
+.sidebar-nav a:hover .nav-text {
+  color: var(--surface-color); /* Text color on hover */
+}
+
+/* Navigation Icons and Text */
+
+.nav-icon {
+  font-size: 1.5em;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary); /* Default icon color */
+  transition: color 0.2s ease-in-out; /* Smooth transition for icon color */
+}
+
+.nav-text {
+  margin-left: 15px; /* Space between icon and text */
+  font-weight: 500; /* Medium font weight */
+  opacity: 0; /* Hidden by default */
+  max-width: 0; /* Collapsed by default */
+  overflow: hidden; /* Hide overflow */
+  white-space: nowrap; /* Prevent text wrapping */
+  transition: opacity 0.3s ease-in-out 0.1s, max-width 0.3s ease-in-out 0.1s; /* Smooth transition with delay */
+}
+
+.sidebar:hover .nav-text {
+  opacity: 1; /* Visible on hover */
+  max-width: 200px; /* Adjust as needed for your longest text label */
+}
+
+/* Employee Profile Section (assuming it's at the bottom of the sidebar) */
+.employee-profile {
+  margin-top: auto; /* Pushes this section to the bottom */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.employee-profile .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  opacity: 1; /* Always visible */
+  transition: opacity 0.3s ease-in-out;
+}
+
+.employee-profile .employee-name,
+.employee-profile .employee-role {
+  opacity: 0; /* Hidden by default */
+  max-width: 0; /* Collapsed by default */
+  overflow: hidden; /* Hide overflow */
+  transition: opacity 0.3s ease-in-out 0.1s, max-width 0.3s ease-in-out 0.1s; /* Smooth transition with delay */
+}
+
+.sidebar:hover .employee-profile .employee-name,
+.sidebar:hover .employee-profile .employee-role {
+  opacity: 1; /* Visible on hover */
+  max-width: 200px; /* Adjust as needed */
+}
+
+.employee-profile .employee-name {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.employee-profile .employee-role {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments (optional, but good practice) */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0; /* Hide sidebar completely on small screens by default */
+    left: -60px; /* Off-screen */
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+  }
+
+  .sidebar:hover {
+    width: 200px; /* Smaller expanded width for mobile */
+    left: 0; /* Bring into view */
+  }
+
+  .main-content {
+    margin-left: 0; /* No margin on small screens, sidebar overlays */
+  }
+}
+
 /* Define brand colors as CSS variables */
 :root {
   --primary-color: #ec4899; /* Default primary color from config/index.js */
