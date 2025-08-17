@@ -22,8 +22,8 @@ const config = {
   },
   maxChainDepth: parseInt(process.env.MAX_CHAIN_DEPTH) || 5, // Max number of assistant hops in a chain
   // AI Employee configurations with PRODUCTION webhook URLs
-const employees = {
-  brenden: {
+employees: {
+    brenden: {
     assistantId: 'asst_MvlMZ3IOvQrTkbsENRSzGRwZ',
     name: 'AI Brenden',
     role: 'lead scraper',
