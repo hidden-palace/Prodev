@@ -22,72 +22,94 @@ const config = {
   },
   maxChainDepth: parseInt(process.env.MAX_CHAIN_DEPTH) || 5, // Max number of assistant hops in a chain
   // AI Employee configurations with PRODUCTION webhook URLs
-  employees: {
-    brenden: {
-      assistantId: 'asst_MvlMZ3IOvQrTkbsENRSzGRwZ',
-      name: 'AI Brenden',
-      role: 'lead scraper',
-      specialty: 'Lead Research Specialist',
-      toolWebhooks: {
-        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
-        name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94'
-      }
-      // chainsTo: 'van' // Example: Brenden chains to Van
-    },
-    van: {
-      assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
-      name: 'AI Van',
-      role: 'page operator',
-      specialty: 'Digital Marketing Designer',
-      toolWebhooks: { // Use toolWebhooks object for multiple tools
-       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9',
-        // Add other tools for Van here
-      }
-      // chainsTo: null // Example: Van does not chain further
-    }, 
-    sara: {
-      assistantId: 'asst_w2t643MjToTPg3ywB7pYdIuX',
-      name: 'AI Sara',
-      role: 'Blog Post Writer',
-      specialty: 'Blog Post Expertr',
-      toolWebhooks: { // Use toolWebhooks object for multiple tools
-       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9',
-        // Add other tools for Van here
-      }
-      // chainsTo: null // Example: Van does not chain further
-    },
-    rey: {
-      assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
-      name: 'AI Rey',
-      role: 'Lead Generation Plan Strategist',
-      specialty: 'Voice Outreach Manager',
-      toolWebhooks: { // Use toolWebhooks object for multiple tools
-        get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
-        // Add other tools for Angel here
-      }
-      // chainsTo: null // Example: Angel does not chain further
-    },
-    xavier: {
-      assistantId: 'asst_6oDeBjbnFlAiagSEJDWHvBtl',
-      name: 'AI Xavier',
-      role: 'Content generation AI',
-      specialty: 'UGC Expert',
-      toolWebhooks: { // Use toolWebhooks object for multiple tools
-       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/29eabaa8-2d9a-401a-99e6-1b35afacbb8f',
-        // Add other tools for Van here
-      }
-      // chainsTo: null // Example: Van does not chain further
+employees: {
+  brenden: {
+    assistantId: 'asst_MvlMZ3IOvQrTkbsENRSzGRwZ',
+    name: 'AI Brenden',
+    role: 'lead scraper',
+    specialty: 'Lead Research Specialist',
+    toolWebhooks: {
+      scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
+      name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94'
     }
-    // EASILY ADD MORE EMPLOYEES HERE:
-    // sarah: {
-    //   assistantId: 'asst_sarah_id',
-    //   name: 'AI Sarah',
-    //   role: 'content creator',
-    //   specialty: 'Content Marketing Specialist',
-    //   webhookUrl: 'https://hook.eu2.make.com/sarah_webhook_url'
-    // }
+    // chainsTo: 'van'
+  },
+  van: {
+    assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
+    name: 'AI Van',
+    role: 'page operator',
+    specialty: 'Digital Marketing Designer',
+    toolWebhooks: {
+      capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+    }
+    // chainsTo: null
+  },
+  sara: {
+    assistantId: 'asst_w2t643MjToTPg3ywB7pYdIuX',
+    name: 'AI Sara',
+    role: 'Blog Post Writer',
+    specialty: 'Blog Post Expert',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/sara'
+    }
+  },
+  rey: {
+    assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
+    name: 'AI Rey',
+    role: 'Lead Generation Plan Strategist',
+    specialty: 'Voice Outreach Manager',
+    toolWebhooks: {
+      get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a'
+    }
+  },
+  xavier: {
+    assistantId: 'asst_6oDeBjbnFlAiagSEJDWHvBtl',
+    name: 'AI Xavier',
+    role: 'Content Generation AI',
+    specialty: 'UGC Expert',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/xavier'
+    }
+  },
+
+  // NEW EMPLOYEES
+  rhea: {
+    assistantId: 'asst_Y9UHKrstNe3H7Z3uhxe5ruEG',
+    name: 'AI Rhea',
+    role: 'Reputation AI',
+    specialty: 'Review Assistant',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/rhea'
+    }
+  },
+  miles: {
+    assistantId: 'asst_fhA5p35szgoaXaoHk2v4KmuB',
+    name: 'AI Miles',
+    role: 'Campaign AI Builder',
+    specialty: 'Marketing Campaign Designer',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/miles'
+    }
+  },
+  eden: {
+    assistantId: 'asst_Lr3o67bwsM4LzhDef8bbsbCy',
+    name: 'AI Eden',
+    role: 'Email Occasion Reminder AI',
+    specialty: 'Customer Engagement Emails',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/eden'
+    }
+  },
+  angel: {
+    assistantId: 'asst_eVAiDpRTPgcfvlhxPQCnH91c',
+    name: 'AI Angel',
+    role: 'Customer Support AI',
+    specialty: 'Handles Customer Queries & Phone Inquiries',
+    toolWebhooks: {
+      placeholder_tool: 'https://your-webhook-url.com/angel'
+    }
   }
-};
+}
 
 // Validate required configuration
 const requiredConfig = [
