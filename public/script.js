@@ -4,6 +4,7 @@ let currentThreadId = null;
 let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
+let employeeInfoPanel; // Panel for showing employee details
 
 // Global state management
 let activeEmployeeId = 'brenden';
@@ -160,7 +161,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeBranding();
   initializeMobileMenu();
   initializeExportDropdown();
-  
+  initializeEmployeeInfoPanel();
+
   // Load initial employee
   switchEmployee('brenden');
   
@@ -212,17 +214,86 @@ function initializeNavigation() {
 
 function initializeEmployeeSelection() {
   const teamMembers = document.querySelectorAll('.team-member');
-  
+
   teamMembers.forEach(member => {
+    const employeeId = member.dataset.employee;
     member.addEventListener('click', () => {
-      const employeeId = member.dataset.employee;
       switchEmployee(employeeId);
-      
+
       // Update active team member
       teamMembers.forEach(m => m.classList.remove('active'));
       member.classList.add('active');
+
+      showEmployeeInfo(employeeId);
     });
+
+    // Reveal info on hover as well
+    member.addEventListener('mouseenter', () => showEmployeeInfo(employeeId));
   });
+}
+
+function initializeEmployeeInfoPanel() {
+  employeeInfoPanel = document.createElement('div');
+  employeeInfoPanel.id = 'employee-info-panel';
+  employeeInfoPanel.className = 'employee-panel';
+  employeeInfoPanel.innerHTML = `
+    <div class="panel-content">
+      <button class="panel-close" id="employeePanelClose">&times;</button>
+      <h3 id="panel-name"></h3>
+      <p id="panel-role"></p>
+      <p id="panel-description"></p>
+      <div class="panel-metrics">
+        <div class="metric">Tasks Completed: <span id="panel-tasks">0</span></div>
+        <div class="metric">Active Threads: <span id="panel-threads">0</span></div>
+      </div>
+      <div class="panel-actions" id="panel-actions"></div>
+    </div>`;
+
+  document.body.appendChild(employeeInfoPanel);
+
+  const closeBtn = document.getElementById('employeePanelClose');
+  closeBtn.addEventListener('click', hideEmployeeInfo);
+  employeeInfoPanel.addEventListener('click', (e) => {
+    if (e.target === employeeInfoPanel) hideEmployeeInfo();
+  });
+}
+
+function showEmployeeInfo(employeeId) {
+  const employee = employees[employeeId];
+  if (!employee) return;
+
+  document.getElementById('panel-name').textContent = employee.name;
+  document.getElementById('panel-role').textContent = employee.specialty || employee.role;
+  document.getElementById('panel-description').textContent = employee.description || '';
+
+  const tasksEl = document.getElementById('panel-tasks');
+  const threadsEl = document.getElementById('panel-threads');
+  if (tasksEl) tasksEl.textContent = employee.metrics?.tasks || 0;
+  if (threadsEl) threadsEl.textContent = employee.metrics?.threads || 0;
+
+  const actionsContainer = document.getElementById('panel-actions');
+  actionsContainer.innerHTML = '';
+  (employee.quickActions || []).forEach(action => {
+    const btn = document.createElement('button');
+    btn.className = 'panel-action-btn';
+    btn.textContent = `${action.icon} ${action.text}`;
+    btn.addEventListener('click', () => {
+      if (messageInput) {
+        messageInput.value = action.action;
+        messageInput.dispatchEvent(new Event('input'));
+      }
+      hideEmployeeInfo();
+    });
+    actionsContainer.appendChild(btn);
+  });
+
+  employeeInfoPanel.classList.add('active');
+}
+
+function hideEmployeeInfo() {
+  if (employeeInfoPanel) {
+    employeeInfoPanel.classList.remove('active');
+  }
 }
 
 function setupEmployeeProfiles() {
