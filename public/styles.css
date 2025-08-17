@@ -19,44 +19,55 @@
 }
 
 /* Global styles */
+html,
+body,
+.app-container {
+  height: 100%;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;
   background: var(--background-color);
   color: var(--text-primary);
   line-height: 1.5;
-}
-
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  padding: var(--spacing-sm);
-  cursor: pointer;
+  display: flex;
 }
 
 /* Layout */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--surface-color);
+  border-right: 1px solid var(--border-color);
+  padding: var(--spacing-lg) var(--spacing-md);
+  overflow-y: auto;
 .app-container {
-  flex: 1;
+  display: flex;
 }
 
-.top-nav {
+.sidebar {
+  width: 250px;
+  height: 100vh;
+}
+
+.sidebar-nav {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  background: var(--surface-color);
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.app-container {
+  flex: 1;
+  margin-left: 250px;
 }
 
 .logo img {
   height: 40px;
   margin-right: var(--spacing-sm);
-}
-
-.nav-links {
-  display: flex;
-  gap: var(--spacing-md);
 }
 
 .nav-item {
@@ -90,6 +101,7 @@ body {
 }
 
 .main-content {
+  flex-grow: 1;
   padding: var(--spacing-xl);
   overflow-y: auto;
 }
@@ -274,7 +286,6 @@ body {
   padding: 0.25rem 0;
 }
 
- codex/add-click-and-hover-handlers-to-employee-cards-17qepk
 /* Employee detail panel */
 .employee-panel {
   position: fixed;
@@ -363,27 +374,6 @@ body {
       font-size: 16px;
   }
 
-  .mobile-menu-toggle {
-    display: block;
-  }
-
-  .nav-links {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 220px;
-    flex-direction: column;
-    padding: var(--spacing-lg);
-    background: var(--surface-color);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 1000;
-  }
-
-  .nav-links.open {
-    transform: translateX(0);
-  }
 
   .main-content {
     padding: var(--spacing-md);
