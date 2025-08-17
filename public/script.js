@@ -155,6 +155,7 @@ let chatMessages, messageInput, sendButton, charCount, employeeList;
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   initializeElements();
+  setupEmployeeProfiles();
   initializeNavigation();
   initializeEmployeeSelection();
   initializeChatInterface();
@@ -217,18 +218,9 @@ function initializeEmployeeSelection() {
   const teamMembers = document.querySelectorAll('.team-member');
 
   teamMembers.forEach(member => {
-    const employeeId = member.dataset.employee;
-    member.addEventListener('click', () => {
-      switchEmployee(employeeId);
+    const employeeId = member.dataset.employeeId;
 
-      // Update active team member
-      teamMembers.forEach(m => m.classList.remove('active'));
-      member.classList.add('active');
-
-      showEmployeeInfo(employeeId);
-    });
-
-    // Reveal info on hover as well
+    // Reveal info on hover
     member.addEventListener('mouseenter', () => showEmployeeInfo(employeeId));
   });
 }
@@ -321,98 +313,12 @@ function renderEmployeeStatusList() {
 
 function setupEmployeeProfiles() {
   console.log('🔧 Setting up employee profiles...');
-  
-const employees = [
-  { 
-    id: 'brenden', 
-    name: 'AI Brenden', 
-    role: 'Lead Research Specialist', 
-    specialty: 'Lead Generation & Data Research',
-    avatar: '/brenden-avatar.jpg',
-    description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
-    status: 'online'
-  },
-  { 
-    id: 'van', 
-    name: 'AI Van', 
-    role: 'Landing Page Generation Expert', 
-    specialty: 'Landing Page Expert',
-    avatar: '/van-avatar.jpg',
-    description: 'Expert at creating comprehensive engaging landing pages that convert.',
-    status: 'online'
-  },
-  { 
-    id: 'sara', 
-    name: 'AI Sara', 
-    role: 'Blog Post Writer', 
-    specialty: 'Blog Post Expert',
-    avatar: '/sara-avatar.jpg', 
-    description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
-    status: 'online'
-  },
-  { 
-    id: 'rey', 
-    name: 'AI Rey', 
-    role: 'Lead Generation Plan Strategist', 
-    specialty: 'Voice Outreach & Campaign Management',
-    avatar: '/rey-avatar.jpg', 
-    description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
-    status: 'online'
-  },
-  { 
-    id: 'xavier', 
-    name: 'AI Xavier', 
-    role: 'Content Generation AI', 
-    specialty: 'Expert UGC video generator',
-    avatar: '/xavier-avatar.jpg',
-    description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
-    status: 'online'
-  },
-  // --- New Employees ---
-  { 
-    id: 'rhea', 
-    name: 'AI Rhea', 
-    role: 'Reputation AI', 
-    specialty: 'Review Assistant',
-    avatar: '/placeholder-avatar.jpg', // replace with real logo
-    description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
-    status: 'online'
-  },
-  { 
-    id: 'miles', 
-    name: 'AI Miles', 
-    role: 'Campaign AI Builder', 
-    specialty: 'Marketing Campaign Designer',
-    avatar: '/placeholder-avatar.jpg',
-    description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
-    status: 'online'
-  },
-  { 
-    id: 'eden', 
-    name: 'AI Eden', 
-    role: 'Email Occasion Reminder AI', 
-    specialty: 'Customer Engagement Emails',
-    avatar: '/placeholder-avatar.jpg',
-    description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
-    status: 'online'
-  },
-  { 
-    id: 'angel', 
-    name: 'AI Angel', 
-    role: 'Customer Support AI', 
-    specialty: 'Handles Customer Queries & Phone Inquiries',
-    avatar: '/placeholder-avatar.jpg',
-    description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
-    status: 'online'
-  }
-];
 
   // Clear existing employee list and ensure fresh state
   employeeList.innerHTML = '';
-  
-  console.log('🔧 CRITICAL: Creating employee elements with data attributes');
 
-  employees.forEach((employee, index) => {
+  console.log('🔧 CRITICAL: Creating employee elements with data attributes');
+  Object.values(employees).forEach((employee) => {
     const employeeEl = document.createElement('div');
     employeeEl.className = `team-member ${employee.id === activeEmployeeId ? 'active' : ''}`;
     // CRITICAL: Store employee ID in data attribute for foolproof identification
@@ -420,8 +326,8 @@ const employees = [
     employeeEl.setAttribute('data-employee-name', employee.name);
     employeeEl.innerHTML = `
       <div class="member-avatar">
-        <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="${employee.name}">
-        <div class="status-indicator ${employee.status}"></div>
+        <img src="${employee.avatar}" alt="${employee.name}">
+        <div class="status-indicator online"></div>
       </div>
       <div class="member-info">
         <div class="member-name">${employee.name}</div>
@@ -461,9 +367,9 @@ const employees = [
       this.classList.add('active');
       
       // Find employee data
-      const selectedEmployee = employees.find(emp => emp.id === clickedEmployeeId);
+      const selectedEmployee = employees[clickedEmployeeId];
       if (!selectedEmployee) {
-        console.error('🚨 CRITICAL ERROR: Employee not found in array!');
+        console.error('🚨 CRITICAL ERROR: Employee not found in object!');
         return;
       }
       
@@ -483,22 +389,13 @@ const employees = [
 }
 
 function handleEmployeeClick(employee) {
-  console.log('👤 Employee selected:', employee.name, '(ID:', employee.id, ')');
-  console.log('👤 CRITICAL VERIFICATION: activeEmployeeId is now:', activeEmployeeId);
-  console.log('👤 CRITICAL VERIFICATION: employee.id is:', employee.id);
-  console.log('👤 CRITICAL VERIFICATION: Do they match?', activeEmployeeId === employee.id);
+  if (!employee) return;
 
   // Update active employee visual state
   document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
   document.querySelector(`[data-employee-id="${employee.id}"]`)?.classList.add('active');
 
-  // Update chat header
-  updateChatHeader(employee);
-
-  // Load conversation for this employee
-  loadConversationForEmployee(employee.id);
-
-  console.log(`✅ Successfully switched to ${employee.name}`);
+  switchEmployee(employee.id);
 }
 
 function initializeChatInterface() {
