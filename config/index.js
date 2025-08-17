@@ -32,7 +32,6 @@ employees: {
       scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
       name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94'
     }
-    // chainsTo: 'van'
   },
   van: {
     assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
@@ -42,7 +41,6 @@ employees: {
     toolWebhooks: {
       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9'
     }
-    // chainsTo: null
   },
   sara: {
     assistantId: 'asst_w2t643MjToTPg3ywB7pYdIuX',
@@ -71,8 +69,6 @@ employees: {
       placeholder_tool: 'https://your-webhook-url.com/xavier'
     }
   },
-
-  // NEW EMPLOYEES
   rhea: {
     assistantId: 'asst_Y9UHKrstNe3H7Z3uhxe5ruEG',
     name: 'AI Rhea',
