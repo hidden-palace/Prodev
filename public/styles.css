@@ -343,6 +343,7 @@ body {
   transition: width 0.3s ease-in-out; /* Smooth transition for width */
   overflow-x: hidden; /* Hide horizontal scrollbar during transition */
   z-index: 1000; /* Ensure it overlays other content */
+  background-color : black ;
 }
 
 /* When sidebar is hovered, it retracts */
