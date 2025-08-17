@@ -438,7 +438,7 @@ body {
 
 /* Sidebar Styles */
 .sidebar {
-    width: 420px;
+  width: 280px;
     background: var(--primary-color);
     display: flex;
     flex-direction: column;
@@ -1998,24 +1998,11 @@ body {
     text-align: center;
 }
 
-/* Multi-Chat Interface Styles */
 .employee-chat-container {
   display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  margin-bottom: 20px;
-  background: var(--surface-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.employee-chat-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border-color);
-  background: #f8fafc;
   border-radius: 12px 12px 0 0;
 }
 
@@ -2026,12 +2013,8 @@ body {
 }
 
 .employee-avatar-small {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
+  width: 40px;
+  opacity: 1;
 .employee-chat-header h4 {
   font-size: 14px;
   font-weight: 600;
@@ -2343,11 +2326,6 @@ body {
   font-weight: 600;
 }
 
-.message-content em {
-  font-style: italic;
-}
-
-.message-content code {
   background: rgba(0, 0, 0, 0.1);
   padding: 2px 4px;
   border-radius: 3px;
@@ -2387,11 +2365,7 @@ body {
 
 .welcome-content h4 {
     font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
+  opacity: 1;
 .welcome-content p {
     font-size: 14px;
     color: var(--text-secondary);
@@ -2875,11 +2849,6 @@ body {
 .status-grid::-webkit-scrollbar-thumb,
 .log-entries::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 3px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover,
-.modal-body::-webkit-scrollbar-thumb:hover,
 .team-section::-webkit-scrollbar-thumb:hover,
 .tasks-content::-webkit-scrollbar-thumb:hover,
 .guidelines-content::-webkit-scrollbar-thumb:hover,
@@ -2892,32 +2861,18 @@ body {
 .branding-content::-webkit-scrollbar-thumb:hover,
 .status-grid::-webkit-scrollbar-thumb:hover,
 .log-entries::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 1024px) {
+  opacity: 1;
     .sidebar {
         width: 420px;
     }
     
     .team-panel {
         width: 420px;
-    }
-    
-    .quick-actions {
-        grid-template-columns: 1fr;
-    }
+  opacity: 1;
     
     .dashboard-grid {
         grid-template-columns: 1fr;
         padding: 20px;
-    }
-    
-    .dashboard-card.wide {
-        grid-column: span 1;
-    }
-}
 
 @media (max-width: 768px) {
     .mobile-menu-toggle {
