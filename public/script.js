@@ -4,10 +4,6 @@ let currentThreadId = null;
 let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
-let employeeInfoPanel; // Panel for showing employee details
-
-// Base URL for employee avatars stored in Supabase
-const SUPABASE_LOGO_URL = 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos';
 
 // Global state management
 let activeEmployeeId = 'brenden';
@@ -41,7 +37,8 @@ const employees = {
     quickActions: [
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
-      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
+      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' },
+      { icon: '🔄', text: 'A/B test variations', action: 'Create design variations for A/B testing' }
     ],
     tags: ['Marketing', 'Design']
   },
@@ -55,7 +52,8 @@ const employees = {
     quickActions: [
       { icon: '✍️', text: 'Flower care guides', action: 'Write detailed blog posts on caring for orchids and luxury blooms' },
       { icon: '🌸', text: 'Floral trends insights', action: 'Create engaging articles on seasonal and design trends in floral arrangements' },
-      { icon: '📈', text: 'SEO-driven content', action: 'Develop SEO-optimized blog posts to boost brand visibility and drive traffic' }
+      { icon: '📈', text: 'SEO-driven content', action: 'Develop SEO-optimized blog posts to boost brand visibility and drive traffic' },
+      { icon: '📅', text: 'Content calendar', action: 'Generate a monthly blog content calendar' }
     ],
     tags: ['Blog Posts', 'Content Generation']
   },
@@ -64,7 +62,7 @@ const employees = {
     name: 'AI Rey',
     role: 'Strategic Analyst',
     specialty: 'Lead Generation Plan Strategist',
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/rey.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects.',
     quickActions: [
       { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
@@ -89,18 +87,18 @@ const employees = {
     ],
     tags: ['Content', 'Marketing']
   },
-  // --- New Employees ---
   rhea: {
     id: 'rhea',
     name: 'AI Rhea',
     role: 'Reputation AI',
     specialty: 'Review Assistant',
-    avatar: `${SUPABASE_LOGO_URL}/rhea.jpeg`,
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/rhea.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/brenden.jpeg',
     description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
     quickActions: [
       { icon: '⭐', text: 'Analyze reviews', action: 'Analyze recent customer reviews' },
-      { icon: '💬', text: 'Draft response', action: 'Draft a professional response to a negative review' }
+      { icon: '💬', text: 'Draft response', action: 'Draft a professional response to a negative review' },
+      { icon: '📊', text: 'Generate review report', action: 'Create monthly review performance report' },
+      { icon: '👍', text: 'Positive review template', action: 'Create template responses for positive reviews' }
     ],
     tags: ['Reputation', 'Support']
   },
@@ -109,12 +107,13 @@ const employees = {
     name: 'AI Miles',
     role: 'Campaign AI Builder',
     specialty: 'Marketing Campaign Designer',
-    avatar: `${SUPABASE_LOGO_URL}/miles.jpeg`,
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/miles.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
     quickActions: [
       { icon: '📢', text: 'Create ad campaign', action: 'Draft a new Facebook Ads campaign' },
-      { icon: '📈', text: 'Campaign performance plan', action: 'Generate a campaign optimization plan' }
+      { icon: '📈', text: 'Campaign performance plan', action: 'Generate a campaign optimization plan' },
+      { icon: '🎯', text: 'Audience targeting', action: 'Suggest audience targeting parameters' },
+      { icon: '🔄', text: 'A/B test variations', action: 'Create A/B test variations for campaign elements' }
     ],
     tags: ['Campaigns', 'Marketing']
   },
@@ -123,12 +122,13 @@ const employees = {
     name: 'AI Eden',
     role: 'Email Occasion Reminder AI',
     specialty: 'Customer Engagement Emails',
-    avatar: `${SUPABASE_LOGO_URL}/eden.jpeg`,
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/eden.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
     quickActions: [
       { icon: '📧', text: 'Birthday email', action: 'Draft a birthday occasion email for a customer' },
-      { icon: '🎉', text: 'Anniversary email', action: 'Draft an anniversary campaign email' }
+      { icon: '🎉', text: 'Anniversary email', action: 'Draft an anniversary campaign email' },
+      { icon: '🎄', text: 'Holiday sequence', action: 'Create a holiday email sequence' },
+      { icon: '🔄', text: 'Re-engagement series', action: 'Design a customer re-engagement email series' }
     ],
     tags: ['Email', 'Engagement']
   },
@@ -137,12 +137,13 @@ const employees = {
     name: 'AI Angel',
     role: 'Customer Support AI',
     specialty: 'Handles Customer Queries & Phone Inquiries',
-    avatar: `${SUPABASE_LOGO_URL}/angel.jpeg`,
-    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
     description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
     quickActions: [
       { icon: '📞', text: 'Answer inquiry', action: 'Respond to a customer inquiry' },
-      { icon: '📂', text: 'Open support ticket', action: 'Log a customer issue in the support system' }
+      { icon: '📂', text: 'Open support ticket', action: 'Log a customer issue in the support system' },
+      { icon: '❓', text: 'FAQ suggestions', action: 'Suggest FAQ entries based on recent queries' },
+      { icon: '🔄', text: 'Follow-up reminder', action: 'Set up automated follow-up reminders' }
     ],
     tags: ['Support', 'Service']
   }
@@ -162,23 +163,19 @@ let chatMessages, messageInput, sendButton, charCount, employeeList;
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   initializeElements();
-  setupEmployeeProfiles();
   initializeNavigation();
   initializeEmployeeSelection();
   initializeChatInterface();
   initializeBranding();
   initializeMobileMenu();
   initializeExportDropdown();
-  initializeEmployeeInfoPanel();
-  renderEmployeeStatus();
-  renderEmployeeStatusList();
+  
   // Load initial employee
   switchEmployee('brenden');
   
   // Load dashboard metrics
   loadDashboardMetrics();
-  setInterval(loadDashboardMetrics, 30000);
-
+  
   console.log('🚀 Orchid Republic Command Center initialized');
 });
 
@@ -191,9 +188,7 @@ function initializeElements() {
 }
 
 function initializeNavigation() {
-  const nav = document.querySelector('.sidebar-nav');
-  if (!nav) return;
-  const navItems = nav.querySelectorAll('.nav-item');
+  const navItems = document.querySelectorAll('.nav-item');
   const contentSections = document.querySelectorAll('.content-section');
   
   navItems.forEach(item => {
@@ -225,109 +220,113 @@ function initializeNavigation() {
 
 function initializeEmployeeSelection() {
   const teamMembers = document.querySelectorAll('.team-member');
-
+  
   teamMembers.forEach(member => {
-    const employeeId = member.dataset.employeeId;
-
-    // Reveal info on hover
-    member.addEventListener('mouseenter', () => showEmployeeInfo(employeeId));
-  });
-}
-
-function initializeEmployeeInfoPanel() {
-  employeeInfoPanel = document.createElement('div');
-  employeeInfoPanel.id = 'employee-info-panel';
-  employeeInfoPanel.className = 'employee-panel';
-  employeeInfoPanel.innerHTML = `
-    <div class="panel-content">
-      <button class="panel-close" id="employeePanelClose">&times;</button>
-      <h3 id="panel-name"></h3>
-      <p id="panel-role"></p>
-      <p id="panel-description"></p>
-      <div class="panel-metrics">
-        <div class="metric">Tasks Completed: <span id="panel-tasks">0</span></div>
-        <div class="metric">Active Threads: <span id="panel-threads">0</span></div>
-      </div>
-      <div class="panel-actions" id="panel-actions"></div>
-    </div>`;
-
-  document.body.appendChild(employeeInfoPanel);
-
-  const closeBtn = document.getElementById('employeePanelClose');
-  closeBtn.addEventListener('click', hideEmployeeInfo);
-  employeeInfoPanel.addEventListener('click', (e) => {
-    if (e.target === employeeInfoPanel) hideEmployeeInfo();
-  });
-}
-
-function showEmployeeInfo(employeeId) {
-  const employee = employees[employeeId];
-  if (!employee) return;
-
-  document.getElementById('panel-name').textContent = employee.name;
-  document.getElementById('panel-role').textContent = employee.specialty || employee.role;
-  document.getElementById('panel-description').textContent = employee.description || '';
-
-  const tasksEl = document.getElementById('panel-tasks');
-  const threadsEl = document.getElementById('panel-threads');
-  if (tasksEl) tasksEl.textContent = employee.metrics?.tasks || 0;
-  if (threadsEl) threadsEl.textContent = employee.metrics?.threads || 0;
-
-  const actionsContainer = document.getElementById('panel-actions');
-  actionsContainer.innerHTML = '';
-  (employee.quickActions || []).forEach(action => {
-    const btn = document.createElement('button');
-    btn.className = 'panel-action-btn';
-    btn.textContent = `${action.icon} ${action.text}`;
-    btn.addEventListener('click', () => {
-      if (messageInput) {
-        messageInput.value = action.action;
-        messageInput.dispatchEvent(new Event('input'));
-      }
-      hideEmployeeInfo();
+    member.addEventListener('click', () => {
+      const employeeId = member.dataset.employee;
+      switchEmployee(employeeId);
+      
+      // Update active team member
+      teamMembers.forEach(m => m.classList.remove('active'));
+      member.classList.add('active');
     });
-    actionsContainer.appendChild(btn);
-  });
-
-  employeeInfoPanel.classList.add('active');
-}
-
-function hideEmployeeInfo() {
-  if (employeeInfoPanel) {
-    employeeInfoPanel.classList.remove('active');
-  }
-}
-
-function renderEmployeeStatusList() {
-  const statusList = document.querySelector('.employee-status-list');
-  if (!statusList) return;
-
-  statusList.innerHTML = '';
-
-  Object.values(employees).forEach(emp => {
-    const status = (emp.status || 'online').toLowerCase();
-    const card = document.createElement('div');
-    card.className = 'employee-card';
-    card.innerHTML = `
-      <img src="${emp.avatar}" alt="${emp.name}" class="employee-thumb" />
-      <div class="employee-info">
-        <div class="employee-name">${emp.name}</div>
-        <div class="employee-role">${emp.role}</div>
-      </div>
-      <span class="status-badge ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
-    `;
-    statusList.appendChild(card);
   });
 }
 
 function setupEmployeeProfiles() {
   console.log('🔧 Setting up employee profiles...');
+  
+const employees = [
+  { 
+    id: 'brenden', 
+    name: 'AI Brenden', 
+    role: 'Lead Research Specialist', 
+    specialty: 'Lead Generation & Data Research',
+    avatar: '/brenden-avatar.jpg',
+    description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
+    status: 'online'
+  },
+  { 
+    id: 'van', 
+    name: 'AI Van', 
+    role: 'Landing Page Generation Expert', 
+    specialty: 'Landing Page Expert',
+    avatar: '/van-avatar.jpg',
+    description: 'Expert at creating comprehensive engaging landing pages that convert.',
+    status: 'online'
+  },
+  { 
+    id: 'sara', 
+    name: 'AI Sara', 
+    role: 'Blog Post Writer', 
+    specialty: 'Blog Post Expert',
+    avatar: '/sara-avatar.jpg', 
+    description: 'Creative content marketing specialist focused on crafting engaging blog posts that build brand authority and convert readers into loyal customers. I deliver clear, impactful stories that drive results.',
+    status: 'online'
+  },
+  { 
+    id: 'rey', 
+    name: 'AI Rey', 
+    role: 'Lead Generation Plan Strategist', 
+    specialty: 'Voice Outreach & Campaign Management',
+    avatar: '/rey-avatar.jpg', 
+    description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+    status: 'online'
+  },
+  { 
+    id: 'xavier', 
+    name: 'AI Xavier', 
+    role: 'Content Generation AI', 
+    specialty: 'Expert UGC video generator',
+    avatar: '/xavier-avatar.jpg',
+    description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
+    status: 'online'
+  },
+  // --- New Employees ---
+  { 
+    id: 'rhea', 
+    name: 'AI Rhea', 
+    role: 'Reputation AI', 
+    specialty: 'Review Assistant',
+    avatar: '/placeholder-avatar.jpg', // replace with real logo
+    description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
+    status: 'online'
+  },
+  { 
+    id: 'miles', 
+    name: 'AI Miles', 
+    role: 'Campaign AI Builder', 
+    specialty: 'Marketing Campaign Designer',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
+    status: 'online'
+  },
+  { 
+    id: 'eden', 
+    name: 'AI Eden', 
+    role: 'Email Occasion Reminder AI', 
+    specialty: 'Customer Engagement Emails',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
+    status: 'online'
+  },
+  { 
+    id: 'angel', 
+    name: 'AI Angel', 
+    role: 'Customer Support AI', 
+    specialty: 'Handles Customer Queries & Phone Inquiries',
+    avatar: '/placeholder-avatar.jpg',
+    description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
+    status: 'online'
+  }
+];
 
   // Clear existing employee list and ensure fresh state
   employeeList.innerHTML = '';
-
+  
   console.log('🔧 CRITICAL: Creating employee elements with data attributes');
-  Object.values(employees).forEach((employee) => {
+
+  employees.forEach((employee, index) => {
     const employeeEl = document.createElement('div');
     employeeEl.className = `team-member ${employee.id === activeEmployeeId ? 'active' : ''}`;
     // CRITICAL: Store employee ID in data attribute for foolproof identification
@@ -335,8 +334,8 @@ function setupEmployeeProfiles() {
     employeeEl.setAttribute('data-employee-name', employee.name);
     employeeEl.innerHTML = `
       <div class="member-avatar">
-        <img src="${employee.avatar}" alt="${employee.name}">
-        <div class="status-indicator online"></div>
+        <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="${employee.name}">
+        <div class="status-indicator ${employee.status}"></div>
       </div>
       <div class="member-info">
         <div class="member-name">${employee.name}</div>
@@ -376,9 +375,9 @@ function setupEmployeeProfiles() {
       this.classList.add('active');
       
       // Find employee data
-      const selectedEmployee = employees[clickedEmployeeId];
+      const selectedEmployee = employees.find(emp => emp.id === clickedEmployeeId);
       if (!selectedEmployee) {
-        console.error('🚨 CRITICAL ERROR: Employee not found in object!');
+        console.error('🚨 CRITICAL ERROR: Employee not found in array!');
         return;
       }
       
@@ -398,13 +397,22 @@ function setupEmployeeProfiles() {
 }
 
 function handleEmployeeClick(employee) {
-  if (!employee) return;
+  console.log('👤 Employee selected:', employee.name, '(ID:', employee.id, ')');
+  console.log('👤 CRITICAL VERIFICATION: activeEmployeeId is now:', activeEmployeeId);
+  console.log('👤 CRITICAL VERIFICATION: employee.id is:', employee.id);
+  console.log('👤 CRITICAL VERIFICATION: Do they match?', activeEmployeeId === employee.id);
 
   // Update active employee visual state
   document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
   document.querySelector(`[data-employee-id="${employee.id}"]`)?.classList.add('active');
 
-  switchEmployee(employee.id);
+  // Update chat header
+  updateChatHeader(employee);
+
+  // Load conversation for this employee
+  loadConversationForEmployee(employee.id);
+
+  console.log(`✅ Successfully switched to ${employee.name}`);
 }
 
 function initializeChatInterface() {
@@ -662,17 +670,17 @@ function removeLogo() {
 
 function initializeMobileMenu() {
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-  const navLinks = document.getElementById('navLinks');
-
-  if (mobileMenuToggle && navLinks) {
+  const sidebar = document.getElementById('sidebar');
+  
+  if (mobileMenuToggle && sidebar) {
     mobileMenuToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('open');
+      sidebar.classList.toggle('mobile-open');
     });
-
+    
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (!navLinks.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-        navLinks.classList.remove('open');
+      if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        sidebar.classList.remove('mobile-open');
       }
     });
   }
@@ -1582,95 +1590,30 @@ function showNotification(message, type = 'info') {
 }
 
 async function loadDashboardMetrics() {
-  const activityList = document.querySelector('.activity-list');
-  const metricIds = ['leads-generated', 'leads-validated', 'leads-contacted', 'leads-converted', 'pending-calls'];
-
   try {
     console.log('📈 Loading dashboard metrics...');
-
-    // Show loading state
-    metricIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.textContent = '...';
-        el.classList.add('loading');
-        el.classList.remove('error');
-      }
-    });
-    if (activityList) {
-      activityList.innerHTML = '<div class="activity-item">Loading...</div>';
-    }
-
-    const response = await fetch('/api/dashboard-metrics');
-    const data = await response.json();
-
+    const response = await fetch('/api/leads/statistics');
+    const stats = await response.json();
+    
     if (response.ok) {
-      const stats = data.leads || {};
-      const metricMap = {
-        'leads-generated': stats.total || 0,
-        'leads-validated': stats.validated || 0,
-        'leads-contacted': stats.outreach_sent || 0,
-        'leads-converted': stats.converted || 0,
-        'pending-calls': data.pending_calls || 0
-      };
-
-      Object.entries(metricMap).forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.remove('loading', 'error');
-        countUp(el, value);
-      });
-
-      if (activityList) {
-        if (data.activities && data.activities.length > 0) {
-          activityList.innerHTML = '';
-          data.activities.forEach(act => {
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = `<div class="activity-time">${act.time}</div><div class="activity-description">${act.description}</div>`;
-            activityList.appendChild(item);
-          });
-        } else {
-          activityList.innerHTML = '<div class="activity-item">No recent activity</div>';
-        }
-      }
-
+      // Update dashboard metrics
+      const leadsGenerated = document.getElementById('leads-generated');
+      const leadsValidated = document.getElementById('leads-validated');
+      const leadsContacted = document.getElementById('leads-contacted');
+      const leadsConverted = document.getElementById('leads-converted');
+      
+      if (leadsGenerated) leadsGenerated.textContent = stats.total || 0;
+      if (leadsValidated) leadsValidated.textContent = stats.validated || 0;
+      if (leadsContacted) leadsContacted.textContent = stats.outreach_sent || 0;
+      if (leadsConverted) leadsConverted.textContent = stats.converted || 0;
+      
       console.log(`✅ Updated dashboard metrics: ${stats.total || 0} total leads`);
     } else {
-      throw new Error(data.error || 'Request failed');
+      console.error('Failed to load dashboard metrics:', stats);
     }
   } catch (error) {
     console.error('Failed to load dashboard metrics:', error);
-    metricIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.textContent = '—';
-        el.classList.remove('loading');
-        el.classList.add('error');
-      }
-    });
-    if (activityList) {
-      activityList.innerHTML = '<div class="activity-item error">Error loading activity</div>';
-    }
   }
-}
-
-function countUp(el, newValue) {
-  const start = parseInt(el.textContent.replace(/[^0-9]/g, ''), 10) || 0;
-  const end = Number(newValue);
-  const duration = 800;
-  const startTime = performance.now();
-
-  function update(currentTime) {
-    const progress = Math.min((currentTime - startTime) / duration, 1);
-    const value = Math.floor(start + (end - start) * progress);
-    el.textContent = value;
-    if (progress < 1) {
-      requestAnimationFrame(update);
-    }
-  }
-
-  requestAnimationFrame(update);
 }
 
 async function loadLeadsData() {
@@ -1917,27 +1860,6 @@ function viewLead(leadId) {
 function editLead(leadId) {
   // TODO: Implement lead editing
   console.log('Edit lead:', leadId);
-}
-
-function renderEmployeeStatus() {
-  const statusContainer = document.getElementById('employee-status-list');
-  if (!statusContainer) return;
-
-  statusContainer.innerHTML = '';
-
-  Object.values(employees).forEach(employee => {
-    const card = document.createElement('div');
-    card.className = 'employee-card';
-    card.innerHTML = `
-      <img src="${employee.avatar}" alt="${employee.name}" class="employee-thumb" />
-      <div class="employee-info">
-        <div class="employee-name">${employee.name}</div>
-        <div class="employee-role">${employee.role}</div>
-      </div>
-      <span class="status-badge online">Online</span>
-    `;
-    statusContainer.appendChild(card);
-  });
 }
 
 function renderTeamMembers() {
