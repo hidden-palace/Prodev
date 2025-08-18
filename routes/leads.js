@@ -131,27 +131,21 @@ router.get('/export', async (req, res, next) => {
     const {
       format = 'csv',
       source_platform,
-      industry,
       city,
-      validated,
-      outreach_sent,
-      employee_id,
       min_score,
       date_from,
-      date_to
+      date_to,
+      employee_id,
     } = req.query;
 
     console.log('🔍 EXPORT DEBUG: Parsed parameters:', {
       format,
       source_platform,
-      industry,
       city,
-      validated,
-      outreach_sent,
-      employee_id,
       min_score,
       date_from,
-      date_to
+      date_to,
+      employee_id,
     });
     // Validate format
     if (!['csv', 'xml'].includes(format.toLowerCase())) {
@@ -164,14 +158,11 @@ router.get('/export', async (req, res, next) => {
 
     const filters = {};
     if (source_platform) filters.source_platform = source_platform;
-    if (industry) filters.industry = industry;
     if (city) filters.city = city;
-    if (validated !== undefined) filters.validated = validated === 'true';
-    if (outreach_sent !== undefined) filters.outreach_sent = outreach_sent === 'true';
-    if (employee_id) filters.employee_id = employee_id;
     if (min_score) filters.min_score = parseFloat(min_score);
     if (date_from) filters.date_from = date_from;
     if (date_to) filters.date_to = date_to;
+    if (employee_id) filters.employee_id = employee_id;
 
     console.log('🔍 EXPORT DEBUG: Applied filters:', filters);
     // Get all leads (no pagination for export)
