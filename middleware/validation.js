@@ -19,23 +19,6 @@ const validateAskRequest = (req, res, next) => {
     });
   }
 
-  // Validate employee field
-  const { employee } = req.body;
-  if (!employee || typeof employee !== 'string' || employee.trim().length === 0) {
-    return res.status(400).json({
-      error: 'Missing or invalid employee field',
-      details: 'Employee must be a non-empty string'
-    });
-  }
-
-  // Validate employee exists in configuration
-  const config = require('../config');
-  if (!config.employees || !config.employees[employee]) {
-    return res.status(400).json({
-      error: 'Invalid employee',
-      details: `Employee '${employee}' not found in configuration. Available employees: ${Object.keys(config.employees || {}).join(', ')}`
-    });
-  }
   next();
 };
 
