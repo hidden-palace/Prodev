@@ -1,5 +1,3 @@
-require('./services/error-handler'); // initialize logger and metrics
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
