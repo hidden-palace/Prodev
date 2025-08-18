@@ -5,7 +5,7 @@
 }
 
 :root {
- --primary-color: #D97D9D;       /* Deep teal/cyan (dominant color) */
+ --primary-color: #3B82F6;       /* Deep teal/cyan (dominant color) */
   --secondary-color: #64748b;     /* Muted slate (unchanged) */
   --accent-color: #c7531f;        /* Bold burnt orange (highlight/accent) */
   --success-color: #10b981;       /* Success green */
