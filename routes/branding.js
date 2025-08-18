@@ -128,52 +128,10 @@ router.post('/logo', async (req, res, next) => {
  */
 router.get('/employee-profiles', async (req, res, next) => {
   try {
-    console.log('🔍 GET /api/branding/employee-profiles called');
-    
-    if (!supabaseService) {
-      console.error('❌ Supabase service not initialized');
-      return res.status(503).json({
-        error: 'Service unavailable',
-        details: 'Supabase service is not properly configured.'
-      });
-    }
-
-    // Fetch employee profiles from database
-    let profilesData = [];
-    try {
-      console.log('🔍 Querying employee_profiles table...');
-      const { data, error } = await supabaseService.client
-        .from('employee_profiles')
-        .select('employee_id, profile_picture_url, created_at, updated_at');
-      
-      if (!error && data) {
-        profilesData = data;
-        console.log('✅ Employee profiles retrieved:', profilesData.length, 'profiles');
-      } else if (error) {
-        console.log('⚠️ Database query error:', error.message);
-        // Fall back to default profiles if database query fails
-        profilesData = [
-          { employee_id: 'brenden', profile_picture_url: null },
-          { employee_id: 'van', profile_picture_url: null },
-          { employee_id: 'Rey', profile_picture_url: null },
-          { employee_id: 'Xavier', profile_picture_url: null }
-        ];
-      }
-    } catch (dbError) {
-      console.log('❌ Database query failed, using defaults:', dbError.message);
-      // Fall back to default profiles
-      profilesData = [
-        { employee_id: 'brenden', profile_picture_url: null },
-        { employee_id: 'van', profile_picture_url: null },
-        { employee_id: 'Rey', profile_picture_url: null },
-        { employee_id: 'Xavier', profile_picture_url: null }
-      ];
-    }
-
-    console.log('✅ Returning employee profiles:', profilesData);
-    res.json(profilesData);
+    // Return empty array for now
+    res.json([]);
   } catch (err) {
-    console.error('❌ Error fetching employee profiles:', err);
+    console.error('Failure in employee profiles GET:', err);
     res.status(500).json({
       error: 'Internal server error',
       details: err.message
