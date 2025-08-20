@@ -264,3 +264,6 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       });
     }
     
+  }
+}
+)
