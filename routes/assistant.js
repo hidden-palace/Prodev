@@ -265,5 +265,8 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
     }
     
   }
-}
-)
+  } catch (error) {
+    console.error('Error in /api/ask route:', error);
+    next(error);
+  }
+});
