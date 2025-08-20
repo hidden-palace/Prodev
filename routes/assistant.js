@@ -264,6 +264,15 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       });
     }
     
+    // TODO: Add the actual AI processing logic here
+    // For now, return a success response to prevent client timeout
+    res.json({
+      success: true,
+      message: 'Request received successfully',
+      employee: employeeConfig.name,
+      thread_id: thread_id || 'new_thread_will_be_created'
+    });
+    
   } catch (error) {
     console.error('Error in /api/ask route:', error);
     next(error);
